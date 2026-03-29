@@ -4,6 +4,13 @@ TrustPlane is a trust-first control-plane prototype for governed AI agents.
 
 It is the sharper direction that emerged from earlier `ai-it-team` exploration.
 
+The current direction includes a more realistic deployment shape built around:
+
+- governed intake bots
+- a very small deployable operator team
+- backend runtime adapters and projection layers
+- operator-visible trust, approval, execution, and verification boundaries
+
 ## What this is
 
 This project is **not**:
