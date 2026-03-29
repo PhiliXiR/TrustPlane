@@ -4,36 +4,40 @@ TrustPlane is a trust-first control-plane prototype for governed AI agents.
 
 It is the sharper direction that emerged from earlier `ai-it-team` exploration.
 
-The current direction includes a more realistic deployment shape built around:
+## What this is
+
+TrustPlane is an operator-facing surface for a governed agent runtime.
+
+The project is centered on:
+
+- governed intake
+- trust and delegation posture
+- approval and intervention boundaries
+- execution visibility
+- verification and auditability
+- human-readable control over agent-driven work
+
+It is **not**:
+
+- a service desk clone
+- a ticketing UI
+- a generic observability dashboard
+- another agent framework
+
+## Current direction
+
+TrustPlane is moving toward a more realistic deployment shape built around:
 
 - governed intake bots
 - a very small deployable operator team
 - example agent workspaces and runtime config shape
 - backend runtime adapters and projection layers
 - operator-visible trust, approval, execution, and verification boundaries
-- a future rubric-based trust rating model tied to real delegation and execution posture
+- a rubric-based trust rating model tied to delegation and execution posture
 - live command observability for operator CLI work
-- a narrow future Slack intake slice for real external request entry
+- a narrow future Slack intake slice
 - a staged plan for using NemoClaw as the Slack-facing intake bot
 - a Linux-first deployment shape for the real runtime-backed version
-- step-by-step first-test Linux deployment instructions
-
-## What this is
-
-This project is **not**:
-
-- a service desk clone
-- a ticketing UI
-- a generic observability dashboard
-
-It is an operator-facing surface for a governed agent runtime.
-
-The goal is to show one request moving through an AI-assisted workflow with strong visibility into:
-
-- what is happening right now
-- why it is allowed
-- what happens next
-- where a human can intervene
 
 ## Current prototype
 
@@ -45,14 +49,15 @@ TrustPlane currently demonstrates multiple governed runtime scenarios, including
 The UI models this system shape:
 
 - request enters system
-- orchestrator selects workflow
-- intake agent classifies request
-- domain agent takes ownership
-- policy check determines whether action is allowed
-- governed tool execution is prepared
+- intake and classification shape the request
+- a domain operator or workflow takes ownership
+- policy determines what is allowed
+- governed execution is prepared or performed
 - human approval or human execution may be required
 - verification confirms outcome
-- timeline records everything
+- timeline and inspection surfaces explain what happened
+
+A new streaming proof slice also exists for the reporting-access path, allowing the UI to show simulated command execution progress and verification updates over time.
 
 ## Core UI sections
 
@@ -90,9 +95,12 @@ The UI models this system shape:
 - **Execution trace panel**
   - concrete action path separate from workflow movement
 
+- **Live command output panel**
+  - streamed command/execution output for the current proof slice
+
 - **Timeline panel**
   - readable operational events
-  - not raw logs
+  - not raw logs only
 
 - **Inspection drawer**
   - raw request JSON
@@ -109,21 +117,20 @@ The UI models this system shape:
   - rollback path
 
 - **Approval bar**
-  - approve / deny / pause / resume controls that now mutate runtime-backed local state through the backend
+  - approve / deny / pause / resume controls that mutate runtime-backed local state through the backend
 
 ## Design principle
 
 **The system that decides must also explain.**
 
-That means the runtime surface should make:
+That means the runtime surface should make visible:
 
 - decision path
 - policy basis
 - execution intent
 - human control points
 - trust boundaries
-
-all visible and readable.
+- verification status
 
 ## Technical approach
 
@@ -137,6 +144,7 @@ all visible and readable.
 
 - FastAPI
 - Python runtime snapshots and action endpoints
+- SSE-based event streaming for the current execution proof slice
 
 ### Current backend role
 
@@ -145,8 +153,9 @@ The backend currently serves:
 - runtime snapshot
 - scenario switching
 - approve / deny / pause / resume actions
+- event streaming for simulated command execution updates
 
-The frontend now consumes the FastAPI backend rather than reading static mock state directly.
+The frontend consumes the FastAPI backend rather than reading static mock state directly.
 
 ## Run locally
 
@@ -200,15 +209,28 @@ npm run build
 
 ## Project structure
 
-- `src/App.tsx` — top-level composition
-- `src/components/` — modular UI components
-- `src/api.ts` — frontend calls into the backend
-- `src/runtime/` — scenario definitions and runtime-shaped types
-- `backend/main.py` — FastAPI app
-- `backend/models.py` — runtime contract models
-- `backend/store.py` — in-memory runtime state mutations
-- `backend/scenarios.py` — backend scenario definitions
-- `docs/` — product thesis, roadmap, integration contract, reuse note, backend plan
+- `src/App.tsx` - top-level composition
+- `src/components/` - modular UI components
+- `src/api.ts` - frontend calls into the backend
+- `src/runtime/` - scenario definitions and runtime-shaped types
+- `backend/main.py` - FastAPI app
+- `backend/models.py` - runtime contract models
+- `backend/store.py` - in-memory runtime state mutations and event publishing
+- `backend/scenarios.py` - backend scenario definitions
+- `examples/agent-workspaces/` - intake/operator workspace scaffolds
+- `docs/` - architecture, trust model, intake, operator, deployment, and integration docs
+
+## Key docs
+
+- `docs/index.md` — docs map and suggested reading order
+- `docs/product-thesis.md` — core product idea
+- `docs/integration-contract.md` — runtime contract direction
+- `docs/runtime-adapter-architecture.md` — backend adapter/projection model
+- `docs/minimal-operator-team.md` — small deployable operator team
+- `docs/trust-rating-model.md` — trust rubric direction
+- `docs/live-command-observability.md` — CLI execution visibility model
+- `docs/nemoclaw-slack-intake-plan.md` — staged NemoClaw + Slack intake plan
+- `docs/first-linux-deployment-instructions.md` — first Linux deployment path
 
 ## Why this exists
 
