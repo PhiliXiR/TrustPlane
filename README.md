@@ -8,6 +8,7 @@ The current direction includes a more realistic deployment shape built around:
 
 - governed intake bots
 - a very small deployable operator team
+- example agent workspaces and runtime config shape
 - backend runtime adapters and projection layers
 - operator-visible trust, approval, execution, and verification boundaries
 
