@@ -15,6 +15,7 @@ That means it needs the runtime to expose enough structure for TrustPlane to sho
 - where a human can intervene
 - what work is prepared or executed
 - what evidence exists
+- how the request was normalized and whether clarification is still required
 
 ## Architectural model
 
@@ -71,6 +72,8 @@ It does need a stable external contract.
 ### 1. Request object
 
 A request is the top-level unit TrustPlane visualizes.
+
+TrustPlane should conceptually own the governed intake layer for this request, even if the original user-facing entry surface is external.
 
 Minimum fields:
 

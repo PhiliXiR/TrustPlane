@@ -51,6 +51,8 @@ NemoClaw / OpenShell or a similar substrate handles:
 TrustPlane handles:
 
 - request-centric visibility
+- governed intake and normalization logic
+- ambiguity / clarification visibility
 - workflow explanation
 - human checkpoint visibility
 - policy and trust boundary visibility
@@ -146,6 +148,14 @@ Define the minimum stable contract between runtime and TrustPlane.
 ### Deliverable
 
 A reduced “minimum viable integration surface” doc derived from the broader integration contract.
+
+That reduced surface should also include intake-facing objects such as:
+
+- raw request
+- normalized request
+- missing required context
+- clarification-needed state
+- initial risk / trust posture
 
 ### Why this matters
 

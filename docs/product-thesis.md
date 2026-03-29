@@ -15,6 +15,7 @@ TrustPlane helps humans:
 - verify outcomes and audit evidence
 - gradually delegate more authority over time
 - reduce or revoke autonomy when trust falls
+- govern how requests are normalized, clarified, and admitted into the runtime in the first place
 
 ## What it is not
 
@@ -39,6 +40,8 @@ It is a trust and control layer that makes delegation visible, bounded, reviewab
 
 TrustPlane is strongest when it makes these things explicit:
 
+- intake normalization
+- ambiguity and clarification state
 - workflow state
 - current owner
 - policy basis
