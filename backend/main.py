@@ -1,5 +1,7 @@
+from queue import Empty
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from .store import (
     approve_current_request,
     deny_current_request,
@@ -7,6 +9,8 @@ from .store import (
     pause_current_request,
     resume_current_request,
     set_scenario,
+    subscribe_events,
+    unsubscribe_events,
 )
 from .models import RuntimeScenario, ScenarioOption
 from .scenarios import list_scenarios
@@ -34,6 +38,25 @@ def scenarios():
 @app.get('/api/runtime', response_model=RuntimeScenario)
 def get_runtime():
     return get_runtime_snapshot()
+
+
+@app.get('/api/events')
+def events():
+    q = subscribe_events()
+
+    def event_stream():
+        try:
+            yield 'event: connected\ndata: {"ok": true}\n\n'
+            while True:
+                try:
+                    item = q.get(timeout=15)
+                    yield f"event: {item['type']}\ndata: {item['payload']}\n\n"
+                except Empty:
+                    yield 'event: keepalive\ndata: {}\n\n'
+        finally:
+            unsubscribe_events(q)
+
+    return StreamingResponse(event_stream(), media_type='text/event-stream')
 
 
 @app.post('/api/runtime/scenario/{scenario_id}', response_model=RuntimeScenario)

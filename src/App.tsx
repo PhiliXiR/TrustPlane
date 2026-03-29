@@ -4,6 +4,7 @@ import { DecisionPanel } from './components/DecisionPanel';
 import { ExecutionTracePanel } from './components/ExecutionTracePanel';
 import { HumanCheckpointsPanel } from './components/HumanCheckpointsPanel';
 import { InspectionDrawer } from './components/InspectionDrawer';
+import { LiveExecutionPanel } from './components/LiveExecutionPanel';
 import { PlaybookCard } from './components/PlaybookCard';
 import { RequestHeader } from './components/RequestHeader';
 import { ScenarioSelector } from './components/ScenarioSelector';
@@ -21,6 +22,7 @@ import {
 import type { RuntimeScenario } from './runtime/scenarioTypes';
 
 type ScenarioOption = { id: string; label: string };
+type ExecutionLogEntry = { id: string; stream: 'stdout' | 'stderr'; message: string };
 
 export default function App() {
   const [scenarioId, setScenarioId] = useState('');
@@ -29,6 +31,7 @@ export default function App() {
   const [selectedStageId, setSelectedStageId] = useState('');
   const [selectedEventId, setSelectedEventId] = useState('');
   const [inspectionOpen, setInspectionOpen] = useState(true);
+  const [liveExecution, setLiveExecution] = useState<ExecutionLogEntry[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -43,6 +46,29 @@ export default function App() {
       .catch((err) => {
         setError(String(err));
       });
+  }, []);
+
+  useEffect(() => {
+    const source = new EventSource('http://127.0.0.1:8011/api/events');
+
+    source.addEventListener('runtime.snapshot', (event) => {
+      const snapshot = JSON.parse((event as MessageEvent).data) as RuntimeScenario;
+      setRuntime(snapshot);
+      setScenarioId(snapshot.id);
+      setSelectedStageId((current) => current || snapshot.stages.find((stage) => stage.status === 'current')?.id || snapshot.stages[0].id);
+      setSelectedEventId(snapshot.timeline[snapshot.timeline.length - 1]?.id ?? snapshot.timeline[0].id);
+    });
+
+    source.addEventListener('execution.stream', (event) => {
+      const payload = JSON.parse((event as MessageEvent).data) as { eventType: string; stream: 'stdout' | 'stderr'; message: string };
+      setLiveExecution((current) => [...current, { id: `${payload.eventType}-${current.length + 1}`, stream: payload.stream, message: payload.message }]);
+    });
+
+    source.onerror = () => {
+      source.close();
+    };
+
+    return () => source.close();
   }, []);
 
   const selectedStage = useMemo(() => {
@@ -69,6 +95,7 @@ export default function App() {
 
   async function handleScenarioChange(nextScenarioId: string) {
     try {
+      setLiveExecution([]);
       await refreshFromAction(changeScenario(nextScenarioId));
     } catch (err) {
       setError(String(err));
@@ -123,6 +150,8 @@ export default function App() {
           <ExecutionTracePanel steps={runtime.executionSteps} />
           <PlaybookCard playbook={runtime.playbook} />
         </div>
+
+        <LiveExecutionPanel entries={liveExecution} />
 
         <InspectionDrawer
           open={inspectionOpen}
