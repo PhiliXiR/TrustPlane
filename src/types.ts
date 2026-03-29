@@ -11,12 +11,14 @@ export type Stage = {
   next: string;
 };
 
+export type TimelineCategory = 'request' | 'workflow' | 'policy' | 'human' | 'tool' | 'verification' | 'artifact';
+
 export type TimelineEvent = {
   id: string;
   time: string;
   title: string;
   detail: string;
-  category: 'request' | 'workflow' | 'policy' | 'human' | 'tool' | 'verification';
+  category: TimelineCategory;
   inspectionKey?: string;
 };
 
@@ -40,4 +42,18 @@ export type RequestModel = {
   owner: string;
   risk: string;
   autonomyMode: string;
+};
+
+export type ExecutionStep = {
+  id: string;
+  label: string;
+  state: 'completed' | 'current' | 'upcoming';
+  detail: string;
+};
+
+export type HumanCheckpoint = {
+  id: string;
+  label: string;
+  state: 'completed' | 'current' | 'upcoming';
+  detail: string;
 };

@@ -1,12 +1,14 @@
 import { useMemo, useState } from 'react';
 import { ApprovalBar } from './components/ApprovalBar';
 import { DecisionPanel } from './components/DecisionPanel';
+import { ExecutionTracePanel } from './components/ExecutionTracePanel';
+import { HumanCheckpointsPanel } from './components/HumanCheckpointsPanel';
 import { InspectionDrawer } from './components/InspectionDrawer';
 import { PlaybookCard } from './components/PlaybookCard';
 import { RequestHeader } from './components/RequestHeader';
 import { TimelinePanel } from './components/TimelinePanel';
 import { WorkflowRail } from './components/WorkflowRail';
-import { inspections, playbook, request, stages, timeline } from './mockData';
+import { executionSteps, humanCheckpoints, inspections, playbook, request, stages, timeline } from './mockData';
 
 export default function App() {
   const [selectedStageId, setSelectedStageId] = useState(stages.find((stage) => stage.status === 'current')?.id ?? stages[0].id);
@@ -32,9 +34,14 @@ export default function App() {
         <ApprovalBar />
         <WorkflowRail stages={stages} selectedStageId={selectedStageId} onSelect={setSelectedStageId} />
 
-        <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
+        <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
           <DecisionPanel stage={selectedStage} />
           <TimelinePanel timeline={timeline} selectedEventId={selectedEventId} onSelect={setSelectedEventId} />
+        </div>
+
+        <div className="grid gap-6 xl:grid-cols-2">
+          <HumanCheckpointsPanel checkpoints={humanCheckpoints} />
+          <ExecutionTracePanel steps={executionSteps} />
         </div>
 
         <div className="grid gap-6 xl:grid-cols-[0.8fr_1.2fr]">
