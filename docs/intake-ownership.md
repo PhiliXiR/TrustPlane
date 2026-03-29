@@ -79,6 +79,81 @@ Capturing the first trust and control posture before execution planning begins.
 
 Determining which workflows are eligible based on the normalized request.
 
+## Example external intake surfaces
+
+### Slack example
+
+A user might submit something like:
+
+> hey, can you give me access to the reporting dashboard before tomorrow’s review?
+
+The Slack surface can remain a lightweight front door.
+TrustPlane should own what happens next:
+
+- extract target system: reporting dashboard
+- infer likely request type: access request
+- detect missing context if needed
+- normalize the request into a controlled runtime object
+- determine whether clarification is required before workflow selection
+- determine initial trust/delegation posture
+
+Example normalized request:
+
+```json
+{
+  "source": "slack",
+  "rawRequest": "hey, can you give me access to the reporting dashboard before tomorrow’s review?",
+  "normalizedType": "access_request",
+  "targetSystem": "reporting",
+  "requestedEntitlement": "reporting.read",
+  "clarificationNeeded": false,
+  "candidateWorkflows": ["access_request_standard"],
+  "initialTrustMode": "human_approved_execution"
+}
+```
+
+### Jira example
+
+A user might submit a structured Jira issue like:
+
+- Summary: Update VPN access policy for remote contractors
+- Description: tighten split tunnel rules before maintenance window
+- Priority: High
+- Change window: Saturday 22:00
+
+In that case the intake surface is more structured from the start, but TrustPlane still owns:
+
+- normalization into the runtime contract
+- classification into infrastructure-change workflow
+- risk posture
+- whether human execution is required
+- whether the request is complete enough to stage
+
+Example normalized request:
+
+```json
+{
+  "source": "jira",
+  "rawRequest": {
+    "summary": "Update VPN access policy for remote contractors",
+    "priority": "High",
+    "changeWindow": "Saturday 22:00"
+  },
+  "normalizedType": "infrastructure_change",
+  "targetSystem": "vpn-policy",
+  "clarificationNeeded": false,
+  "candidateWorkflows": ["vpn_policy_standard_change"],
+  "initialTrustMode": "human_executed_change"
+}
+```
+
+### Why these examples matter
+
+These examples show the intended boundary clearly:
+
+- Slack and Jira can remain external entry surfaces
+- TrustPlane owns the normalization, ambiguity handling, and governed admission logic
+
 ## Suggested future intake objects
 
 TrustPlane will likely need intake-facing objects such as:
