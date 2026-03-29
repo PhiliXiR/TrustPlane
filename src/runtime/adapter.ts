@@ -1,5 +1,6 @@
-import { getDefaultScenario } from './index';
+import { getDefaultScenario, getScenarioById } from './index';
 
-export function loadRuntimeSnapshot() {
-  return getDefaultScenario();
+export function loadRuntimeSnapshot(scenarioId?: string) {
+  if (!scenarioId) return getDefaultScenario();
+  return getScenarioById(scenarioId);
 }

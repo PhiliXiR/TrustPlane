@@ -1,0 +1,292 @@
+import type { RuntimeScenario } from './scenarioTypes';
+
+export const vpnPolicyScenario: RuntimeScenario = {
+  id: 'vpn-policy-change',
+  label: 'Change VPN access policy',
+  request: {
+    title: 'Change VPN access policy',
+    state: 'Awaiting human execution of final risky step',
+    owner: 'Network Agent',
+    risk: 'high',
+    autonomyMode: 'human-executed change',
+  },
+  trustModel: {
+    level: 'Level 1.5 — Human execution required',
+    currentBoundary: 'The runtime may prepare the policy change, but a human operator must execute the final step.',
+    delegationRule: 'The agent can model the change, prepare the exact API envelope, and stage verification, but execution authority does not cross into runtime control for this workflow.',
+    downgradeRule: 'If verification fails or human review rejects the staged change, the workflow remains manual and the prepared envelope is invalidated.',
+  },
+  stages: [
+    {
+      id: 'submitted',
+      label: 'Request Submitted',
+      status: 'completed',
+      explanation: 'A change request entered the runtime asking for a VPN policy update before the maintenance window.',
+      evidence: ['requestId=req_2088', 'targetSystem=vpn-policy', 'changeType=policy_update'],
+      rule: 'Structured change requests can enter governed intake.',
+      next: 'Intake normalizes the requested change.',
+    },
+    {
+      id: 'intake',
+      label: 'Intake',
+      status: 'completed',
+      explanation: 'The runtime extracted target policy, requested change scope, and maintenance context into a controlled request object.',
+      evidence: ['maintenanceWindow=approved', 'requestedScope=remote-access-policy', 'change intent normalized'],
+      rule: 'Infrastructure changes must be normalized before playbook selection.',
+      next: 'Classification selects the infrastructure-change workflow family.',
+    },
+    {
+      id: 'classification',
+      label: 'Classification',
+      status: 'completed',
+      explanation: 'The request was classified as a governed infrastructure change with a high-risk execution boundary.',
+      evidence: ['workflow=infrastructure_change', 'risk=high', 'target affects remote-access posture'],
+      rule: 'Policy-affecting changes receive stronger execution controls than standard access grants.',
+      next: 'A network playbook is selected.',
+    },
+    {
+      id: 'playbook',
+      label: 'IAM Playbook',
+      status: 'completed',
+      explanation: 'A versioned network-policy playbook was selected to avoid uncontrolled, one-off execution.',
+      evidence: ['playbook=vpn-policy-standard-change', 'version=0.9.8', 'verification runbook attached'],
+      rule: 'Risky policy changes must use playbook-backed envelopes and rollback paths.',
+      next: 'Policy check validates whether the staged change can proceed to human execution.',
+    },
+    {
+      id: 'policy',
+      label: 'Policy Check',
+      status: 'completed',
+      explanation: 'Policy review allowed the change to be staged, but the runtime cannot directly execute it because the workflow is classified as human-executed.',
+      evidence: ['executionMode=human_executed', 'rollback path validated', 'blast-radius note attached'],
+      rule: 'High-risk infrastructure policy changes require human execution even when the agent has correctly prepared the action.',
+      next: 'Approval and execution preparation remain visible to the operator.',
+    },
+    {
+      id: 'approval',
+      label: 'Approval Check',
+      status: 'completed',
+      explanation: 'Human review has already approved the staged policy change for execution within the maintenance window.',
+      evidence: ['approver=Network Operations Lead', 'approval status=granted', 'window status=active'],
+      rule: 'Approval alone does not grant execution authority to the runtime in this workflow class.',
+      next: 'A human operator must execute the staged policy request.',
+    },
+    {
+      id: 'tool',
+      label: 'Tool Execute',
+      status: 'current',
+      explanation: 'The runtime has prepared the exact policy-update envelope, but a human operator must issue the final change.',
+      evidence: ['tool=vpn-policy.update', 'runtimeMode=prepared_for_human_execution', 'rollback payload staged'],
+      rule: 'The runtime may assist, but not act alone, for high-risk policy changes.',
+      next: 'Verification will confirm policy convergence after human execution.',
+    },
+    {
+      id: 'verification',
+      label: 'Verification',
+      status: 'future',
+      explanation: 'Verification will compare the resulting VPN policy against the staged desired state.',
+      evidence: ['verification query prepared', 'expected policy hash staged'],
+      rule: 'High-risk changes require immediate post-execution verification.',
+      next: 'The runtime records the completed change artifact.',
+    },
+    {
+      id: 'done',
+      label: 'Done',
+      status: 'future',
+      explanation: 'The request closes after human execution, verification, and artifact capture are all complete.',
+      evidence: ['artifact pending', 'verification pending'],
+      rule: 'Completion requires evidence and verified convergence.',
+      next: 'No next step.',
+    },
+  ],
+  humanCheckpoints: [
+    {
+      id: 'hc1',
+      label: 'Approval granted',
+      state: 'completed',
+      detail: 'Network Operations Lead approved the staged policy change for the current maintenance window.',
+    },
+    {
+      id: 'hc2',
+      label: 'Human execution required',
+      state: 'current',
+      detail: 'A human operator must execute the final VPN policy update using the staged runtime envelope.',
+    },
+    {
+      id: 'hc3',
+      label: 'Verification reviewed',
+      state: 'upcoming',
+      detail: 'After execution, a human can compare the verification result against the staged expected policy state.',
+    },
+  ],
+  executionSteps: [
+    {
+      id: 'ex1',
+      label: 'Read current VPN policy',
+      state: 'completed',
+      detail: 'The runtime read the current policy state and captured the baseline configuration.',
+    },
+    {
+      id: 'ex2',
+      label: 'Prepare policy diff',
+      state: 'completed',
+      detail: 'The runtime generated a bounded diff and validated rollback payloads.',
+    },
+    {
+      id: 'ex3',
+      label: 'Stage governed tool envelope',
+      state: 'completed',
+      detail: 'The exact API envelope and rollback path were staged for human review.',
+    },
+    {
+      id: 'ex4',
+      label: 'Await human execution',
+      state: 'current',
+      detail: 'Execution authority remains with a human operator for this workflow class.',
+    },
+    {
+      id: 'ex5',
+      label: 'Verify resulting policy',
+      state: 'upcoming',
+      detail: 'Verification will compare final policy state to the approved desired policy diff.',
+    },
+  ],
+  timeline: [
+    {
+      id: 't1',
+      time: '18:20',
+      title: 'workflow.entered_queue',
+      detail: 'Infrastructure change request created and queued for governed intake.',
+      category: 'request',
+      inspectionKey: 'request',
+    },
+    {
+      id: 't2',
+      time: '18:21',
+      title: 'workflow.classified',
+      detail: 'Request classified as infrastructure_change with high-risk execution boundaries.',
+      category: 'workflow',
+      inspectionKey: 'request',
+    },
+    {
+      id: 't3',
+      time: '18:22',
+      title: 'workflow.playbook_selected',
+      detail: 'Playbook selected: vpn-policy-standard-change.',
+      category: 'workflow',
+      inspectionKey: 'playbook',
+    },
+    {
+      id: 't4',
+      time: '18:23',
+      title: 'policy.check.completed',
+      detail: 'Policy review allowed staging but required human execution of the final change.',
+      category: 'policy',
+      inspectionKey: 'policy',
+    },
+    {
+      id: 't5',
+      time: '18:24',
+      title: 'human.approval.granted',
+      detail: 'Network Operations Lead approved the staged change for the active maintenance window.',
+      category: 'human',
+      inspectionKey: 'policy',
+    },
+    {
+      id: 't6',
+      time: '18:25',
+      title: 'human.execution.required',
+      detail: 'The runtime prepared the governed tool request but paused before final execution.',
+      category: 'human',
+      inspectionKey: 'tool',
+    },
+    {
+      id: 't7',
+      time: '18:25',
+      title: 'execution.change.prepared',
+      detail: 'VPN policy update envelope and rollback payload staged for human operator use.',
+      category: 'tool',
+      inspectionKey: 'tool',
+    },
+    {
+      id: 't8',
+      time: '18:26',
+      title: 'verification.check.pending',
+      detail: 'Verification and artifact capture remain queued behind human execution.',
+      category: 'verification',
+      inspectionKey: 'artifact',
+    },
+  ],
+  inspections: {
+    request: {
+      title: 'Raw request JSON',
+      content: `{
+  "requestId": "req_2088",
+  "workflow": "infrastructure_change",
+  "targetSystem": "vpn-policy",
+  "changeType": "policy_update",
+  "requestedBy": "network-admin@company",
+  "maintenanceWindow": "active",
+  "risk": "high"
+}`,
+    },
+    tool: {
+      title: 'Raw tool request / response',
+      content: `{
+  "tool": "vpn-policy.update",
+  "runtimeMode": "prepared_for_human_execution",
+  "input": {
+    "policyDiff": "...staged diff...",
+    "rollbackPayload": "...rollback envelope..."
+  },
+  "response": null,
+  "blockedBy": "human.execution.required"
+}`,
+    },
+    policy: {
+      title: 'Policy metadata',
+      content: `{
+  "policyId": "pol_infra_high_risk_07",
+  "decision": "human_execution_required",
+  "requiredApprover": "Network Operations Lead",
+  "delegationMode": "human_executed_change",
+  "reason": "target workflow affects remote access posture"
+}`,
+    },
+    playbook: {
+      title: 'Playbook version',
+      content: `{
+  "playbook": "vpn-policy-standard-change",
+  "version": "0.9.8",
+  "allowedTools": ["vpn-policy.read", "vpn-policy.update", "vpn-policy.verify"],
+  "runtime": "governed-agent-runtime",
+  "executionAuthority": "human_operator_only"
+}`,
+    },
+    artifact: {
+      title: 'Artifact preview',
+      content: `{
+  "artifactType": "infrastructure_change_record",
+  "status": "pending",
+  "willInclude": [
+    "approved policy diff",
+    "human execution record",
+    "verification result",
+    "rollback reference"
+  ]
+}`,
+    },
+  },
+  playbook: {
+    name: 'vpn-policy-standard-change',
+    trigger: 'Standard VPN policy modification during approved maintenance window',
+    preconditions: [
+      'Maintenance window is active',
+      'Requested policy scope is bounded',
+      'Rollback payload has been generated',
+    ],
+    allowedTools: ['vpn-policy.read', 'vpn-policy.update', 'vpn-policy.verify'],
+    approvalRequirement: 'Approval required before execution staging. Human operator required for final change application.',
+    rollback: 'Apply rollback payload, verify policy convergence, and attach rollback artifact.',
+  },
+};
