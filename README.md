@@ -37,6 +37,7 @@ TrustPlane is moving toward a more realistic deployment shape built around:
 - live command observability for operator CLI work
 - a narrow future Slack intake slice
 - a staged plan for using NemoClaw as the Slack-facing intake bot
+- an explicit delegation and routing model for operator handoff
 - a Linux-first deployment shape for the real runtime-backed version
 
 ## Current prototype
