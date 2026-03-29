@@ -8,6 +8,13 @@ export const request: RequestModel = {
   autonomyMode: 'human-approved execution',
 };
 
+export const trustModel = {
+  level: 'Level 1 — Approval before action',
+  currentBoundary: 'Execution blocked until Reporting Data Owner approval',
+  delegationRule: 'The runtime may prepare the tool call, but it may not issue any write action before human approval.',
+  downgradeRule: 'If verification fails or the approval is denied, the workflow remains human-controlled and execution authority is removed.',
+};
+
 export const stages: Stage[] = [
   {
     id: 'submitted',

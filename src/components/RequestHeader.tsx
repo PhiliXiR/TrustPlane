@@ -1,25 +1,47 @@
 import type { RequestModel } from '../types';
 
-type Props = { request: RequestModel };
+type Props = {
+  request: RequestModel;
+  trustModel: {
+    level: string;
+    currentBoundary: string;
+    delegationRule: string;
+    downgradeRule: string;
+  };
+};
 
 const pillStyles: Record<string, string> = {
   medium: 'border-warn/30 text-warn bg-warn/10',
   'human-approved execution': 'border-accent/30 text-accent bg-accent/10',
 };
 
-export function RequestHeader({ request }: Props) {
+export function RequestHeader({ request, trustModel }: Props) {
   return (
-    <section className="rounded-3xl border border-line bg-panel/95 p-6 shadow-panel">
-      <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+    <section className="rounded-[28px] border border-line bg-panel/95 p-6 shadow-panel lg:p-7">
+      <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
         <div>
           <p className="mb-2 text-xs font-semibold uppercase tracking-[0.24em] text-accent">TrustPlane</p>
-          <h1 className="text-3xl font-semibold tracking-tight text-slate-50">{request.title}</h1>
+          <h1 className="text-3xl font-semibold tracking-tight text-slate-50 lg:text-[2.15rem]">{request.title}</h1>
+          <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <StatusPill label="Current state" value={request.state} />
+            <StatusPill label="Current owner" value={request.owner} />
+            <StatusPill label="Risk level" value={request.risk} tone={pillStyles[request.risk]} />
+            <StatusPill label="Autonomy mode" value={request.autonomyMode} tone={pillStyles[request.autonomyMode]} />
+          </div>
         </div>
-        <div className="flex flex-wrap gap-3 text-sm">
-          <StatusPill label="Current state" value={request.state} />
-          <StatusPill label="Current owner" value={request.owner} />
-          <StatusPill label="Risk level" value={request.risk} tone={pillStyles[request.risk]} />
-          <StatusPill label="Autonomy mode" value={request.autonomyMode} tone={pillStyles[request.autonomyMode]} />
+
+        <div className="rounded-3xl border border-violet/25 bg-violet/10 p-5">
+          <div className="text-[11px] uppercase tracking-[0.2em] text-violet">Trust boundary</div>
+          <div className="mt-2 text-lg font-semibold text-slate-50">{trustModel.level}</div>
+          <p className="mt-3 text-sm leading-7 text-slate-200">{trustModel.currentBoundary}</p>
+          <div className="mt-4 space-y-3 text-sm leading-6 text-slate-300">
+            <div>
+              <span className="font-semibold text-slate-100">Delegation rule:</span> {trustModel.delegationRule}
+            </div>
+            <div>
+              <span className="font-semibold text-slate-100">Downgrade path:</span> {trustModel.downgradeRule}
+            </div>
+          </div>
         </div>
       </div>
     </section>
