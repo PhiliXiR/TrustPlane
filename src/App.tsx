@@ -17,7 +17,7 @@ import {
   fetchRuntimeSnapshot,
   pauseRuntimeRequest,
   resumeRuntimeRequest,
-} from './runtime/api';
+} from './api';
 import type { RuntimeScenario } from './runtime/scenarioTypes';
 
 const scenarioOptions = getScenarioOptions();
@@ -28,13 +28,18 @@ export default function App() {
   const [selectedStageId, setSelectedStageId] = useState('');
   const [selectedEventId, setSelectedEventId] = useState('');
   const [inspectionOpen, setInspectionOpen] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchRuntimeSnapshot().then((snapshot) => {
-      setRuntime(snapshot);
-      setSelectedStageId(snapshot.stages.find((stage) => stage.status === 'current')?.id ?? snapshot.stages[0].id);
-      setSelectedEventId(snapshot.timeline[snapshot.timeline.length - 1]?.id ?? snapshot.timeline[0].id);
-    });
+    fetchRuntimeSnapshot()
+      .then((snapshot) => {
+        setRuntime(snapshot);
+        setSelectedStageId(snapshot.stages.find((stage) => stage.status === 'current')?.id ?? snapshot.stages[0].id);
+        setSelectedEventId(snapshot.timeline[snapshot.timeline.length - 1]?.id ?? snapshot.timeline[0].id);
+      })
+      .catch((err) => {
+        setError(String(err));
+      });
   }, []);
 
   const selectedStage = useMemo(() => {
@@ -60,7 +65,23 @@ export default function App() {
 
   async function handleScenarioChange(nextScenarioId: string) {
     setScenarioId(nextScenarioId);
-    await refreshFromAction(changeScenario(nextScenarioId));
+    try {
+      await refreshFromAction(changeScenario(nextScenarioId));
+    } catch (err) {
+      setError(String(err));
+    }
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-transparent px-4 py-8 text-slate-100 lg:px-8">
+        <div className="mx-auto max-w-[1500px] rounded-3xl border border-danger/30 bg-danger/10 p-8 shadow-panel">
+          <div className="text-lg font-semibold text-slate-50">TrustPlane backend unavailable</div>
+          <div className="mt-2 text-sm text-slate-200">Start the FastAPI backend first. Expected base: <code>http://127.0.0.1:8011</code></div>
+          <pre className="mt-4 overflow-x-auto rounded-2xl border border-danger/25 bg-ink/60 p-4 text-xs text-slate-200">{error}</pre>
+        </div>
+      </div>
+    );
   }
 
   if (!runtime || !selectedStage || !selectedEvent || !selectedInspection) {
@@ -68,7 +89,7 @@ export default function App() {
       <div className="min-h-screen bg-transparent px-4 py-8 text-slate-100 lg:px-8">
         <div className="mx-auto max-w-[1500px] rounded-3xl border border-line bg-panel/95 p-8 shadow-panel">
           <div className="text-lg font-semibold text-slate-50">Loading TrustPlane runtime…</div>
-          <div className="mt-2 text-sm text-muted">Initializing the local runtime adapter and current scenario snapshot.</div>
+          <div className="mt-2 text-sm text-muted">Fetching current state from the FastAPI runtime adapter.</div>
         </div>
       </div>
     );
@@ -80,10 +101,10 @@ export default function App() {
         <RequestHeader request={runtime.request} trustModel={runtime.trustModel} />
         <ScenarioSelector options={scenarioOptions} value={scenarioId} onChange={handleScenarioChange} />
         <ApprovalBar
-          onApprove={() => refreshFromAction(approveRuntimeRequest())}
-          onDeny={() => refreshFromAction(denyRuntimeRequest())}
-          onPause={() => refreshFromAction(pauseRuntimeRequest())}
-          onResume={() => refreshFromAction(resumeRuntimeRequest())}
+          onApprove={() => refreshFromAction(approveRuntimeRequest()).catch((err) => setError(String(err)))}
+          onDeny={() => refreshFromAction(denyRuntimeRequest()).catch((err) => setError(String(err)))}
+          onPause={() => refreshFromAction(pauseRuntimeRequest()).catch((err) => setError(String(err)))}
+          onResume={() => refreshFromAction(resumeRuntimeRequest()).catch((err) => setError(String(err)))}
         />
         <WorkflowRail stages={runtime.stages} selectedStageId={selectedStageId} onSelect={setSelectedStageId} />
 
