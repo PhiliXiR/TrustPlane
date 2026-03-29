@@ -16,6 +16,7 @@ The current direction includes a more realistic deployment shape built around:
 - a narrow future Slack intake slice for real external request entry
 - a staged plan for using NemoClaw as the Slack-facing intake bot
 - a Linux-first deployment shape for the real runtime-backed version
+- step-by-step first-test Linux deployment instructions
 
 ## What this is
 
