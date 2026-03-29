@@ -13,6 +13,7 @@ The current direction includes a more realistic deployment shape built around:
 - operator-visible trust, approval, execution, and verification boundaries
 - a future rubric-based trust rating model tied to real delegation and execution posture
 - live command observability for operator CLI work
+- a narrow future Slack intake slice for real external request entry
 
 ## What this is
 
