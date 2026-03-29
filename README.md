@@ -15,6 +15,7 @@ The current direction includes a more realistic deployment shape built around:
 - live command observability for operator CLI work
 - a narrow future Slack intake slice for real external request entry
 - a staged plan for using NemoClaw as the Slack-facing intake bot
+- a Linux-first deployment shape for the real runtime-backed version
 
 ## What this is
 
