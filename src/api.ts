@@ -2,6 +2,8 @@ import type { RuntimeScenario } from './runtime/scenarioTypes';
 
 const API_BASE = 'http://127.0.0.1:8011';
 
+type ScenarioOption = { id: string; label: string };
+
 async function call<T>(path: string, options: RequestInit = {}) {
   const response = await fetch(`${API_BASE}${path}`, {
     headers: {
@@ -16,6 +18,10 @@ async function call<T>(path: string, options: RequestInit = {}) {
   }
 
   return response.json() as Promise<T>;
+}
+
+export function fetchScenarioOptions() {
+  return call<ScenarioOption[]>('/api/scenarios');
 }
 
 export function fetchRuntimeSnapshot() {

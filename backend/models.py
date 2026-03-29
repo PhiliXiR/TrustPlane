@@ -80,3 +80,8 @@ class RuntimeScenario(BaseModel):
     timeline: List[TimelineEvent]
     inspections: Dict[str, InspectionRecord]
     playbook: Playbook
+
+
+class ScenarioOption(BaseModel):
+    id: str
+    label: str

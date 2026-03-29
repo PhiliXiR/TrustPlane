@@ -9,21 +9,22 @@ import { RequestHeader } from './components/RequestHeader';
 import { ScenarioSelector } from './components/ScenarioSelector';
 import { TimelinePanel } from './components/TimelinePanel';
 import { WorkflowRail } from './components/WorkflowRail';
-import { getScenarioOptions } from './runtime';
 import {
   approveRuntimeRequest,
   changeScenario,
   denyRuntimeRequest,
   fetchRuntimeSnapshot,
+  fetchScenarioOptions,
   pauseRuntimeRequest,
   resumeRuntimeRequest,
 } from './api';
 import type { RuntimeScenario } from './runtime/scenarioTypes';
 
-const scenarioOptions = getScenarioOptions();
+type ScenarioOption = { id: string; label: string };
 
 export default function App() {
-  const [scenarioId, setScenarioId] = useState(scenarioOptions[0]?.id ?? 'reporting-access');
+  const [scenarioId, setScenarioId] = useState('');
+  const [scenarioOptions, setScenarioOptions] = useState<ScenarioOption[]>([]);
   const [runtime, setRuntime] = useState<RuntimeScenario | null>(null);
   const [selectedStageId, setSelectedStageId] = useState('');
   const [selectedEventId, setSelectedEventId] = useState('');
@@ -31,8 +32,10 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchRuntimeSnapshot()
-      .then((snapshot) => {
+    Promise.all([fetchScenarioOptions(), fetchRuntimeSnapshot()])
+      .then(([options, snapshot]) => {
+        setScenarioOptions(options);
+        setScenarioId(snapshot.id);
         setRuntime(snapshot);
         setSelectedStageId(snapshot.stages.find((stage) => stage.status === 'current')?.id ?? snapshot.stages[0].id);
         setSelectedEventId(snapshot.timeline[snapshot.timeline.length - 1]?.id ?? snapshot.timeline[0].id);
@@ -59,12 +62,12 @@ export default function App() {
   async function refreshFromAction(action: Promise<RuntimeScenario>) {
     const snapshot = await action;
     setRuntime(snapshot);
+    setScenarioId(snapshot.id);
     setSelectedStageId(snapshot.stages.find((stage) => stage.status === 'current')?.id ?? snapshot.stages[0].id);
     setSelectedEventId(snapshot.timeline[snapshot.timeline.length - 1]?.id ?? snapshot.timeline[0].id);
   }
 
   async function handleScenarioChange(nextScenarioId: string) {
-    setScenarioId(nextScenarioId);
     try {
       await refreshFromAction(changeScenario(nextScenarioId));
     } catch (err) {

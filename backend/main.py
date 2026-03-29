@@ -8,7 +8,8 @@ from .store import (
     resume_current_request,
     set_scenario,
 )
-from .models import RuntimeScenario
+from .models import RuntimeScenario, ScenarioOption
+from .scenarios import list_scenarios
 
 app = FastAPI(title='TrustPlane API')
 
@@ -23,6 +24,11 @@ app.add_middleware(
 @app.get('/api/health')
 def health():
     return {'ok': True}
+
+
+@app.get('/api/scenarios', response_model=list[ScenarioOption])
+def scenarios():
+    return list_scenarios()
 
 
 @app.get('/api/runtime', response_model=RuntimeScenario)

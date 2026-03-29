@@ -1,5 +1,5 @@
 from copy import deepcopy
-from .models import RuntimeScenario
+from .models import RuntimeScenario, ScenarioOption
 
 REPORTING_ACCESS = RuntimeScenario.model_validate({
     "id": "reporting-access",
@@ -142,3 +142,7 @@ SCENARIOS = {
 def get_scenario(scenario_id: str):
     base = SCENARIOS.get(scenario_id) or REPORTING_ACCESS
     return deepcopy(base)
+
+
+def list_scenarios():
+    return [ScenarioOption(id=scenario.id, label=scenario.label) for scenario in SCENARIOS.values()]
