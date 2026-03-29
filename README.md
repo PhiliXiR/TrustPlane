@@ -11,6 +11,7 @@ The current direction includes a more realistic deployment shape built around:
 - example agent workspaces and runtime config shape
 - backend runtime adapters and projection layers
 - operator-visible trust, approval, execution, and verification boundaries
+- a future rubric-based trust rating model tied to real delegation and execution posture
 
 ## What this is
 
