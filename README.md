@@ -23,19 +23,20 @@ The goal is to show one request moving through an AI-assisted workflow with stro
 
 ## Current prototype
 
-The current v0 prototype focuses on one workflow:
+TrustPlane currently demonstrates multiple governed runtime scenarios, including:
 
 - **Grant access to reporting app**
+- **Change VPN access policy**
 
 The UI models this system shape:
 
 - request enters system
 - orchestrator selects workflow
 - intake agent classifies request
-- IAM agent takes ownership
+- domain agent takes ownership
 - policy check determines whether action is allowed
 - governed tool execution is prepared
-- human approval is required before execution
+- human approval or human execution may be required
 - verification confirms outcome
 - timeline records everything
 
@@ -47,12 +48,16 @@ The UI models this system shape:
   - current owner
   - risk level
   - autonomy mode
+  - trust boundary summary
+
+- **Scenario selector**
+  - swaps between governed runtime patterns while preserving the same control-plane surface
 
 - **Central workflow rail**
   - request submitted
   - intake
   - classification
-  - IAM playbook
+  - playbook selection
   - policy check
   - approval check
   - tool execute
@@ -64,6 +69,12 @@ The UI models this system shape:
   - what evidence was used
   - what rule or policy applies
   - what happens next
+
+- **Human checkpoints panel**
+  - where human review, approval, or execution is required
+
+- **Execution trace panel**
+  - concrete action path separate from workflow movement
 
 - **Timeline panel**
   - readable operational events
@@ -84,7 +95,7 @@ The UI models this system shape:
   - rollback path
 
 - **Approval bar**
-  - mocked approve / deny / pause / resume controls
+  - approve / deny / pause / resume controls that now mutate runtime-backed local state through the backend
 
 ## Design principle
 
@@ -96,30 +107,78 @@ That means the runtime surface should make:
 - policy basis
 - execution intent
 - human control points
+- trust boundaries
 
 all visible and readable.
 
 ## Technical approach
 
+### Frontend
+
 - React
 - TypeScript
 - Tailwind CSS
-- mocked data only
-- no backend required yet
-- structured so it can later connect to a real runtime
+
+### Backend
+
+- FastAPI
+- Python runtime snapshots and action endpoints
+
+### Current backend role
+
+The backend currently serves:
+
+- runtime snapshot
+- scenario switching
+- approve / deny / pause / resume actions
+
+The frontend now consumes the FastAPI backend rather than reading static mock state directly.
 
 ## Run locally
 
+### 1. Install frontend dependencies
+
 ```bash
 npm install
+```
+
+### 2. Create a Python virtual environment
+
+```bash
+python -m venv .venv
+```
+
+### 3. Install backend dependencies
+
+```bash
+npm run backend:install
+```
+
+### 4. Start the FastAPI backend
+
+```bash
+npm run backend
+```
+
+Backend runs at:
+
+- `http://127.0.0.1:8011`
+
+Health check:
+
+- `http://127.0.0.1:8011/api/health`
+
+### 5. Start the frontend in a second terminal
+
+```bash
 npm run dev
 ```
 
-Open:
+Frontend runs at:
 
 - `http://localhost:4511`
 
-Build:
+## Build
 
 ```bash
 npm run build
@@ -128,13 +187,18 @@ npm run build
 ## Project structure
 
 - `src/App.tsx` — top-level composition
-- `src/mockData.ts` — mocked request, workflow, timeline, policy, and playbook data
-- `src/types.ts` — shared types
 - `src/components/` — modular UI components
+- `src/api.ts` — frontend calls into the backend
+- `src/runtime/` — scenario definitions and runtime-shaped types
+- `backend/main.py` — FastAPI app
+- `backend/models.py` — runtime contract models
+- `backend/store.py` — in-memory runtime state mutations
+- `backend/scenarios.py` — backend scenario definitions
+- `docs/` — product thesis, roadmap, integration contract, reuse note, backend plan
 
 ## Why this exists
 
 The larger idea behind TrustPlane is that governed AI systems will need more than intelligence.
-They will need a trust and control layer that makes delegation visible, bounded, reviewable, and interruptible.
+They will need a trust and control layer that makes delegation visible, bounded, reviewable, interruptible, and revocable.
 
-This prototype is an early UI exploration of that idea.
+TrustPlane is an early product and architecture exploration of that idea.
