@@ -19,8 +19,8 @@ def approve_current_request():
     _current = deepcopy(_current)
     _current.request.state = 'Governed execution authorized'
     _current.request.autonomyMode = 'bounded execution window'
-    _current.trustModel.level = 'Level 2 — Bounded execution'
-    _current.trustModel.currentBoundary = 'Execution authorized inside governed runtime envelope'
+    _current.trustModel.level = 'Elevated'
+    _current.trustModel.currentBoundary = 'Delegation mode: Bounded autonomous execution · Execution mode: Runtime executed'
     _current.trustModel.delegationRule = 'The runtime may now issue the prepared action within the approved playbook boundaries.'
     for stage in _current.stages:
         if stage.id == 'approval':
@@ -62,8 +62,8 @@ def deny_current_request():
     _current = deepcopy(_current)
     _current.request.state = 'Denied and held for human follow-up'
     _current.request.autonomyMode = 'human-controlled'
-    _current.trustModel.level = 'Level 0 — Observe and review'
-    _current.trustModel.currentBoundary = 'Execution authority removed after denial'
+    _current.trustModel.level = 'Restricted'
+    _current.trustModel.currentBoundary = 'Delegation mode: Suspended / downgraded · Execution mode: Execution blocked'
     _current.trustModel.delegationRule = 'The runtime may not execute or continue the staged action after denial.'
     for stage in _current.stages:
         if stage.id == 'approval':

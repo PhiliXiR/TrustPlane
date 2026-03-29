@@ -11,8 +11,8 @@ export const reportingAccessScenario: RuntimeScenario = {
     autonomyMode: 'human-approved execution',
   },
   trustModel: {
-    level: 'Level 1 — Approval before action',
-    currentBoundary: 'Execution blocked until Reporting Data Owner approval',
+    level: 'Moderate',
+    currentBoundary: 'Delegation mode: Human-approved execution · Execution mode: Prepared only',
     delegationRule: 'The runtime may prepare the tool call, but it may not issue any write action before human approval.',
     downgradeRule: 'If verification fails or the approval is denied, the workflow remains human-controlled and execution authority is removed.',
   },

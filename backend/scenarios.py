@@ -12,8 +12,8 @@ REPORTING_ACCESS = RuntimeScenario.model_validate({
         "autonomyMode": "human-approved execution"
     },
     "trustModel": {
-        "level": "Level 1 — Approval before action",
-        "currentBoundary": "Execution blocked until Reporting Data Owner approval",
+        "level": "Moderate",
+        "currentBoundary": "Delegation mode: Human-approved execution · Execution mode: Prepared only",
         "delegationRule": "The runtime may prepare the tool call, but it may not issue any write action before human approval.",
         "downgradeRule": "If verification fails or the approval is denied, the workflow remains human-controlled and execution authority is removed."
     },
@@ -78,8 +78,8 @@ VPN_POLICY = RuntimeScenario.model_validate({
         "autonomyMode": "human-executed change"
     },
     "trustModel": {
-        "level": "Level 1.5 — Human execution required",
-        "currentBoundary": "The runtime may prepare the policy change, but a human operator must execute the final step.",
+        "level": "Moderate",
+        "currentBoundary": "Delegation mode: Human-executed change · Execution mode: Human executed",
         "delegationRule": "The agent can model the change, prepare the exact API envelope, and stage verification, but execution authority does not cross into runtime control for this workflow.",
         "downgradeRule": "If verification fails or human review rejects the staged change, the workflow remains manual and the prepared envelope is invalidated."
     },

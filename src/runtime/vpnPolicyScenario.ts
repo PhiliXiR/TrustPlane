@@ -11,8 +11,8 @@ export const vpnPolicyScenario: RuntimeScenario = {
     autonomyMode: 'human-executed change',
   },
   trustModel: {
-    level: 'Level 1.5 — Human execution required',
-    currentBoundary: 'The runtime may prepare the policy change, but a human operator must execute the final step.',
+    level: 'Moderate',
+    currentBoundary: 'Delegation mode: Human-executed change · Execution mode: Human executed',
     delegationRule: 'The agent can model the change, prepare the exact API envelope, and stage verification, but execution authority does not cross into runtime control for this workflow.',
     downgradeRule: 'If verification fails or human review rejects the staged change, the workflow remains manual and the prepared envelope is invalidated.',
   },
