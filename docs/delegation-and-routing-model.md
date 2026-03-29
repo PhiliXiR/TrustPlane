@@ -14,7 +14,7 @@ TrustPlane UI should not be the hidden delegation engine.
 The most sensible model is:
 
 - NemoClaw handles intake conversation and normalization
-- a routing/orchestration layer performs delegation
+- a request router performs delegation
 - TrustPlane shows and governs the resulting ownership, trust, and control state
 
 ## Roles in the delegation chain
@@ -30,16 +30,18 @@ NemoClaw should own:
 
 NemoClaw may suggest likely workflows or operator lanes, but it should not be the final source of delegation authority.
 
-### Routing / orchestration layer
+### Request router
 
-The routing layer should own:
+The request router should own:
 
-- workflow candidacy evaluation
+- checking whether the normalized request is complete enough to proceed
+- workflow family selection
 - initial owner selection
 - operator lane assignment
 - delegation constrained by policy and trust posture
 
-This is the component that decides where work should go next.
+This is the concrete component that decides where work should go next.
+In early versions, it may be a simple backend routing table plus policy checks rather than a complex orchestration system.
 
 ### TrustPlane
 
@@ -65,8 +67,9 @@ NemoClaw clarifies missing fields and produces a normalized request object.
 
 ### Step 3 — routing
 
-The routing/orchestration layer evaluates:
+The request router checks:
 
+- whether the normalized request is complete enough to proceed
 - normalized request type
 - required workflow family
 - trust/delegation posture
@@ -75,7 +78,7 @@ The routing/orchestration layer evaluates:
 
 ### Step 4 — delegation
 
-The routing/orchestration layer assigns:
+The request router assigns:
 
 - current owner
 - workflow candidate
