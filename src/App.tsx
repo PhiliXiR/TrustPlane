@@ -8,43 +8,45 @@ import { PlaybookCard } from './components/PlaybookCard';
 import { RequestHeader } from './components/RequestHeader';
 import { TimelinePanel } from './components/TimelinePanel';
 import { WorkflowRail } from './components/WorkflowRail';
-import { executionSteps, humanCheckpoints, inspections, playbook, request, stages, timeline, trustModel } from './mockData';
+import { loadRuntimeSnapshot } from './runtime/adapter';
+
+const runtime = loadRuntimeSnapshot();
 
 export default function App() {
-  const [selectedStageId, setSelectedStageId] = useState(stages.find((stage) => stage.status === 'current')?.id ?? stages[0].id);
-  const [selectedEventId, setSelectedEventId] = useState(timeline[timeline.length - 1]?.id ?? timeline[0].id);
+  const [selectedStageId, setSelectedStageId] = useState(runtime.stages.find((stage) => stage.status === 'current')?.id ?? runtime.stages[0].id);
+  const [selectedEventId, setSelectedEventId] = useState(runtime.timeline[runtime.timeline.length - 1]?.id ?? runtime.timeline[0].id);
   const [inspectionOpen, setInspectionOpen] = useState(true);
 
   const selectedStage = useMemo(
-    () => stages.find((stage) => stage.id === selectedStageId) ?? stages[0],
+    () => runtime.stages.find((stage) => stage.id === selectedStageId) ?? runtime.stages[0],
     [selectedStageId]
   );
 
   const selectedEvent = useMemo(
-    () => timeline.find((event) => event.id === selectedEventId) ?? timeline[0],
+    () => runtime.timeline.find((event) => event.id === selectedEventId) ?? runtime.timeline[0],
     [selectedEventId]
   );
 
-  const selectedInspection = inspections[selectedEvent.inspectionKey ?? 'request'];
+  const selectedInspection = runtime.inspections[selectedEvent.inspectionKey ?? 'request'];
 
   return (
     <div className="min-h-screen bg-transparent px-4 py-8 text-slate-100 lg:px-8">
       <div className="mx-auto flex max-w-[1500px] flex-col gap-6">
-        <RequestHeader request={request} trustModel={trustModel} />
+        <RequestHeader request={runtime.request} trustModel={runtime.trustModel} />
         <ApprovalBar />
-        <WorkflowRail stages={stages} selectedStageId={selectedStageId} onSelect={setSelectedStageId} />
+        <WorkflowRail stages={runtime.stages} selectedStageId={selectedStageId} onSelect={setSelectedStageId} />
 
         <div className="grid gap-6 xl:grid-cols-[1.08fr_0.92fr]">
           <DecisionPanel stage={selectedStage} />
           <div className="space-y-6">
-            <HumanCheckpointsPanel checkpoints={humanCheckpoints} />
-            <TimelinePanel timeline={timeline} selectedEventId={selectedEventId} onSelect={setSelectedEventId} />
+            <HumanCheckpointsPanel checkpoints={runtime.humanCheckpoints} />
+            <TimelinePanel timeline={runtime.timeline} selectedEventId={selectedEventId} onSelect={setSelectedEventId} />
           </div>
         </div>
 
         <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-          <ExecutionTracePanel steps={executionSteps} />
-          <PlaybookCard playbook={playbook} />
+          <ExecutionTracePanel steps={runtime.executionSteps} />
+          <PlaybookCard playbook={runtime.playbook} />
         </div>
 
         <InspectionDrawer
