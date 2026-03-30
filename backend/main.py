@@ -60,6 +60,17 @@ def events():
     return StreamingResponse(event_stream(), media_type='text/event-stream')
 
 
+@app.post('/api/intake', response_model=IntakeAccepted)
+def intake(request: IntakeRequest):
+    accepted = create_intake_request(request)
+    return IntakeAccepted(
+        status='accepted',
+        requestId=accepted['requestId'],
+        scenarioId=accepted['scenarioId'],
+        clarificationNeeded=accepted['clarificationNeeded'],
+    )
+
+
 @app.post('/api/intake/slack', response_model=IntakeAccepted)
 def intake_slack(request: IntakeRequest):
     accepted = create_intake_request(request)

@@ -36,12 +36,30 @@ export type Playbook = {
   rollback: string;
 };
 
+export type IntakeMetadata = {
+  requestId: string;
+  source: string;
+  requester: string;
+  rawRequest: string;
+  normalizedType: string;
+  targetSystem: string;
+  requestedEntitlement?: string | null;
+  businessReason?: string | null;
+  clarificationNeeded: boolean;
+  missingFields: string[];
+  candidateWorkflows: string[];
+  initialTrustMode: string;
+  userId?: string | null;
+  channelId?: string | null;
+};
+
 export type RequestModel = {
   title: string;
   state: string;
   owner: string;
   risk: string;
   autonomyMode: string;
+  intake?: IntakeMetadata | null;
 };
 
 export type ExecutionStep = {

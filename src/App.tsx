@@ -16,6 +16,7 @@ import {
   denyRuntimeRequest,
   fetchRuntimeSnapshot,
   fetchScenarioOptions,
+  getEventsUrl,
   pauseRuntimeRequest,
   resumeRuntimeRequest,
 } from './api';
@@ -49,7 +50,7 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    const source = new EventSource('http://127.0.0.1:8011/api/events');
+    const source = new EventSource(getEventsUrl());
 
     source.addEventListener('runtime.snapshot', (event) => {
       const snapshot = JSON.parse((event as MessageEvent).data) as RuntimeScenario;
@@ -107,7 +108,7 @@ export default function App() {
       <div className="min-h-screen bg-transparent px-4 py-8 text-slate-100 lg:px-8">
         <div className="mx-auto max-w-[1500px] rounded-3xl border border-danger/30 bg-danger/10 p-8 shadow-panel">
           <div className="text-lg font-semibold text-slate-50">TrustPlane backend unavailable</div>
-          <div className="mt-2 text-sm text-slate-200">Start the FastAPI backend first. Expected base: <code>http://127.0.0.1:8011</code></div>
+          <div className="mt-2 text-sm text-slate-200">Start the FastAPI backend first and confirm the configured API base is reachable.</div>
           <pre className="mt-4 overflow-x-auto rounded-2xl border border-danger/25 bg-ink/60 p-4 text-xs text-slate-200">{error}</pre>
         </div>
       </div>

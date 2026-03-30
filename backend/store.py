@@ -4,7 +4,7 @@ from time import sleep
 from queue import Queue
 import json
 from .scenarios import REPORTING_ACCESS, get_scenario
-from .models import IntakeRequest
+from .models import IntakeMetadata, IntakeRequest
 
 _current = deepcopy(REPORTING_ACCESS)
 _lock = Lock()
@@ -139,6 +139,22 @@ def create_intake_request(intake: IntakeRequest):
     scenario.request.owner = 'Intake Agent'
     scenario.request.risk = 'medium' if intake.normalizedType == 'access_request' else 'unknown'
     scenario.request.autonomyMode = intake.initialTrustMode.replace('_', '-')
+    scenario.request.intake = IntakeMetadata(
+        requestId=request_id,
+        source=intake.source,
+        requester=intake.requester,
+        rawRequest=intake.rawRequest,
+        normalizedType=intake.normalizedType,
+        targetSystem=intake.targetSystem,
+        requestedEntitlement=intake.requestedEntitlement,
+        businessReason=intake.businessReason,
+        clarificationNeeded=intake.clarificationNeeded,
+        missingFields=intake.missingFields,
+        candidateWorkflows=intake.candidateWorkflows,
+        initialTrustMode=intake.initialTrustMode,
+        userId=intake.userId,
+        channelId=intake.channelId,
+    )
 
     scenario.trustModel.level = trust_level
     scenario.trustModel.currentBoundary = (

@@ -1,6 +1,7 @@
 import type { RuntimeScenario } from './runtime/scenarioTypes';
 
-const API_BASE = 'http://127.0.0.1:8011';
+const API_BASE = import.meta.env.VITE_TRUSTPLANE_API_BASE ?? 'http://127.0.0.1:8011';
+const EVENTS_URL = `${API_BASE}/api/events`;
 
 type ScenarioOption = { id: string; label: string };
 
@@ -46,4 +47,8 @@ export function pauseRuntimeRequest() {
 
 export function resumeRuntimeRequest() {
   return call<RuntimeScenario>('/api/runtime/resume', { method: 'POST' });
+}
+
+export function getEventsUrl() {
+  return EVENTS_URL;
 }

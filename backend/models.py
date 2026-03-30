@@ -6,12 +6,30 @@ TimelineCategory = Literal['request', 'workflow', 'policy', 'human', 'tool', 've
 StepState = Literal['completed', 'current', 'upcoming']
 
 
+class IntakeMetadata(BaseModel):
+    requestId: str
+    source: str
+    requester: str
+    rawRequest: str
+    normalizedType: str
+    targetSystem: str
+    requestedEntitlement: Optional[str] = None
+    businessReason: Optional[str] = None
+    clarificationNeeded: bool = False
+    missingFields: List[str] = []
+    candidateWorkflows: List[str] = []
+    initialTrustMode: str
+    userId: Optional[str] = None
+    channelId: Optional[str] = None
+
+
 class RequestModel(BaseModel):
     title: str
     state: str
     owner: str
     risk: str
     autonomyMode: str
+    intake: Optional[IntakeMetadata] = None
 
 
 class TrustModel(BaseModel):
