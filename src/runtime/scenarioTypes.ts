@@ -1,5 +1,6 @@
 import type {
   AgentAuthorityBoundary,
+  CommandEnvelope,
   ExecutionStep,
   ExecutionSubstrate,
   HumanCheckpoint,
@@ -30,6 +31,7 @@ export type RuntimeScenario = {
   delegation: DelegationState;
   authorityBoundary: AgentAuthorityBoundary;
   executionSubstrate: ExecutionSubstrate;
+  commandEnvelope: CommandEnvelope;
   stages: Stage[];
   humanCheckpoints: HumanCheckpoint[];
   executionSteps: ExecutionStep[];

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ApprovalBar } from './components/ApprovalBar';
+import { CommandEnvelopePanel } from './components/CommandEnvelopePanel';
 import { DecisionPanel } from './components/DecisionPanel';
 import { ExecutionTracePanel } from './components/ExecutionTracePanel';
 import { HumanCheckpointsPanel } from './components/HumanCheckpointsPanel';
@@ -155,12 +156,15 @@ export default function App() {
           </div>
         </div>
 
-        <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+        <div className="grid gap-6 xl:grid-cols-[1.08fr_0.92fr]">
+          <CommandEnvelopePanel envelope={runtime.commandEnvelope} substrate={runtime.executionSubstrate} />
           <ExecutionTracePanel steps={runtime.executionSteps} />
-          <PlaybookCard playbook={runtime.playbook} />
         </div>
 
-        <LiveExecutionPanel entries={liveExecution} />
+        <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+          <PlaybookCard playbook={runtime.playbook} />
+          <LiveExecutionPanel entries={liveExecution} />
+        </div>
 
         <InspectionDrawer
           open={inspectionOpen}

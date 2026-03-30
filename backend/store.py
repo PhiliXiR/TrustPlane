@@ -102,6 +102,7 @@ def _run_reporting_access_execution():
             elif event_type == 'verification.completed':
                 _current.request.state = 'Completed and verified'
                 _current.request.autonomyMode = 'bounded execution completed'
+                _current.commandEnvelope.approvalState = 'executed'
                 for stage in _current.stages:
                     if stage.id == 'verification':
                         stage.status = 'completed'
@@ -128,6 +129,9 @@ def create_intake_request(intake: IntakeRequest):
     requested_entitlement = intake.requestedEntitlement or 'unspecified'
     business_reason = intake.businessReason or 'not yet provided'
     workflow_name = intake.candidateWorkflows[0] if intake.candidateWorkflows else 'unclassified_intake'
+    selected_lane = 'access' if intake.normalizedType == 'access_request' else 'change'
+    selected_agent = 'access-operator' if selected_lane == 'access' else 'change-operator'
+    selected_agent_name = 'Access Operator' if selected_lane == 'access' else 'Change Operator'
     current_state = 'Clarification required before governed intake' if intake.clarificationNeeded else 'Received from intake and awaiting governed review'
     current_stage = 'intake' if intake.clarificationNeeded else 'classification'
     trust_level = 'Restricted' if intake.clarificationNeeded else 'Moderate'
@@ -136,7 +140,7 @@ def create_intake_request(intake: IntakeRequest):
     scenario.label = f"Intake · {intake.targetSystem}"
     scenario.request.title = title
     scenario.request.state = current_state
-    scenario.request.owner = 'Intake Agent'
+    scenario.request.owner = 'Intake Bot' if intake.clarificationNeeded else selected_agent_name
     scenario.request.risk = 'medium' if intake.normalizedType == 'access_request' else 'unknown'
     scenario.request.autonomyMode = intake.initialTrustMode.replace('_', '-')
     scenario.request.intake = IntakeMetadata(
@@ -167,6 +171,116 @@ def create_intake_request(intake: IntakeRequest):
         else 'The runtime may classify and route the request, but execution authority remains gated behind later policy and approval checks.'
     )
     scenario.trustModel.downgradeRule = 'If clarification remains unresolved or later policy checks fail, the request stays human-controlled and cannot advance into execution.'
+
+    scenario.operators = [
+        {
+            'agentId': 'intake',
+            'name': 'Intake Bot',
+            'kind': 'intake-agent',
+            'lane': 'intake',
+            'runtime': 'nemoclaw',
+            'workspace': '~/.openclaw/workspaces/intake-bot',
+            'sessionType': 'persistent',
+            'authorityProfile': 'clarify_and_route_only',
+            'allowedSubstrates': ['openclaw-routing'],
+            'status': 'active' if intake.clarificationNeeded else 'completed_handoff',
+        },
+        {
+            'agentId': selected_agent,
+            'name': selected_agent_name,
+            'kind': 'operator-agent',
+            'lane': selected_lane,
+            'runtime': 'nemoclaw',
+            'workspace': f'~/.openclaw/workspaces/{selected_agent}',
+            'sessionType': 'persistent',
+            'authorityProfile': 'bounded_access_changes' if selected_lane == 'access' else 'prepare_high_risk_change_and_execute_after_release',
+            'allowedSubstrates': ['openclaw-tools'] if selected_lane == 'access' else ['openshell'],
+            'status': 'waiting_for_routing' if intake.clarificationNeeded else 'queued',
+        },
+    ]
+
+    scenario.ownership = {
+        'currentOwner': {
+            'actorType': 'intake-agent' if intake.clarificationNeeded else 'operator-agent',
+            'agentId': 'intake' if intake.clarificationNeeded else selected_agent,
+            'name': 'Intake Bot' if intake.clarificationNeeded else selected_agent_name,
+            'lane': 'intake' if intake.clarificationNeeded else selected_lane,
+        },
+        'previousOwner': None if intake.clarificationNeeded else {
+            'actorType': 'intake-agent',
+            'agentId': 'intake',
+            'name': 'Intake Bot',
+            'lane': 'intake',
+        },
+        'assignedAt': 'now',
+        'ownershipReason': (
+            'The request remains with Intake Bot until missing intake fields are resolved.'
+            if intake.clarificationNeeded
+            else f'NemoClaw routed the normalized request to {selected_agent_name} after matching lane {selected_lane}.'
+        ),
+    }
+
+    scenario.delegation = {
+        'delegationMode': 'held_for_clarification' if intake.clarificationNeeded else 'automatic',
+        'routingComponent': 'nemoclaw-request-router',
+        'selectedLane': 'intake' if intake.clarificationNeeded else selected_lane,
+        'selectedAgentId': None if intake.clarificationNeeded else selected_agent,
+        'candidateLanes': ['access'] if intake.normalizedType == 'access_request' else ['change'],
+        'rejectedLanes': ['endpoint'],
+        'reason': (
+            f'Routing is paused until missing fields are resolved: {", ".join(intake.missingFields)}.'
+            if intake.clarificationNeeded and intake.missingFields
+            else f'The request matches lane {selected_lane} based on normalized type and target system.'
+        ),
+        'confidence': 'low' if intake.clarificationNeeded else 'high',
+        'humanConfirmationRequired': False,
+    }
+
+    scenario.authorityBoundary = {
+        'agentId': 'intake' if intake.clarificationNeeded else selected_agent,
+        'authorityMode': 'clarify_only' if intake.clarificationNeeded else 'prepare_only_until_policy_and_approval',
+        'mayClarify': True if intake.clarificationNeeded else False,
+        'mayPrepare': False if intake.clarificationNeeded else True,
+        'mayExecute': False,
+        'mayApprove': False,
+        'mayDelegate': False,
+        'requiresHumanApprovalBeforeExecution': True,
+        'separationOfDutiesRule': 'Intake may not self-route past unresolved ambiguity; operator execution remains gated behind policy and approval.',
+    }
+
+    scenario.executionSubstrate = {
+        'substrateId': 'openclaw-tools' if selected_lane == 'access' else 'openshell',
+        'substrateKind': 'openclaw-tools' if selected_lane == 'access' else 'command-runtime',
+        'displayName': 'OpenClaw Governed Tools' if selected_lane == 'access' else 'NVIDIA OpenShell',
+        'mode': 'not_released',
+        'supportsStreaming': True,
+        'supportsVerificationArtifacts': True,
+    }
+
+    scenario.commandEnvelope = {
+        'preparedByAgentId': 'intake' if intake.clarificationNeeded else selected_agent,
+        'intendedExecutor': {
+            'actorType': 'operator-agent',
+            'agentId': selected_agent,
+            'name': selected_agent_name,
+        },
+        'substrateId': scenario.executionSubstrate.substrateId,
+        'command': (
+            f'grant-access --system {intake.targetSystem} --entitlement {requested_entitlement} --user {intake.requester}'
+            if selected_lane == 'access'
+            else f'change-system --target {intake.targetSystem} --request {request_id}'
+        ),
+        'arguments': (
+            ['--system', intake.targetSystem, '--entitlement', requested_entitlement, '--user', intake.requester]
+            if selected_lane == 'access'
+            else ['--target', intake.targetSystem, '--request', request_id]
+        ),
+        'workingDirectory': f'/opt/trustplane/runtime/{selected_agent}',
+        'riskClass': scenario.request.risk,
+        'approvalState': 'held_for_clarification' if intake.clarificationNeeded else 'not_yet_released',
+        'rollbackCommand': None if intake.clarificationNeeded else f'rollback --request {request_id}',
+        'expectedVerification': 'normalized_request_classified_and_execution_envelope_prepared',
+    }
 
     for stage in scenario.stages:
         if stage.id == 'submitted':
@@ -306,11 +420,11 @@ def create_intake_request(intake: IntakeRequest):
         {
             'id': 't4',
             'time': 'now',
-            'title': 'human.clarification.requested' if intake.clarificationNeeded else 'workflow.classification.pending',
+            'title': 'human.clarification.requested' if intake.clarificationNeeded else 'ownership.transferred',
             'detail': (
                 f"Clarification needed for fields: {', '.join(intake.missingFields)}."
                 if intake.clarificationNeeded and intake.missingFields
-                else 'Request is ready for governed classification.'
+                else f'Request ownership transferred to {selected_agent_name} after NemoClaw routing.'
             ),
             'category': 'human' if intake.clarificationNeeded else 'workflow',
             'inspectionKey': 'policy' if intake.clarificationNeeded else 'playbook',
@@ -340,8 +454,10 @@ def create_intake_request(intake: IntakeRequest):
         'tool': {
             'title': 'Execution envelope preview',
             'content': json.dumps({
-                'status': 'not_prepared',
-                'reason': 'No execution envelope exists yet. Intake has not advanced beyond governed classification.',
+                'substrate': scenario.executionSubstrate.displayName,
+                'status': scenario.commandEnvelope.approvalState,
+                'command': scenario.commandEnvelope.command,
+                'rollbackCommand': scenario.commandEnvelope.rollbackCommand,
             }, indent=2),
         },
         'policy': {
@@ -404,6 +520,7 @@ def approve_current_request():
         _current.trustModel.level = 'Elevated'
         _current.trustModel.currentBoundary = 'Delegation mode: Bounded autonomous execution · Execution mode: Runtime executed'
         _current.trustModel.delegationRule = 'The runtime may now issue the prepared action within the approved playbook boundaries.'
+        _current.commandEnvelope.approvalState = 'released'
         for stage in _current.stages:
             if stage.id == 'approval':
                 stage.status = 'completed'
@@ -437,6 +554,7 @@ def deny_current_request():
         _current.trustModel.level = 'Restricted'
         _current.trustModel.currentBoundary = 'Delegation mode: Suspended / downgraded · Execution mode: Execution blocked'
         _current.trustModel.delegationRule = 'The runtime may not execute or continue the staged action after denial.'
+        _current.commandEnvelope.approvalState = 'denied'
         for stage in _current.stages:
             if stage.id == 'approval':
                 stage.status = 'blocked'

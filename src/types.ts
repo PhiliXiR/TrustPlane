@@ -113,6 +113,23 @@ export type ExecutionSubstrate = {
   supportsVerificationArtifacts: boolean;
 };
 
+export type CommandEnvelope = {
+  preparedByAgentId: string;
+  intendedExecutor: {
+    actorType: 'operator-agent' | 'human-approver' | 'human-override';
+    agentId?: string | null;
+    name: string;
+  };
+  substrateId: string;
+  command: string;
+  arguments: string[];
+  workingDirectory?: string | null;
+  riskClass: string;
+  approvalState: string;
+  rollbackCommand?: string | null;
+  expectedVerification: string;
+};
+
 export type RequestModel = {
   title: string;
   state: string;

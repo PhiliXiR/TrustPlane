@@ -101,6 +101,22 @@ REPORTING_ACCESS = RuntimeScenario.model_validate({
         "supportsStreaming": True,
         "supportsVerificationArtifacts": True
     },
+    "commandEnvelope": {
+        "preparedByAgentId": "access-operator",
+        "intendedExecutor": {
+            "actorType": "operator-agent",
+            "agentId": "access-operator",
+            "name": "Access Operator"
+        },
+        "substrateId": "openclaw-tools",
+        "command": "reporting-access.grant analyst@company reporting.read",
+        "arguments": ["analyst@company", "reporting.read"],
+        "workingDirectory": "/opt/trustplane/runtime/access-operator",
+        "riskClass": "medium",
+        "approvalState": "pending",
+        "rollbackCommand": "reporting-access.revoke analyst@company reporting.read",
+        "expectedVerification": "readback_and_compare"
+    },
     "stages": [
         {"id": "submitted", "label": "Request Submitted", "status": "completed", "explanation": "The request entered the runtime with a known target application and a bounded entitlement ask.", "evidence": ["requestId=req_1042", "targetApp=Reporting", "requestedEntitlement=reporting.read"], "rule": "Requests with a clear system target may enter structured intake.", "next": "The intake agent normalizes the request into a governed runtime object."},
         {"id": "intake", "label": "Intake", "status": "completed", "explanation": "The intake agent extracted the target system, requested scope, and business intent into structured state.", "evidence": ["target app parsed from natural language", "business need matched to reporting use case", "request normalized into access_request schema"], "rule": "All downstream control logic depends on normalized request state.", "next": "Classification confirms workflow family and ownership lane."},
@@ -250,6 +266,22 @@ VPN_POLICY = RuntimeScenario.model_validate({
         "mode": "prepared_for_operator_agent_execution",
         "supportsStreaming": True,
         "supportsVerificationArtifacts": True
+    },
+    "commandEnvelope": {
+        "preparedByAgentId": "change-operator",
+        "intendedExecutor": {
+            "actorType": "operator-agent",
+            "agentId": "change-operator",
+            "name": "Change Operator"
+        },
+        "substrateId": "openshell",
+        "command": "vpn-policy update --profile vendor-nightly --allow 203.0.113.10/32",
+        "arguments": ["update", "--profile", "vendor-nightly", "--allow", "203.0.113.10/32"],
+        "workingDirectory": "/opt/trustplane/runtime/change-operator",
+        "riskClass": "high",
+        "approvalState": "released",
+        "rollbackCommand": "vpn-policy rollback --profile vendor-nightly",
+        "expectedVerification": "policy_readback_matches_staged_diff"
     },
     "stages": [
         {"id": "submitted", "label": "Request Submitted", "status": "completed", "explanation": "A change request entered the runtime asking for a VPN policy update before the maintenance window.", "evidence": ["requestId=req_2088", "targetSystem=vpn-policy", "changeType=policy_update"], "rule": "Structured change requests can enter governed intake.", "next": "Intake normalizes the requested change."},

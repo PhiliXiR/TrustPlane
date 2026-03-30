@@ -7,6 +7,7 @@ StepState = Literal['completed', 'current', 'upcoming']
 AgentKind = Literal['intake-agent', 'operator-agent', 'human-approver']
 OwnershipActorType = Literal['intake-agent', 'operator-agent', 'human-approver', 'human-override']
 DelegationMode = Literal['automatic', 'suggested', 'human_confirmed', 'held_for_clarification', 'held_for_human_routing']
+CommandExecutorType = Literal['operator-agent', 'human-approver', 'human-override']
 
 
 class IntakeMetadata(BaseModel):
@@ -102,6 +103,25 @@ class ExecutionSubstrate(BaseModel):
     supportsVerificationArtifacts: bool
 
 
+class CommandEnvelopeExecutor(BaseModel):
+    actorType: CommandExecutorType
+    agentId: Optional[str] = None
+    name: str
+
+
+class CommandEnvelope(BaseModel):
+    preparedByAgentId: str
+    intendedExecutor: CommandEnvelopeExecutor
+    substrateId: str
+    command: str
+    arguments: List[str]
+    workingDirectory: Optional[str] = None
+    riskClass: str
+    approvalState: str
+    rollbackCommand: Optional[str] = None
+    expectedVerification: str
+
+
 class Stage(BaseModel):
     id: str
     label: str
@@ -160,6 +180,7 @@ class RuntimeScenario(BaseModel):
     delegation: DelegationState
     authorityBoundary: AgentAuthorityBoundary
     executionSubstrate: ExecutionSubstrate
+    commandEnvelope: CommandEnvelope
     stages: List[Stage]
     humanCheckpoints: List[HumanCheckpoint]
     executionSteps: List[ExecutionStep]
