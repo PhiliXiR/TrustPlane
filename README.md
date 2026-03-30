@@ -1,14 +1,68 @@
 # TrustPlane
 
-TrustPlane is a trust-first control-plane prototype for governed AI agents.
+TrustPlane is an operator-facing control layer for governed agent work.
 
-It is the sharper direction that emerged from earlier `ai-it-team` exploration.
+It makes intake, routing, approval boundaries, execution, and verification visible so agent-driven work is inspectable instead of magical.
+
+## What works today
+
+- Local React + FastAPI prototype with a working operator-facing UI
+- Runtime-backed scenario state with approval, pause, resume, and scenario switching controls
+- Streaming execution proof slice for the reporting-access path, including live command output and verification updates
+
+## What is simulated today
+
+- Runtime scenarios are still scenario-backed rather than sourced from a real agent runtime
+- Command output is currently simulated to prove the control-plane/event model
+- Slack/NemoClaw intake handoff is planned and documented, but not fully wired end-to-end yet
+
+## What I am building next
+
+- Real intake handoff from a conversational intake bot into TrustPlane
+- Richer trust downgrade / suspended-mode behavior
+- Runtime adapters that project real agent/runtime state into the TrustPlane contract
+
+## Why this matters
+
+Most AI agent demos show that a model can do something useful.
+TrustPlane focuses on the harder problem: how to make agent-driven work legible, governed, interruptible, and reviewable once it starts affecting real systems.
+
+## Demo surface
+
+### Screenshots / demo assets
+
+_Add screenshots or GIFs here._
+
+Recommended captures:
+
+1. **Request overview** — status strip, workflow rail, and current trust boundary
+2. **Human checkpoint + execution trace** — where approval or human execution is required
+3. **Live command output + inspection** — streamed execution output and raw inspection context
+
+## 5-minute demo path
+
+1. Install deps and start the backend:
+   ```bash
+   npm install
+   npm run backend:install
+   npm run backend
+   ```
+2. In a second terminal, start the frontend:
+   ```bash
+   npm run dev
+   ```
+3. Open `http://127.0.0.1:4511`
+4. Select **Grant access to reporting app**
+5. Click **Approve**
+6. Watch the workflow advance, the timeline update, and the **Live Command Output** panel stream execution/verification events
+7. Open inspection context to see the raw request, policy metadata, playbook version, and artifact details
+8. Compare what is real today versus what is still simulated
 
 ## What this is
 
 TrustPlane is an operator-facing surface for a governed agent runtime.
 
-The project is centered on:
+It is centered on:
 
 - governed intake
 - trust and delegation posture
@@ -24,38 +78,6 @@ It is **not**:
 - a generic observability dashboard
 - another agent framework
 
-## Current direction
-
-TrustPlane is moving toward a more realistic deployment shape built around:
-
-- governed intake bots
-- a very small deployable operator team
-- example agent workspaces and runtime config shape
-- backend runtime adapters and projection layers
-- operator-visible trust, approval, execution, and verification boundaries
-- a rubric-based trust rating model tied to delegation and execution posture
-- live command observability for operator CLI work
-- a real local intake-to-dashboard handoff path
-- a staged plan for using Slack as the real intake surface
-- an explicit delegation and routing model for operator handoff
-- a Linux-first deployment shape for the real runtime-backed version
-
-## Current real integration status
-
-As of the current Linux prototype state:
-
-- TrustPlane frontend/backend run locally on Linux
-- generic intake endpoint exists at `POST /api/intake`
-- intake-created requests can be projected into runtime scenarios
-- lightweight intake-request persistence exists
-- a separate intake-bot workspace exists outside the repo on the host machine
-- a local intake helper can successfully submit canonical intake JSON into TrustPlane
-- Slack is live on the host machine and can reach OpenClaw
-- Slack currently routes to the default/main agent, not yet the dedicated intake agent
-
-So the remaining gap is not whether intake can reach the dashboard.
-The remaining gap is automatic Slack -> intake-agent routing and automatic intake-agent submission.
-
 ## Current prototype
 
 TrustPlane currently demonstrates multiple governed runtime scenarios, including:
@@ -63,178 +85,40 @@ TrustPlane currently demonstrates multiple governed runtime scenarios, including
 - **Grant access to reporting app**
 - **Change VPN access policy**
 
-The UI models this system shape:
+The current UI shows:
 
-- request enters system
-- intake and classification shape the request
-- a domain operator or workflow takes ownership
-- policy determines what is allowed
-- governed execution is prepared or performed
-- human approval or human execution may be required
-- verification confirms outcome
-- timeline and inspection surfaces explain what happened
+- request state and trust boundary
+- workflow progression and current decision basis
+- human checkpoints
+- execution trace
+- timeline events
+- inspection records
+- live command output for the streaming proof slice
 
-A new streaming proof slice also exists for the reporting-access path, allowing the UI to show simulated command execution progress and verification updates over time.
+## How to run it
 
-## Core UI sections
-
-- **Top request status strip**
-  - request title
-  - current state
-  - current owner
-  - risk level
-  - autonomy mode
-  - trust boundary summary
-
-- **Scenario selector**
-  - swaps between governed runtime patterns while preserving the same control-plane surface
-
-- **Central workflow rail**
-  - request submitted
-  - intake
-  - classification
-  - playbook selection
-  - policy check
-  - approval check
-  - tool execute
-  - verification
-  - done
-
-- **Decision explanation panel**
-  - why the system is at the current stage
-  - what evidence was used
-  - what rule or policy applies
-  - what happens next
-
-- **Human checkpoints panel**
-  - where human review, approval, or execution is required
-
-- **Execution trace panel**
-  - concrete action path separate from workflow movement
-
-- **Live command output panel**
-  - streamed command/execution output for the current proof slice
-
-- **Timeline panel**
-  - readable operational events
-  - not raw logs only
-
-- **Inspection drawer**
-  - raw request JSON
-  - raw tool request / response
-  - policy metadata
-  - playbook version
-  - runtime notes
-
-- **Playbook card**
-  - trigger
-  - preconditions
-  - allowed tools
-  - approval requirement
-  - rollback path
-
-- **Approval bar**
-  - approve / deny / pause / resume controls that mutate runtime-backed local state through the backend
-
-## Design principle
-
-**The system that decides must also explain.**
-
-That means the runtime surface should make visible:
-
-- decision path
-- policy basis
-- execution intent
-- human control points
-- trust boundaries
-- verification status
-
-## Technical approach
-
-### Frontend
-
-- React
-- TypeScript
-- Tailwind CSS
-
-### Backend
-
-- FastAPI
-- Python runtime snapshots and action endpoints
-- SSE-based event streaming for the current execution proof slice
-
-### Current backend role
-
-The backend currently serves:
-
-- runtime snapshot
-- scenario switching
-- approve / deny / pause / resume actions
-- event streaming for simulated command execution updates
-
-The frontend consumes the FastAPI backend rather than reading static mock state directly.
-
-## Run locally
-
-### 1. Install frontend dependencies
+### Start the backend
 
 ```bash
 npm install
-```
-
-### 2. Create a Python virtual environment
-
-```bash
-python -m venv .venv
-```
-
-### 3. Install backend dependencies
-
-On Linux/macOS:
-
-```bash
 npm run backend:install
-```
-
-On Windows:
-
-```bash
-npm run backend:install:windows
-```
-
-### 4. Start the FastAPI backend
-
-On Linux/macOS:
-
-```bash
 npm run backend
 ```
 
-On Windows:
-
-```bash
-npm run backend:windows
-```
-
-Backend runs at:
-
+Backend:
 - `http://127.0.0.1:8011`
+- health: `http://127.0.0.1:8011/api/health`
 
-Health check:
-
-- `http://127.0.0.1:8011/api/health`
-
-### 5. Start the frontend in a second terminal
+### Start the frontend
 
 ```bash
 npm run dev
 ```
 
-Frontend runs at:
+Frontend:
+- `http://127.0.0.1:4511`
 
-- `http://localhost:4511`
-
-## Build
+### Build
 
 ```bash
 npm run build
@@ -242,21 +126,20 @@ npm run build
 
 ## Project structure
 
-- `src/App.tsx` - top-level composition
-- `src/components/` - modular UI components
-- `src/api.ts` - frontend calls into the backend
-- `src/runtime/` - scenario definitions and runtime-shaped types
+- `src/App.tsx` - top-level UI composition
+- `src/components/` - UI components
+- `src/api.ts` - frontend API calls
+- `src/runtime/` - runtime-shaped types and scenario helpers
 - `backend/main.py` - FastAPI app
 - `backend/models.py` - runtime contract models
-- `backend/store.py` - in-memory runtime state mutations and event publishing
-- `backend/scenarios.py` - backend scenario definitions
+- `backend/store.py` - in-memory runtime state and event publishing
+- `backend/scenarios.py` - scenario definitions
 - `examples/agent-workspaces/` - intake/operator workspace scaffolds
-- `docs/` - architecture, trust model, intake, operator, deployment, and integration docs
+- `docs/` - architecture, trust model, intake, deployment, and integration docs
 
 ## Key docs
 
 - `docs/index.md` — docs map and suggested reading order
-- `docs/product-thesis.md` — core product idea
 - `docs/integration-contract.md` — runtime contract direction
 - `docs/runtime-adapter-architecture.md` — backend adapter/projection model
 - `docs/minimal-operator-team.md` — small deployable operator team
@@ -265,9 +148,20 @@ npm run build
 - `docs/nemoclaw-slack-intake-plan.md` — staged NemoClaw + Slack intake plan
 - `docs/first-linux-deployment-instructions.md` — first Linux deployment path
 
+## Relationship to the other projects
+
+- `ai-it-team` is the earlier lab where the workflow/control ideas were explored
+- `TrustPlane` is the clearer control-plane direction that emerged from that work
+- `AgentJournal` is where the implementation notes, articles, and experiment framing live
+
+Related reading:
+
+- AgentJournal article: **The control plane starts at intake**
+- AgentJournal article: **Trust is the real adoption curve in AI-assisted IT operations**
+
 ## Why this exists
 
-The larger idea behind TrustPlane is that governed AI systems will need more than intelligence.
-They will need a trust and control layer that makes delegation visible, bounded, reviewable, interruptible, and revocable.
+The underlying problem is not just whether agents can do useful work.
+It is whether humans can understand, constrain, review, and intervene in that work once the agent starts interacting with real systems.
 
-TrustPlane is an early product and architecture exploration of that idea.
+TrustPlane is an exploration of that control layer.
