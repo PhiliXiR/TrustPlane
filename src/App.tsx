@@ -20,6 +20,7 @@ import {
   fetchScenarioOptions,
   getEventsUrl,
   pauseRuntimeRequest,
+  releaseExecutionAuthority,
   resumeRuntimeRequest,
 } from './api';
 import type { RuntimeScenario } from './runtime/scenarioTypes';
@@ -135,6 +136,7 @@ export default function App() {
         <ScenarioSelector options={scenarioOptions} value={scenarioId} onChange={handleScenarioChange} />
         <ApprovalBar
           onApprove={() => refreshFromAction(approveRuntimeRequest()).catch((err) => setError(String(err)))}
+          onReleaseExecution={() => refreshFromAction(releaseExecutionAuthority()).catch((err) => setError(String(err)))}
           onDeny={() => refreshFromAction(denyRuntimeRequest()).catch((err) => setError(String(err)))}
           onPause={() => refreshFromAction(pauseRuntimeRequest()).catch((err) => setError(String(err)))}
           onResume={() => refreshFromAction(resumeRuntimeRequest()).catch((err) => setError(String(err)))}

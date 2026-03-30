@@ -583,3 +583,61 @@ def resume_current_request():
         _append_timeline('workflow.resumed', 'Operator resumed the workflow.', 'human', 'request')
     _publish_snapshot()
     return get_runtime_snapshot()
+
+
+def _run_openshell_execution():
+    global _current
+    steps = [
+        ('execution.command.started', 'Dispatching approved OpenShell command envelope...', 'stdout'),
+        ('execution.stdout.chunk', 'OpenShell: loading staged command profile vendor-nightly', 'stdout'),
+        ('execution.stdout.chunk', 'OpenShell: applying VPN policy delta for 203.0.113.10/32', 'stdout'),
+        ('execution.stdout.chunk', 'OpenShell: command completed successfully', 'stdout'),
+        ('verification.started', 'Reading back resulting VPN policy state', 'stdout'),
+        ('verification.completed', 'Verified OpenShell-applied policy matches staged desired state', 'stdout'),
+    ]
+
+    for event_type, message, stream in steps:
+        sleep(1.0)
+        with _lock:
+            if event_type == 'execution.command.started':
+                _append_timeline('execution.command.dispatched', 'Approved OpenShell command envelope dispatched by the change operator.', 'tool', 'tool')
+            elif event_type == 'verification.started':
+                for stage in _current.stages:
+                    if stage.id == 'tool':
+                        stage.status = 'completed'
+                    elif stage.id == 'verification':
+                        stage.status = 'current'
+                _append_timeline('verification.started', 'Verification started after OpenShell command completion.', 'verification', 'artifact')
+            elif event_type == 'verification.completed':
+                _current.request.state = 'Completed and verified'
+                _current.commandEnvelope.approvalState = 'executed'
+                for stage in _current.stages:
+                    if stage.id == 'verification':
+                        stage.status = 'completed'
+                    elif stage.id == 'done':
+                        stage.status = 'completed'
+                _append_timeline('verification.completed', 'Verification passed and OpenShell execution artifact is ready.', 'verification', 'artifact')
+        _publish('execution.stream', {'eventType': event_type, 'stream': stream, 'message': message})
+        _publish_snapshot()
+
+
+def release_execution_authority():
+    global _current
+    with _lock:
+        _current = deepcopy(_current)
+        _current.request.state = 'Execution authority released to current operator'
+        _current.commandEnvelope.approvalState = 'released'
+        _current.authorityBoundary.mayExecute = True
+        _current.executionSubstrate.mode = 'released_for_execution'
+        if _current.operators:
+            for operator in _current.operators:
+                if operator.agentId == _current.ownership.currentOwner.agentId:
+                    operator.status = 'execution_released'
+        _append_timeline('agent.authority.released_for_execution', 'Execution authority was explicitly released to the current operator agent.', 'tool', 'tool')
+    _publish_snapshot()
+    current = get_runtime_snapshot()
+    if current.executionSubstrate.substrateId == 'openshell':
+        Thread(target=_run_openshell_execution, daemon=True).start()
+    elif current.id == 'reporting-access':
+        Thread(target=_run_reporting_access_execution, daemon=True).start()
+    return get_runtime_snapshot()

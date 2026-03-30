@@ -3,9 +3,10 @@ type Props = {
   onDeny: () => void;
   onPause: () => void;
   onResume: () => void;
+  onReleaseExecution: () => void;
 };
 
-export function ApprovalBar({ onApprove, onDeny, onPause, onResume }: Props) {
+export function ApprovalBar({ onApprove, onDeny, onPause, onResume, onReleaseExecution }: Props) {
   return (
     <section className="rounded-3xl border border-line bg-panel/95 p-4 shadow-panel">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -15,6 +16,7 @@ export function ApprovalBar({ onApprove, onDeny, onPause, onResume }: Props) {
         </div>
         <div className="flex flex-wrap gap-3">
           <ActionButton label="Approve" tone="border-success/35 bg-success/10 text-success" onClick={onApprove} />
+          <ActionButton label="Release Execution" tone="border-violet/35 bg-violet/10 text-violet" onClick={onReleaseExecution} />
           <ActionButton label="Deny" tone="border-danger/35 bg-danger/10 text-danger" onClick={onDeny} />
           <ActionButton label="Pause" tone="border-warn/35 bg-warn/10 text-warn" onClick={onPause} />
           <ActionButton label="Resume" tone="border-accent/35 bg-accent/10 text-accent" onClick={onResume} />

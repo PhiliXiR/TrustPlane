@@ -8,6 +8,7 @@ from .store import (
     deny_current_request,
     get_runtime_snapshot,
     pause_current_request,
+    release_execution_authority,
     resume_current_request,
     set_scenario,
     subscribe_events,
@@ -90,6 +91,11 @@ def set_runtime_scenario(scenario_id: str):
 @app.post('/api/runtime/approve', response_model=RuntimeScenario)
 def approve():
     return approve_current_request()
+
+
+@app.post('/api/runtime/release-execution', response_model=RuntimeScenario)
+def release_execution():
+    return release_execution_authority()
 
 
 @app.post('/api/runtime/deny', response_model=RuntimeScenario)

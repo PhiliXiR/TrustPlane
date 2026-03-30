@@ -49,6 +49,10 @@ export function resumeRuntimeRequest() {
   return call<RuntimeScenario>('/api/runtime/resume', { method: 'POST' });
 }
 
+export function releaseExecutionAuthority() {
+  return call<RuntimeScenario>('/api/runtime/release-execution', { method: 'POST' });
+}
+
 export function getEventsUrl() {
   return EVENTS_URL;
 }
