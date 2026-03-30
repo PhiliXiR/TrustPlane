@@ -5,6 +5,7 @@ import { ExecutionTracePanel } from './components/ExecutionTracePanel';
 import { HumanCheckpointsPanel } from './components/HumanCheckpointsPanel';
 import { InspectionDrawer } from './components/InspectionDrawer';
 import { LiveExecutionPanel } from './components/LiveExecutionPanel';
+import { OperatorControlPanel } from './components/OperatorControlPanel';
 import { PlaybookCard } from './components/PlaybookCard';
 import { RequestHeader } from './components/RequestHeader';
 import { ScenarioSelector } from './components/ScenarioSelector';
@@ -136,6 +137,13 @@ export default function App() {
           onDeny={() => refreshFromAction(denyRuntimeRequest()).catch((err) => setError(String(err)))}
           onPause={() => refreshFromAction(pauseRuntimeRequest()).catch((err) => setError(String(err)))}
           onResume={() => refreshFromAction(resumeRuntimeRequest()).catch((err) => setError(String(err)))}
+        />
+        <OperatorControlPanel
+          operators={runtime.operators}
+          ownership={runtime.ownership}
+          delegation={runtime.delegation}
+          authorityBoundary={runtime.authorityBoundary}
+          executionSubstrate={runtime.executionSubstrate}
         />
         <WorkflowRail stages={runtime.stages} selectedStageId={selectedStageId} onSelect={setSelectedStageId} />
 

@@ -4,6 +4,9 @@ from typing import Dict, List, Literal, Optional
 StageStatus = Literal['completed', 'current', 'future', 'blocked']
 TimelineCategory = Literal['request', 'workflow', 'policy', 'human', 'tool', 'verification', 'artifact']
 StepState = Literal['completed', 'current', 'upcoming']
+AgentKind = Literal['intake-agent', 'operator-agent', 'human-approver']
+OwnershipActorType = Literal['intake-agent', 'operator-agent', 'human-approver', 'human-override']
+DelegationMode = Literal['automatic', 'suggested', 'human_confirmed', 'held_for_clarification', 'held_for_human_routing']
 
 
 class IntakeMetadata(BaseModel):
@@ -37,6 +40,66 @@ class TrustModel(BaseModel):
     currentBoundary: str
     delegationRule: str
     downgradeRule: str
+
+
+class OperatorAgent(BaseModel):
+    agentId: str
+    name: str
+    kind: AgentKind
+    lane: str
+    runtime: str
+    workspace: Optional[str] = None
+    sessionType: Optional[str] = None
+    authorityProfile: Optional[str] = None
+    allowedSubstrates: List[str]
+    status: str
+
+
+class OwnershipRecord(BaseModel):
+    actorType: OwnershipActorType
+    agentId: Optional[str] = None
+    name: str
+    lane: str
+
+
+class OwnershipState(BaseModel):
+    currentOwner: OwnershipRecord
+    previousOwner: Optional[OwnershipRecord] = None
+    assignedAt: str
+    ownershipReason: str
+
+
+class DelegationState(BaseModel):
+    delegationMode: DelegationMode
+    routingComponent: str
+    selectedLane: str
+    selectedAgentId: Optional[str] = None
+    candidateLanes: List[str]
+    rejectedLanes: List[str]
+    reason: str
+    confidence: str
+    humanConfirmationRequired: bool
+
+
+class AgentAuthorityBoundary(BaseModel):
+    agentId: str
+    authorityMode: str
+    mayClarify: bool
+    mayPrepare: bool
+    mayExecute: bool
+    mayApprove: bool
+    mayDelegate: bool
+    requiresHumanApprovalBeforeExecution: bool
+    separationOfDutiesRule: str
+
+
+class ExecutionSubstrate(BaseModel):
+    substrateId: str
+    substrateKind: str
+    displayName: str
+    mode: str
+    supportsStreaming: bool
+    supportsVerificationArtifacts: bool
 
 
 class Stage(BaseModel):
@@ -92,6 +155,11 @@ class RuntimeScenario(BaseModel):
     label: str
     request: RequestModel
     trustModel: TrustModel
+    operators: List[OperatorAgent]
+    ownership: OwnershipState
+    delegation: DelegationState
+    authorityBoundary: AgentAuthorityBoundary
+    executionSubstrate: ExecutionSubstrate
     stages: List[Stage]
     humanCheckpoints: List[HumanCheckpoint]
     executionSteps: List[ExecutionStep]
