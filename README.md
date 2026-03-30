@@ -35,10 +35,26 @@ TrustPlane is moving toward a more realistic deployment shape built around:
 - operator-visible trust, approval, execution, and verification boundaries
 - a rubric-based trust rating model tied to delegation and execution posture
 - live command observability for operator CLI work
-- a narrow future Slack intake slice
-- a staged plan for using NemoClaw as the Slack-facing intake bot
+- a real local intake-to-dashboard handoff path
+- a staged plan for using Slack as the real intake surface
 - an explicit delegation and routing model for operator handoff
 - a Linux-first deployment shape for the real runtime-backed version
+
+## Current real integration status
+
+As of the current Linux prototype state:
+
+- TrustPlane frontend/backend run locally on Linux
+- generic intake endpoint exists at `POST /api/intake`
+- intake-created requests can be projected into runtime scenarios
+- lightweight intake-request persistence exists
+- a separate intake-bot workspace exists outside the repo on the host machine
+- a local intake helper can successfully submit canonical intake JSON into TrustPlane
+- Slack is live on the host machine and can reach OpenClaw
+- Slack currently routes to the default/main agent, not yet the dedicated intake agent
+
+So the remaining gap is not whether intake can reach the dashboard.
+The remaining gap is automatic Slack -> intake-agent routing and automatic intake-agent submission.
 
 ## Current prototype
 

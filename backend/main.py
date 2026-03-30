@@ -7,6 +7,7 @@ from .store import (
     create_intake_request,
     deny_current_request,
     get_runtime_snapshot,
+    list_runtime_scenarios,
     pause_current_request,
     release_execution_authority,
     resume_current_request,
@@ -15,7 +16,6 @@ from .store import (
     unsubscribe_events,
 )
 from .models import IntakeAccepted, IntakeRequest, RuntimeScenario, ScenarioOption
-from .scenarios import list_scenarios
 
 app = FastAPI(title='TrustPlane API')
 
@@ -34,7 +34,7 @@ def health():
 
 @app.get('/api/scenarios', response_model=list[ScenarioOption])
 def scenarios():
-    return list_scenarios()
+    return [ScenarioOption.model_validate(item) for item in list_runtime_scenarios()]
 
 
 @app.get('/api/runtime', response_model=RuntimeScenario)

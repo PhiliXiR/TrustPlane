@@ -24,12 +24,15 @@ Some parts are still planned.
 - scenario-backed runtime
 - streamed execution proof slice for reporting access
 - deployable-looking workspace and agent config examples
+- generic intake endpoint at `POST /api/intake`
+- manual local intake submission into the dashboard
+- lightweight intake-request persistence
 
 ### Planned but not yet fully implemented
 
-- real Slack intake endpoint flow
-- real NemoClaw Slack bot handoff
-- real external request creation in backend
+- automatic Slack -> dedicated intake-agent routing
+- automatic intake-agent submission into TrustPlane from the live chat path
+- full downstream operator-agent execution path from real intake traffic
 
 This document gets the environment ready for the first real test path and makes clear where manual testing ends and new implementation begins.
 
@@ -203,13 +206,15 @@ Do not expose raw dev ports directly to the internet.
 
 This part is not fully implemented yet, but the environment should be prepared with the expected shape.
 
-## Planned endpoint
+## Intake endpoint status
 
-TrustPlane will need a narrow intake endpoint, likely something like:
+TrustPlane now has a working generic intake endpoint:
 
 ```http
-POST /api/intake/slack
+POST /api/intake
 ```
+
+A Slack-specific path also exists, but the generic intake route is enough for the first Linux test loop.
 
 ## Planned payload example
 

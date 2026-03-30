@@ -2,15 +2,45 @@ from copy import deepcopy
 from threading import Lock, Thread
 from time import sleep
 from queue import Queue
+from pathlib import Path
 import json
-from .scenarios import REPORTING_ACCESS, get_scenario
-from .models import IntakeMetadata, IntakeRequest
+from .scenarios import REPORTING_ACCESS, SCENARIOS, get_scenario
+from .models import IntakeMetadata, IntakeRequest, RuntimeScenario
 
 _current = deepcopy(REPORTING_ACCESS)
 _lock = Lock()
 _subscribers = []
 _event_counter = 0
 _request_counter = 3000
+_intake_scenarios = {}
+_STORAGE_PATH = Path(__file__).resolve().parent / 'intake-scenarios.json'
+
+
+def _save_intake_scenarios():
+    payload = {
+        'requestCounter': _request_counter,
+        'scenarios': [scenario.model_dump() for scenario in _intake_scenarios.values()],
+    }
+    _STORAGE_PATH.write_text(json.dumps(payload, indent=2))
+
+
+def _load_intake_scenarios():
+    global _request_counter, _intake_scenarios
+    if not _STORAGE_PATH.exists():
+        return
+    try:
+        payload = json.loads(_STORAGE_PATH.read_text())
+        _request_counter = max(int(payload.get('requestCounter', 3000)), 3000)
+        loaded = {}
+        for item in payload.get('scenarios', []):
+            scenario = RuntimeScenario.model_validate(item)
+            loaded[scenario.id] = scenario
+        _intake_scenarios = loaded
+    except Exception:
+        _intake_scenarios = {}
+
+
+_load_intake_scenarios()
 
 
 def _next_event_id(prefix: str):
@@ -46,6 +76,12 @@ def _publish_snapshot():
     _publish("runtime.snapshot", get_runtime_snapshot().model_dump())
 
 
+def _persist_current_if_intake():
+    if _current.id in _intake_scenarios:
+        _intake_scenarios[_current.id] = deepcopy(_current)
+        _save_intake_scenarios()
+
+
 def get_runtime_snapshot():
     with _lock:
         return deepcopy(_current)
@@ -54,9 +90,19 @@ def get_runtime_snapshot():
 def set_scenario(scenario_id: str):
     global _current
     with _lock:
-        _current = get_scenario(scenario_id)
+        if scenario_id in _intake_scenarios:
+            _current = deepcopy(_intake_scenarios[scenario_id])
+        else:
+            _current = get_scenario(scenario_id)
     _publish_snapshot()
     return get_runtime_snapshot()
+
+
+def list_runtime_scenarios():
+    with _lock:
+        base = [{"id": scenario.id, "label": scenario.label} for scenario in SCENARIOS.values()]
+        intake = [{"id": scenario.id, "label": scenario.label} for scenario in _intake_scenarios.values()]
+    return base + intake
 
 
 def _append_timeline(title: str, detail: str, category: str, inspection_key: str | None = None):
@@ -116,6 +162,7 @@ def _run_reporting_access_execution():
                         step.state = 'completed'
                 _append_timeline('verification.completed', 'Verification passed and completion artifact is ready.', 'verification', 'artifact')
                 _current.inspections['artifact'].content = '{\n  "artifactType": "access_change_record",\n  "status": "complete",\n  "verification": "passed",\n  "executedCommand": "reporting-access.grant analyst@company reporting.read"\n}'
+            _persist_current_if_intake()
         _publish('execution.stream', {'eventType': event_type, 'stream': stream, 'message': message})
         _publish_snapshot()
 
@@ -248,8 +295,9 @@ def create_intake_request(intake: IntakeRequest):
         'separationOfDutiesRule': 'Intake may not self-route past unresolved ambiguity; operator execution remains gated behind policy and approval.',
     }
 
+    substrate_id = 'openclaw-tools' if selected_lane == 'access' else 'openshell'
     scenario.executionSubstrate = {
-        'substrateId': 'openclaw-tools' if selected_lane == 'access' else 'openshell',
+        'substrateId': substrate_id,
         'substrateKind': 'openclaw-tools' if selected_lane == 'access' else 'command-runtime',
         'displayName': 'OpenClaw Governed Tools' if selected_lane == 'access' else 'NVIDIA OpenShell',
         'mode': 'not_released',
@@ -264,7 +312,7 @@ def create_intake_request(intake: IntakeRequest):
             'agentId': selected_agent,
             'name': selected_agent_name,
         },
-        'substrateId': scenario.executionSubstrate.substrateId,
+        'substrateId': substrate_id,
         'command': (
             f'grant-access --system {intake.targetSystem} --entitlement {requested_entitlement} --user {intake.requester}'
             if selected_lane == 'access'
@@ -454,10 +502,10 @@ def create_intake_request(intake: IntakeRequest):
         'tool': {
             'title': 'Execution envelope preview',
             'content': json.dumps({
-                'substrate': scenario.executionSubstrate.displayName,
-                'status': scenario.commandEnvelope.approvalState,
-                'command': scenario.commandEnvelope.command,
-                'rollbackCommand': scenario.commandEnvelope.rollbackCommand,
+                'substrate': scenario.executionSubstrate['displayName'],
+                'status': scenario.commandEnvelope['approvalState'],
+                'command': scenario.commandEnvelope['command'],
+                'rollbackCommand': scenario.commandEnvelope['rollbackCommand'],
             }, indent=2),
         },
         'policy': {
@@ -506,7 +554,9 @@ def create_intake_request(intake: IntakeRequest):
 
     with _lock:
         _current = scenario
+        _intake_scenarios[scenario.id] = deepcopy(scenario)
         _append_timeline('artifact.created', 'Intake record created and projected into TrustPlane runtime view.', 'artifact', 'artifact')
+        _persist_current_if_intake()
     _publish_snapshot()
     return {'requestId': request_id, 'scenarioId': scenario.id, 'clarificationNeeded': intake.clarificationNeeded}
 
@@ -539,6 +589,7 @@ def approve_current_request():
                 step.state = 'current'
         _append_timeline('human.approval.granted', 'Operator approved the governed action and released execution authority to the runtime.', 'human', 'policy')
         _append_timeline('execution.change.started', 'The governed runtime began issuing the prepared tool request within approved bounds.', 'tool', 'tool')
+        _persist_current_if_intake()
     _publish_snapshot()
     if get_runtime_snapshot().id == 'reporting-access':
         Thread(target=_run_reporting_access_execution, daemon=True).start()
@@ -562,6 +613,7 @@ def deny_current_request():
             elif stage.id in {'tool', 'verification', 'done'}:
                 stage.status = 'future'
         _append_timeline('human.approval.denied', 'Operator denied the staged action. Runtime execution authority has been revoked.', 'human', 'policy')
+        _persist_current_if_intake()
     _publish_snapshot()
     return get_runtime_snapshot()
 
@@ -572,6 +624,7 @@ def pause_current_request():
         _current = deepcopy(_current)
         _current.request.state = 'Paused for operator review'
         _append_timeline('workflow.paused', 'Operator paused the workflow pending additional review.', 'human', 'request')
+        _persist_current_if_intake()
     _publish_snapshot()
     return get_runtime_snapshot()
 
@@ -581,6 +634,7 @@ def resume_current_request():
     with _lock:
         _current = deepcopy(_current)
         _append_timeline('workflow.resumed', 'Operator resumed the workflow.', 'human', 'request')
+        _persist_current_if_intake()
     _publish_snapshot()
     return get_runtime_snapshot()
 
@@ -617,6 +671,7 @@ def _run_openshell_execution():
                     elif stage.id == 'done':
                         stage.status = 'completed'
                 _append_timeline('verification.completed', 'Verification passed and OpenShell execution artifact is ready.', 'verification', 'artifact')
+            _persist_current_if_intake()
         _publish('execution.stream', {'eventType': event_type, 'stream': stream, 'message': message})
         _publish_snapshot()
 
@@ -634,6 +689,7 @@ def release_execution_authority():
                 if operator.agentId == _current.ownership.currentOwner.agentId:
                     operator.status = 'execution_released'
         _append_timeline('agent.authority.released_for_execution', 'Execution authority was explicitly released to the current operator agent.', 'tool', 'tool')
+        _persist_current_if_intake()
     _publish_snapshot()
     current = get_runtime_snapshot()
     if current.executionSubstrate.substrateId == 'openshell':

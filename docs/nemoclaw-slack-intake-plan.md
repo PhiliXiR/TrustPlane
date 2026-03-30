@@ -23,13 +23,24 @@ TrustPlane acts as the operator-facing control plane that receives the normalize
 The first test should prove this end-to-end path:
 
 1. user sends a request in Slack
-2. NemoClaw receives it
-3. NemoClaw asks clarification questions if needed
-4. NemoClaw creates a normalized request object
-5. NemoClaw sends that object to TrustPlane backend
+2. the intake agent receives it
+3. the intake agent asks clarification questions if needed
+4. the intake agent creates a normalized request object
+5. the intake path sends that object to TrustPlane backend
 6. TrustPlane displays the request in a governed request view
 
 That is enough for the first meaningful intake test.
+
+## Current status note
+
+The Linux prototype now has:
+
+- a working generic TrustPlane intake endpoint
+- a working local helper that can POST canonical intake objects into TrustPlane
+- a separate intake-bot workspace on the host machine
+- a live Slack channel/provider setup on the host machine
+
+The remaining missing step is explicit Slack routing to the intake agent instead of the default main agent.
 
 ## First request family
 
