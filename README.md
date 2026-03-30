@@ -174,14 +174,30 @@ python -m venv .venv
 
 ### 3. Install backend dependencies
 
+On Linux/macOS:
+
 ```bash
 npm run backend:install
 ```
 
+On Windows:
+
+```bash
+npm run backend:install:windows
+```
+
 ### 4. Start the FastAPI backend
+
+On Linux/macOS:
 
 ```bash
 npm run backend
+```
+
+On Windows:
+
+```bash
+npm run backend:windows
 ```
 
 Backend runs at:

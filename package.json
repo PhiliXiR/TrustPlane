@@ -7,8 +7,10 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "backend": ".\\.venv\\Scripts\\python -m uvicorn backend.main:app --host 127.0.0.1 --port 8011",
-    "backend:install": ".\\.venv\\Scripts\\python -m pip install -r backend\\requirements.txt"
+    "backend": "./.venv/bin/python -m uvicorn backend.main:app --host 127.0.0.1 --port 8011",
+    "backend:install": "./.venv/bin/python -m pip install -r backend/requirements.txt",
+    "backend:windows": ".\\.venv\\Scripts\\python -m uvicorn backend.main:app --host 127.0.0.1 --port 8011",
+    "backend:install:windows": ".\\.venv\\Scripts\\python -m pip install -r backend\\requirements.txt"
   },
   "dependencies": {
     "react": "^18.3.1",

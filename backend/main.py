@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from .store import (
     approve_current_request,
+    create_intake_request,
     deny_current_request,
     get_runtime_snapshot,
     pause_current_request,
@@ -12,7 +13,7 @@ from .store import (
     subscribe_events,
     unsubscribe_events,
 )
-from .models import RuntimeScenario, ScenarioOption
+from .models import IntakeAccepted, IntakeRequest, RuntimeScenario, ScenarioOption
 from .scenarios import list_scenarios
 
 app = FastAPI(title='TrustPlane API')
@@ -57,6 +58,17 @@ def events():
             unsubscribe_events(q)
 
     return StreamingResponse(event_stream(), media_type='text/event-stream')
+
+
+@app.post('/api/intake/slack', response_model=IntakeAccepted)
+def intake_slack(request: IntakeRequest):
+    accepted = create_intake_request(request)
+    return IntakeAccepted(
+        status='accepted',
+        requestId=accepted['requestId'],
+        scenarioId=accepted['scenarioId'],
+        clarificationNeeded=accepted['clarificationNeeded'],
+    )
 
 
 @app.post('/api/runtime/scenario/{scenario_id}', response_model=RuntimeScenario)

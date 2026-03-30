@@ -85,3 +85,26 @@ class RuntimeScenario(BaseModel):
 class ScenarioOption(BaseModel):
     id: str
     label: str
+
+
+class IntakeRequest(BaseModel):
+    source: Literal['slack', 'discord', 'telegram', 'web', 'api']
+    userId: Optional[str] = None
+    channelId: Optional[str] = None
+    rawRequest: str
+    requester: str
+    normalizedType: str
+    targetSystem: str
+    requestedEntitlement: Optional[str] = None
+    businessReason: Optional[str] = None
+    clarificationNeeded: bool = False
+    missingFields: List[str] = []
+    candidateWorkflows: List[str] = []
+    initialTrustMode: str
+
+
+class IntakeAccepted(BaseModel):
+    status: Literal['accepted']
+    requestId: str
+    scenarioId: str
+    clarificationNeeded: bool
