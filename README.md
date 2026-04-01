@@ -1,6 +1,6 @@
 # TrustPlane
 
-<img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/d8c5fe22-561a-424c-bf2a-b3f3d9a3676e" />
+<img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/81a2c864-b635-4326-a2b6-8f7fe58728f8" />
 
 TrustPlane is an operator-facing control layer for governed agent work.
 
