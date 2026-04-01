@@ -1,5 +1,8 @@
 # TrustPlane
 
+<img width="1254" height="1254" alt="image" src="https://github.com/user-attachments/assets/8c0022e9-ae85-4766-9841-f0f2b994a405" />
+
+
 TrustPlane is an operator-facing control layer for governed agent work.
 
 It makes intake, routing, approval boundaries, execution, and verification visible so agent-driven work is inspectable instead of magical.
