@@ -17,6 +17,7 @@ This index groups the current TrustPlane docs by purpose so the repo is easier t
 - `linux-deployment-shape.md` — Linux-first runtime hosting model
 - `first-linux-deployment-instructions.md` — first-test Linux setup steps
 - `execution-records-brief.md` — sharper product framing around Execution Records as the primary object
+- `openclaw-n8n-trustplane-role-map.md` — role split and handoff boundaries between OpenClaw, n8n, and TrustPlane
 
 ## Intake and external entry
 
