@@ -16,6 +16,7 @@ This index groups the current TrustPlane docs by purpose so the repo is easier t
 - `backend-plan.md` — backend direction and responsibilities
 - `linux-deployment-shape.md` — Linux-first runtime hosting model
 - `first-linux-deployment-instructions.md` — first-test Linux setup steps
+- `execution-records-brief.md` — sharper product framing around Execution Records as the primary object
 
 ## Intake and external entry
 
@@ -24,6 +25,8 @@ This index groups the current TrustPlane docs by purpose so the repo is easier t
 - `slack-intake-slice.md` — smallest sane Slack integration slice
 - `nemoclaw-slack-intake-plan.md` — staged plan for NemoClaw as Slack intake bot
 - `minimal-intake-bot-template.md` — deployable-ish intake bot workspace/config shape
+- `n8n-integration-starter.md` — local n8n webhook-to-TrustPlane starter path
+- `intake-agent-tuning-notes.md` — guidance for keeping the intake bot focused and reducing clarification churn
 
 ## Operators and team model
 

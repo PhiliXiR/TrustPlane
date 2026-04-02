@@ -2,6 +2,8 @@
 
 <img width="940" height="594" alt="TrustplaneLogo" src="https://github.com/user-attachments/assets/18caafa6-0908-4357-9e07-f66f922d3a32" />
 
+TrustPlane is a trust-first control plane for autonomous execution.
+
 TrustPlane is an operator-facing control layer for governed agent work.
 
 It makes intake, routing, approval boundaries, execution, and verification visible so agent-driven work is inspectable instead of magical.
@@ -11,18 +13,23 @@ It makes intake, routing, approval boundaries, execution, and verification visib
 - Local React + FastAPI prototype with a working operator-facing UI
 - Runtime-backed scenario state with approval, pause, resume, and scenario switching controls
 - Streaming execution proof slice for the reporting-access path, including live command output and verification updates
+- Generic intake endpoint at `POST /api/intake`
+- Intake-created requests can be projected into runtime scenarios
+- Lightweight intake-request persistence
+- Local `n8n` webhook handoff into TrustPlane is now proven on the Linux machine
 
 ## What is simulated today
 
 - Runtime scenarios are still scenario-backed rather than sourced from a real agent runtime
 - Command output is currently simulated to prove the control-plane/event model
-- Slack/NemoClaw intake handoff is planned and documented, but not fully wired end-to-end yet
+- Slack/OpenClaw intake handoff is only partially wired end-to-end; the local bridge exists, but the dedicated intake-agent route still needs tightening and automation
 
 ## What I am building next
 
 - Real intake handoff from a conversational intake bot into TrustPlane
 - Richer trust downgrade / suspended-mode behavior
 - Runtime adapters that project real agent/runtime state into the TrustPlane contract
+- Cleaner Slack intake-agent routing and automatic submission into the n8n/TrustPlane path
 
 ## Why this matters
 
@@ -62,23 +69,78 @@ Recommended captures:
 
 ## What this is
 
-TrustPlane is an operator-facing surface for a governed agent runtime.
+TrustPlane is a control and visibility layer for AI agents operating inside real systems.
 
 It is centered on:
 
-- governed intake
-- trust and delegation posture
-- approval and intervention boundaries
+- execution records
+- human oversight and intervention
 - execution visibility
 - verification and auditability
 - human-readable control over agent-driven work
+- trust boundaries around autonomous behavior
 
 It is **not**:
 
 - a service desk clone
 - a ticketing UI
+- a workflow builder
 - a generic observability dashboard
 - another agent framework
+
+## Core idea
+
+TrustPlane's primary object is the **Execution Record**.
+
+An Execution Record captures:
+
+- intent
+- plan
+- actions
+- outputs
+- review
+- outcome
+
+In short:
+
+> Intent -> Plan -> Actions -> Outputs -> Review -> Outcome
+
+That structured record is the product.
+
+## Current direction
+
+TrustPlane is moving toward a more realistic deployment shape built around:
+
+- governed intake bots
+- a very small deployable operator team
+- example agent workspaces and runtime config shape
+- backend runtime adapters and projection layers
+- operator-visible trust, approval, execution, and verification boundaries
+- a rubric-based trust rating model tied to delegation and execution posture
+- live command observability for operator CLI work
+- a real local intake-to-dashboard handoff path
+- a staged plan for using Slack as the real intake surface
+- an explicit delegation and routing model for operator handoff
+- a Linux-first deployment shape for the real runtime-backed version
+- n8n as a practical local integration substrate, without making workflow runs the core product object
+
+## Current real integration status
+
+As of the current Linux prototype state:
+
+- TrustPlane frontend/backend run locally on Linux
+- generic intake endpoint exists at `POST /api/intake`
+- intake-created requests can be projected into runtime scenarios
+- lightweight intake-request persistence exists
+- a separate intake-bot workspace exists outside the repo on the host machine
+- a local intake helper can successfully submit canonical intake JSON into TrustPlane
+- local `n8n` runs in Docker at `http://127.0.0.1:5678`
+- imported `n8n` webhook workflows can now successfully forward normalized payloads into TrustPlane
+- Slack is live on the host machine and can reach OpenClaw
+- Slack currently routes to the default/main agent, not yet the dedicated intake agent
+
+So the remaining gap is not whether intake can reach the dashboard.
+The remaining gap is automatic Slack -> intake-agent routing, tighter intake behavior, and automatic intake-agent submission.
 
 ## Current prototype
 
@@ -137,16 +199,20 @@ npm run build
 - `backend/store.py` - in-memory runtime state and event publishing
 - `backend/scenarios.py` - scenario definitions
 - `examples/agent-workspaces/` - intake/operator workspace scaffolds
+- `ops/n8n/` - starter n8n workflow assets for local intake bridging
 - `docs/` - architecture, trust model, intake, deployment, and integration docs
 
 ## Key docs
 
 - `docs/index.md` — docs map and suggested reading order
+- `docs/execution-records-brief.md` — sharper product framing around Execution Records
 - `docs/integration-contract.md` — runtime contract direction
 - `docs/runtime-adapter-architecture.md` — backend adapter/projection model
 - `docs/minimal-operator-team.md` — small deployable operator team
 - `docs/trust-rating-model.md` — trust rubric direction
 - `docs/live-command-observability.md` — CLI execution visibility model
+- `docs/n8n-integration-starter.md` — local n8n webhook-to-TrustPlane starter path
+- `docs/intake-agent-tuning-notes.md` — guidance for keeping the intake bot focused
 - `docs/nemoclaw-slack-intake-plan.md` — staged NemoClaw + Slack intake plan
 - `docs/first-linux-deployment-instructions.md` — first Linux deployment path
 

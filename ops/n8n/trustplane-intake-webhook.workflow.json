@@ -1,0 +1,75 @@
+{
+  "name": "TrustPlane Intake Webhook",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "trustplane-intake",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-node",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [260, 300],
+      "webhookId": "trustplane-intake"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $json.body ?? $json;\n\nreturn [{\n  json: {\n    source: body.source || 'api',\n    userId: body.userId || undefined,\n    channelId: body.channelId || undefined,\n    rawRequest: body.rawRequest || '',\n    requester: body.requester || 'unknown',\n    normalizedType: body.normalizedType || 'general_request',\n    targetSystem: body.targetSystem || 'unknown-system',\n    requestedEntitlement: body.requestedEntitlement || undefined,\n    businessReason: body.businessReason || undefined,\n    clarificationNeeded: Boolean(body.clarificationNeeded),\n    missingFields: Array.isArray(body.missingFields) ? body.missingFields : [],\n    candidateWorkflows: Array.isArray(body.candidateWorkflows) ? body.candidateWorkflows : [],\n    initialTrustMode: body.initialTrustMode || 'human_approved_execution'\n  }\n}];"
+      },
+      "id": "code-node",
+      "name": "Build TrustPlane Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [540, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8011/api/intake",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "id": "http-node",
+      "name": "Send to TrustPlane",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [840, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{$json}}",
+        "options": {}
+      },
+      "id": "respond-node",
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.3,
+      "position": [1100, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [[{ "node": "Build TrustPlane Payload", "type": "main", "index": 0 }]]
+    },
+    "Build TrustPlane Payload": {
+      "main": [[{ "node": "Send to TrustPlane", "type": "main", "index": 0 }]]
+    },
+    "Send to TrustPlane": {
+      "main": [[{ "node": "Respond", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": false,
+  "settings": {},
+  "versionId": "00000000-0000-0000-0000-000000000002",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {}
+}
