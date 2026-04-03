@@ -77,6 +77,8 @@ A starter import file lives at:
 ops/n8n/trustplane-intake-webhook.workflow.json
 ```
 
+That starter workflow is meant to be treated as the known-good local baseline for the Linux prototype path.
+
 Suggested flow:
 
 - **Webhook** node
@@ -123,6 +125,20 @@ That gives you:
 - conversational intake in OpenClaw
 - stable automation routing in n8n
 - visible request/execution tracking in TrustPlane
+
+## Smoke test
+
+A local smoke-test helper now lives at:
+
+```text
+scripts/smoke-test-intake.sh
+```
+
+It:
+
+1. checks TrustPlane backend health
+2. posts a canned canonical intake payload to the production `n8n` webhook
+3. prints the response and prompts you to confirm the created record in the TrustPlane UI
 
 ## Suggested next improvements
 

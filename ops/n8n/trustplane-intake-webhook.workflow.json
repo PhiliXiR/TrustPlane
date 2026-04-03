@@ -8,7 +8,7 @@
         "responseMode": "responseNode",
         "options": {}
       },
-      "id": "webhook-node",
+      "id": "webhook-trustplane-intake",
       "name": "Webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
@@ -17,13 +17,13 @@
     },
     {
       "parameters": {
-        "jsCode": "const body = $json.body ?? $json;\n\nreturn [{\n  json: {\n    source: body.source || 'api',\n    userId: body.userId || undefined,\n    channelId: body.channelId || undefined,\n    rawRequest: body.rawRequest || '',\n    requester: body.requester || 'unknown',\n    normalizedType: body.normalizedType || 'general_request',\n    targetSystem: body.targetSystem || 'unknown-system',\n    requestedEntitlement: body.requestedEntitlement || undefined,\n    businessReason: body.businessReason || undefined,\n    clarificationNeeded: Boolean(body.clarificationNeeded),\n    missingFields: Array.isArray(body.missingFields) ? body.missingFields : [],\n    candidateWorkflows: Array.isArray(body.candidateWorkflows) ? body.candidateWorkflows : [],\n    initialTrustMode: body.initialTrustMode || 'human_approved_execution'\n  }\n}];"
+        "jsCode": "const body = $json.body ?? $json;\nconst payload = {\n  source: body.source ?? 'slack',\n  userId: body.userId ?? null,\n  channelId: body.channelId ?? null,\n  rawRequest: body.rawRequest ?? '',\n  requester: body.requester ?? body.userId ?? 'unknown-requester',\n  normalizedType: body.normalizedType ?? 'unknown_request',\n  targetSystem: body.targetSystem ?? 'unknown-system',\n  requestedEntitlement: body.requestedEntitlement ?? null,\n  businessReason: body.businessReason ?? '',\n  clarificationNeeded: body.clarificationNeeded ?? false,\n  missingFields: Array.isArray(body.missingFields) ? body.missingFields : [],\n  candidateWorkflows: Array.isArray(body.candidateWorkflows) ? body.candidateWorkflows : [],\n  initialTrustMode: body.initialTrustMode ?? 'human_review_required'\n};\nreturn [{ json: payload }];"
       },
-      "id": "code-node",
-      "name": "Build TrustPlane Payload",
+      "id": "normalize-payload",
+      "name": "Normalize Payload",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [540, 300]
+      "position": [520, 300]
     },
     {
       "parameters": {
@@ -32,44 +32,66 @@
         "sendBody": true,
         "contentType": "json",
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify($json) }}",
+        "jsonBody": "={{$json}}",
         "options": {}
       },
-      "id": "http-node",
+      "id": "send-to-trustplane",
       "name": "Send to TrustPlane",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [840, 300]
+      "position": [800, 300]
     },
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={{$json}}",
+        "responseBody": "={{ { ok: true, forwarded: true, trustplane: $json } }}",
         "options": {}
       },
-      "id": "respond-node",
-      "name": "Respond",
+      "id": "respond-to-webhook",
+      "name": "Respond to Webhook",
       "type": "n8n-nodes-base.respondToWebhook",
-      "typeVersion": 1.3,
-      "position": [1100, 300]
+      "typeVersion": 1.4,
+      "position": [1080, 300]
     }
   ],
   "connections": {
     "Webhook": {
-      "main": [[{ "node": "Build TrustPlane Payload", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Normalize Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
-    "Build TrustPlane Payload": {
-      "main": [[{ "node": "Send to TrustPlane", "type": "main", "index": 0 }]]
+    "Normalize Payload": {
+      "main": [
+        [
+          {
+            "node": "Send to TrustPlane",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Send to TrustPlane": {
-      "main": [[{ "node": "Respond", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
-  "active": false,
-  "settings": {},
-  "versionId": "00000000-0000-0000-0000-000000000002",
+  "pinData": {},
   "meta": {
-    "templateCredsSetupCompleted": true
-  },
-  "pinData": {}
+    "templateCredsSetupCompleted": false,
+    "instanceId": "trustplane-local-starter"
+  }
 }

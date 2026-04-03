@@ -17,6 +17,7 @@ It makes intake, routing, approval boundaries, execution, and verification visib
 - Intake-created requests can be projected into runtime scenarios
 - Lightweight intake-request persistence
 - Local `n8n` webhook handoff into TrustPlane is now proven on the Linux machine
+- Slack -> intake agent -> watcher -> n8n -> TrustPlane now works end-to-end in the local Linux setup when the backend is bound on `0.0.0.0:8011`
 
 ## What is simulated today
 
@@ -137,10 +138,11 @@ As of the current Linux prototype state:
 - local `n8n` runs in Docker at `http://127.0.0.1:5678`
 - imported `n8n` webhook workflows can now successfully forward normalized payloads into TrustPlane
 - Slack is live on the host machine and can reach OpenClaw
-- Slack currently routes to the default/main agent, not yet the dedicated intake agent
+- Slack can now be routed to a dedicated intake agent on the host machine
+- the local watcher bridge can detect `TRUSTPLANE_INTAKE_PAYLOAD` messages from the intake session store and forward them through `n8n`
 
-So the remaining gap is not whether intake can reach the dashboard.
-The remaining gap is automatic Slack -> intake-agent routing, tighter intake behavior, and automatic intake-agent submission.
+So the remaining gap is no longer basic local intake reachability.
+The remaining gap is hardening, better operational packaging, and richer runtime-backed projection in the TrustPlane UI.
 
 ## Current prototype
 
@@ -169,9 +171,12 @@ npm run backend:install
 npm run backend
 ```
 
+The backend startup script now binds uvicorn on `0.0.0.0:8011` so the local Dockerized `n8n` container can reach the intake API through `host.docker.internal`.
+
 Backend:
 - `http://127.0.0.1:8011`
 - health: `http://127.0.0.1:8011/api/health`
+- Docker-reachable intake target for `n8n`: `http://host.docker.internal:8011/api/intake`
 
 ### Start the frontend
 
