@@ -1,12 +1,14 @@
 import type { HumanCheckpoint } from '../types';
 import type { IntakeExampleFixture } from '../runtime/exampleTypes';
 import type { RequestSnapshot } from '../runtime/requestTypes';
-import { deriveHumanCheckpoints } from '../runtime/requestViewAdapters';
+import { deriveHumanCheckpoints, deriveHumanCheckpointsFromExample } from '../runtime/requestViewAdapters';
 
 type Props = { checkpoints: HumanCheckpoint[]; snapshot?: RequestSnapshot | null; example?: IntakeExampleFixture | null };
 
 export function HumanCheckpointsPanel({ checkpoints, snapshot, example }: Props) {
-  const resolvedCheckpoints = deriveHumanCheckpoints(snapshot, checkpoints);
+  const resolvedCheckpoints = example
+    ? deriveHumanCheckpointsFromExample(example, checkpoints)
+    : deriveHumanCheckpoints(snapshot, checkpoints);
   return (
     <section className="rounded-3xl border border-line bg-panel/95 p-6 shadow-panel">
       <div className="flex items-center justify-between gap-3">

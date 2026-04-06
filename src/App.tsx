@@ -34,7 +34,7 @@ import {
 } from './api';
 import type { IntakeExampleFixture, IntakeExampleSummary } from './runtime/exampleTypes';
 import { deriveExampleModeSummary } from './runtime/exampleViewAdapters';
-import { deriveWorkflowRailStagesFromExample } from './runtime/requestViewAdapters';
+import { deriveRequestTimelineFromExample, deriveWorkflowRailStagesFromExample } from './runtime/requestViewAdapters';
 import type { RequestSnapshot, RequestTimelineResponse } from './runtime/requestTypes';
 import type { RuntimeScenario } from './runtime/scenarioTypes';
 
@@ -201,6 +201,9 @@ export default function App() {
       try {
         const example = await fetchExample(exampleId);
         setSelectedExample(example);
+        const exampleTimeline = deriveRequestTimelineFromExample(example);
+        setRequestTimeline({ requestId: example.exampleId, events: exampleTimeline });
+        setSelectedEventId(exampleTimeline[0]?.eventId ?? '');
         if (runtime) {
           const derivedStages = deriveWorkflowRailStagesFromExample(example, runtime.stages);
           const activeStage = derivedStages.find((stage) => stage.status === 'current') ?? derivedStages.find((stage) => stage.status === 'blocked') ?? derivedStages[0];

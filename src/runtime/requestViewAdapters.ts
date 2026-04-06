@@ -173,6 +173,76 @@ export function deriveHumanCheckpoints(snapshot: RequestSnapshot | null | undefi
   ];
 }
 
+export function deriveHumanCheckpointsFromExample(example: IntakeExampleFixture | null | undefined, fallbackCheckpoints: HumanCheckpoint[]): HumanCheckpoint[] {
+  if (!example) return fallbackCheckpoints;
+
+  const events = new Set(example.expectedTimelineEvents);
+  const reviewState: HumanCheckpoint['state'] = events.has('human.approval.requested') ? 'current' : 'upcoming';
+  const executionState: HumanCheckpoint['state'] = events.has('execution.change.prepared') ? 'upcoming' : 'upcoming';
+  const verificationState: HumanCheckpoint['state'] = example.expectedEvidenceArtifacts.length > 0 ? 'upcoming' : 'upcoming';
+
+  return [
+    {
+      id: 'hcp-review',
+      label: 'Human review gate',
+      state: reviewState,
+      detail: example.expectedTrustPlane.operatorSummary ?? 'Expected operator review path for this example fixture.',
+    },
+    {
+      id: 'hcp-execution',
+      label: 'Execution authority',
+      state: executionState,
+      detail: `Expected workflow: ${example.expectedTrustPlane.workflowCandidate ?? 'unknown_workflow'}`,
+    },
+    {
+      id: 'hcp-verification',
+      label: 'Outcome verification',
+      state: verificationState,
+      detail: example.expectedEvidenceArtifacts.length > 0
+        ? `Expected evidence: ${example.expectedEvidenceArtifacts.join(', ')}`
+        : 'Expected verification/evidence path not specified.',
+    },
+  ];
+}
+
+export function deriveRequestTimelineFromExample(example: IntakeExampleFixture | null | undefined): RequestTimelineEvent[] {
+  if (!example) return [];
+
+  return example.expectedTimelineEvents.map((eventType, index) => {
+    const family = eventType.startsWith('intake.')
+      ? 'intake'
+      : eventType.startsWith('workflow.')
+        ? 'workflow'
+        : eventType.startsWith('policy.')
+          ? 'policy'
+          : eventType.startsWith('human.')
+            ? 'human_checkpoint'
+            : eventType.startsWith('execution.')
+              ? 'execution'
+              : eventType.startsWith('verification.')
+                ? 'verification'
+                : eventType.startsWith('artifact.')
+                  ? 'artifact'
+                  : 'workflow';
+
+    return {
+      eventId: `${example.exampleId}-event-${index + 1}`,
+      requestId: example.exampleId,
+      family,
+      type: eventType,
+      summary: `${example.label} -> ${eventType}`,
+      timestamp: `example-step-${index + 1}`,
+      actor: family === 'human_checkpoint' ? 'operator' : family === 'policy' ? 'policy' : 'runtime',
+      details: {
+        exampleId: example.exampleId,
+        category: example.category,
+      },
+      correlationId: null,
+      artifactRefs: family === 'artifact' || family === 'verification' ? example.expectedEvidenceArtifacts : [],
+    };
+  });
+}
+
 export function deriveExecutionTrace(snapshot: RequestSnapshot | null | undefined, fallbackSteps: ExecutionStep[]): ExecutionStep[] {
   if (!snapshot) return fallbackSteps;
 
