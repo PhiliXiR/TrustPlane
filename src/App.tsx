@@ -34,6 +34,8 @@ import type { RuntimeScenario } from './runtime/scenarioTypes';
 
 type ScenarioOption = { id: string; label: string };
 type ExecutionLogEntry = { id: string; stream: 'stdout' | 'stderr'; message: string };
+type RuntimeSnapshotEventPayload = RuntimeScenario | { scenario?: RuntimeScenario; requestId?: string; scenarioId?: string };
+type ExecutionStreamPayload = { eventType: string; stream: 'stdout' | 'stderr'; message: string; requestId?: string };
 
 export default function App() {
   const [scenarioId, setScenarioId] = useState('');
@@ -52,10 +54,7 @@ export default function App() {
     Promise.all([fetchScenarioOptions(), fetchRuntimeSnapshot()])
       .then(async ([options, snapshot]) => {
         setScenarioOptions(options);
-        setScenarioId(snapshot.id);
-        setRuntime(snapshot);
-        setSelectedStageId(snapshot.stages.find((stage) => stage.status === 'current')?.id ?? snapshot.stages[0].id);
-        setSelectedEventId(snapshot.timeline[snapshot.timeline.length - 1]?.id ?? snapshot.timeline[0].id);
+        applyRuntimeSnapshot(snapshot);
         await hydrateProjectedState(snapshot);
       })
       .catch((err) => {
@@ -68,20 +67,15 @@ export default function App() {
     const source = new EventSource(activeRequestId ? getRequestEventsUrl(activeRequestId) : getEventsUrl());
 
     source.addEventListener('runtime.snapshot', (event) => {
-      const payload = JSON.parse((event as MessageEvent).data) as { scenario?: RuntimeScenario; requestId?: string; scenarioId?: string } | RuntimeScenario;
-      const snapshot = typeof payload === 'object' && payload !== null && 'scenario' in payload
-        ? payload.scenario ?? null
-        : (payload as RuntimeScenario);
+      const payload = JSON.parse((event as MessageEvent).data) as RuntimeSnapshotEventPayload;
+      const snapshot = unwrapRuntimeSnapshotPayload(payload);
       if (!snapshot) return;
-      setRuntime(snapshot);
-      setScenarioId(snapshot.id);
-      setSelectedStageId((current) => current || snapshot.stages.find((stage) => stage.status === 'current')?.id || snapshot.stages[0].id);
-      setSelectedEventId(snapshot.timeline[snapshot.timeline.length - 1]?.id ?? snapshot.timeline[0].id);
+      applyRuntimeSnapshot(snapshot);
       hydrateProjectedState(snapshot);
     });
 
     source.addEventListener('execution.stream', (event) => {
-      const payload = JSON.parse((event as MessageEvent).data) as { eventType: string; stream: 'stdout' | 'stderr'; message: string; requestId?: string };
+      const payload = JSON.parse((event as MessageEvent).data) as ExecutionStreamPayload;
       if (activeRequestId && payload.requestId && payload.requestId !== activeRequestId) return;
       setLiveExecution((current) => [...current, { id: `${payload.eventType}-${current.length + 1}`, stream: payload.stream, message: payload.message }]);
     });
@@ -113,8 +107,25 @@ export default function App() {
     return runtime.inspections[inspectionKey ?? selectedEvent?.inspectionKey ?? 'request'] ?? runtime.inspections.request;
   }, [runtime, selectedEvent, selectedRequestEvent]);
 
+  function resolveRequestId(snapshot: RuntimeScenario | null) {
+    return snapshot?.request.intake?.requestId ?? null;
+  }
+
+  function applyRuntimeSnapshot(snapshot: RuntimeScenario) {
+    setRuntime(snapshot);
+    setScenarioId(snapshot.id);
+    setSelectedStageId(snapshot.stages.find((stage) => stage.status === 'current')?.id ?? snapshot.stages[0].id);
+    setSelectedEventId(snapshot.timeline[snapshot.timeline.length - 1]?.id ?? snapshot.timeline[0].id);
+  }
+
+  function unwrapRuntimeSnapshotPayload(payload: RuntimeSnapshotEventPayload) {
+    return typeof payload === 'object' && payload !== null && 'scenario' in payload
+      ? payload.scenario ?? null
+      : (payload as RuntimeScenario);
+  }
+
   async function hydrateProjectedState(snapshot: RuntimeScenario) {
-    const requestId = snapshot.request.intake?.requestId;
+    const requestId = resolveRequestId(snapshot);
     if (requestId) {
       try {
         const [snapshotData, timelineData] = await Promise.all([
@@ -136,10 +147,7 @@ export default function App() {
 
   async function refreshFromAction(action: Promise<RuntimeScenario>) {
     const snapshot = await action;
-    setRuntime(snapshot);
-    setScenarioId(snapshot.id);
-    setSelectedStageId(snapshot.stages.find((stage) => stage.status === 'current')?.id ?? snapshot.stages[0].id);
-    setSelectedEventId(snapshot.timeline[snapshot.timeline.length - 1]?.id ?? snapshot.timeline[0].id);
+    applyRuntimeSnapshot(snapshot);
     await hydrateProjectedState(snapshot);
     setFlashMessage(snapshot.request.state);
   }
@@ -182,7 +190,7 @@ export default function App() {
     );
   }
 
-  const requestId = requestSnapshot?.request.requestId ?? runtime.request.intake?.requestId ?? null;
+  const requestId = requestSnapshot?.request.requestId ?? resolveRequestId(runtime);
 
   function performAction(action: 'approve' | 'deny' | 'pause' | 'resume' | 'release-execution') {
     if (requestId) {

@@ -48,40 +48,20 @@ export function approveRuntimeRequest() {
   return call<RuntimeScenario>('/api/runtime/approve', { method: 'POST' });
 }
 
-export function approveRequestById(requestId: string) {
-  return call<RuntimeScenario>(`/api/requests/${requestId}/approve`, { method: 'POST' });
-}
-
 export function denyRuntimeRequest() {
   return call<RuntimeScenario>('/api/runtime/deny', { method: 'POST' });
-}
-
-export function denyRequestById(requestId: string) {
-  return call<RuntimeScenario>(`/api/requests/${requestId}/deny`, { method: 'POST' });
 }
 
 export function pauseRuntimeRequest() {
   return call<RuntimeScenario>('/api/runtime/pause', { method: 'POST' });
 }
 
-export function pauseRequestById(requestId: string) {
-  return call<RuntimeScenario>(`/api/requests/${requestId}/pause`, { method: 'POST' });
-}
-
 export function resumeRuntimeRequest() {
   return call<RuntimeScenario>('/api/runtime/resume', { method: 'POST' });
 }
 
-export function resumeRequestById(requestId: string) {
-  return call<RuntimeScenario>(`/api/requests/${requestId}/resume`, { method: 'POST' });
-}
-
 export function releaseExecutionAuthority() {
   return call<RuntimeScenario>('/api/runtime/release-execution', { method: 'POST' });
-}
-
-export function releaseExecutionById(requestId: string) {
-  return call<RuntimeScenario>(`/api/requests/${requestId}/release-execution`, { method: 'POST' });
 }
 
 export function performRequestAction(requestId: string, action: RequestActionKind) {

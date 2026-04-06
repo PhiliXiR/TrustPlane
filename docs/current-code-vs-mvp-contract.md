@@ -459,8 +459,8 @@ Implemented in code:
 Still not done:
 - full replacement of scenario-global API usage
 - removal of scenario-backed transitional shaping
-- deeper write-path cleanup beyond the thin request-scoped bridge
 - a more explicit backend-native evidence/artifact contract beyond projected summaries and inspection-key linkage
+- deeper backend cleanup to reduce dependence on scenario-global internals behind the bridge
 
 Newly implemented in a thin bridge form:
 - request-scoped action endpoints for approve, deny, pause, resume, and release execution
@@ -468,7 +468,7 @@ Newly implemented in a thin bridge form:
 - backend request-context helper for request-facing reads/projections
 - request-aware SSE payload enrichment for runtime snapshots and execution-stream events
 - thin request-scoped stream endpoint at `/api/requests/{request_id}/stream`
-- frontend request-scoped action helper path
+- consolidated frontend request action helper path
 - frontend now prefers the request-scoped stream when a request ID is available, with global stream fallback
 - approval bar now prefers request-scoped actions when a request ID is available
 - workflow rail and human checkpoints now derive contract-aware summaries from the request snapshot
@@ -480,11 +480,11 @@ Newly implemented in a thin bridge form:
 The current code is close enough to the MVP docs that the next pass should continue the **adapter/projection migration**, but the center of gravity is shifting.
 
 The main remaining gap is now less about visible UI migration and more about:
-- deeper write-path cleanup
 - stronger request-native evidence/artifact modeling
 - reducing scenario-global assumptions behind the bridge
 - continuing the backend transition from scenario-centric helpers toward request-native helpers
 - deciding how much of the current global runtime stream should become truly request-native over time
+- eventually shrinking the compatibility burden of the scenario-backed bridge
 
 The most important implementation insight remains:
 
