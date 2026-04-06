@@ -227,6 +227,7 @@ npm run build
 - `docs/live-command-observability.md` — CLI execution visibility model
 - `docs/n8n-integration-starter.md` — local n8n webhook-to-TrustPlane starter path
 - `docs/intake-agent-tuning-notes.md` — guidance for keeping the intake bot focused
+- `docs/intake-submission-examples.md` — curated realistic intake-bot submissions across IT and AWS/ops cases
 - `docs/nemoclaw-slack-intake-plan.md` — staged NemoClaw + Slack intake plan
 - `docs/first-linux-deployment-instructions.md` — first Linux deployment path
 
