@@ -36,11 +36,31 @@ That is enough for the first meaningful intake test.
 The Linux prototype now has:
 
 - a working generic TrustPlane intake endpoint
-- a working local helper that can POST canonical intake objects into TrustPlane
 - a separate intake-bot workspace on the host machine
 - a live Slack channel/provider setup on the host machine
+- a working intake bot path on the host machine
+- a working watcher path that detects intake payloads from the intake session store
+- a working local `n8n` normalization/handoff path into TrustPlane
 
-The remaining missing step is explicit Slack routing to the intake agent instead of the default main agent.
+The practical implemented flow is now:
+
+1. a user sends a request in Slack
+2. the dedicated intake bot receives it
+3. the intake bot can ask clarification questions if needed
+4. the intake bot emits the handoff payload into the intake/watcher path
+5. the watcher forwards it to `n8n`
+6. `n8n` normalizes/packages the intake object and submits it into TrustPlane
+7. TrustPlane receives the request and projects it into the governed view
+
+So this is no longer just a plan in the abstract.
+The intake bot path is implemented and working in the current Linux setup.
+
+What remains is mainly:
+
+- hardening
+- operational packaging
+- reducing brittle assumptions in the bridge
+- continuing to improve the TrustPlane-side runtime-backed projection
 
 ## First request family
 
@@ -142,7 +162,9 @@ Before wiring Slack, freeze the minimum request object NemoClaw should send.
 
 ## Phase 2 — prepare NemoClaw intake bot definition
 
-NemoClaw should be configured as a dedicated intake bot.
+NemoClaw is now configured in practice as a dedicated intake bot path on the Linux host.
+
+This phase is therefore partially complete in implementation terms, even if the surrounding docs and operational packaging still need cleanup.
 
 ### Needs
 
@@ -175,7 +197,7 @@ This keeps integration noise low.
 
 ## Phase 4 — add TrustPlane intake endpoint
 
-TrustPlane backend needs a narrow intake endpoint.
+TrustPlane now has the narrow intake endpoint in place.
 
 ### Proposed endpoint
 
@@ -273,17 +295,19 @@ TrustPlane should remain the operator-facing trust/control layer.
 
 ## Immediate next deliverables
 
-A practical implementation sequence would be:
+The basic intake-bot path now exists, so the practical next sequence has shifted.
 
-1. define the intake payload schema in code/docs
-2. add `POST /api/intake/slack` in TrustPlane backend
-3. add intake-source rendering in TrustPlane UI
-4. prepare NemoClaw intake bot config/workspace
-5. connect one Slack bot to one narrow request family
+The higher-value next steps are:
+
+1. tighten docs so they reflect the implemented intake-bot + watcher + `n8n` path
+2. harden the Slack -> intake bot -> watcher -> `n8n` -> TrustPlane chain operationally
+3. reduce brittle assumptions in routing and payload handoff
+4. improve TrustPlane’s request-native projection of the resulting intake objects
+5. broaden only after the reporting-access-style slice remains stable
 
 ## Summary
 
-The right first NemoClaw + Slack + TrustPlane experiment is:
+The right first NemoClaw + Slack + TrustPlane experiment was:
 
 - one Slack intake bot
 - one narrow access-request workflow
@@ -291,4 +315,7 @@ The right first NemoClaw + Slack + TrustPlane experiment is:
 - one normalized handoff object
 - one TrustPlane-visible request state
 
-That is a strong enough external test without creating connector sprawl too early.
+That path is now implemented in the current Linux setup through the intake bot + watcher + `n8n` bridge.
+
+The work left is not "make the intake bot exist."
+The work left is to harden, simplify, and operationalize the implemented path without losing the governed-intake shape.

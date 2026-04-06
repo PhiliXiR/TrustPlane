@@ -23,14 +23,14 @@ It makes intake, routing, approval boundaries, execution, and verification visib
 
 - Runtime scenarios are still scenario-backed rather than sourced from a real agent runtime
 - Command output is currently simulated to prove the control-plane/event model
-- Slack/OpenClaw intake handoff is only partially wired end-to-end; the local bridge exists, but the dedicated intake-agent route still needs tightening and automation
+- The Slack intake path is implemented in the local Linux setup through the dedicated intake bot + watcher + `n8n` + TrustPlane bridge, but it still needs hardening, tighter automation, and cleaner operational packaging
 
 ## What I am building next
 
-- Real intake handoff from a conversational intake bot into TrustPlane
+- Hardening and operational cleanup for the implemented intake-bot -> watcher -> `n8n` -> TrustPlane path
 - Richer trust downgrade / suspended-mode behavior
 - Runtime adapters that project real agent/runtime state into the TrustPlane contract
-- Cleaner Slack intake-agent routing and automatic submission into the n8n/TrustPlane path
+- Cleaner request-native runtime/action/event handling inside TrustPlane itself
 
 ## Why this matters
 
