@@ -6,8 +6,10 @@ from .store import (
     approve_current_request,
     create_intake_request,
     deny_current_request,
+    get_intake_example,
     get_request_context,
     get_runtime_snapshot,
+    list_intake_examples,
     list_runtime_scenarios,
     pause_current_request,
     project_request_snapshot,
@@ -19,7 +21,7 @@ from .store import (
     subscribe_events,
     unsubscribe_events,
 )
-from .models import IntakeAccepted, IntakeRequest, RequestSnapshot, RequestTimelineResponse, RuntimeScenario, ScenarioOption
+from .models import IntakeAccepted, IntakeExampleFixture, IntakeExampleSummary, IntakeRequest, RequestSnapshot, RequestTimelineResponse, RuntimeScenario, ScenarioOption
 
 app = FastAPI(title='TrustPlane API')
 
@@ -39,6 +41,19 @@ def health():
 @app.get('/api/scenarios', response_model=list[ScenarioOption])
 def scenarios():
     return [ScenarioOption.model_validate(item) for item in list_runtime_scenarios()]
+
+
+@app.get('/api/examples', response_model=list[IntakeExampleSummary])
+def examples():
+    return list_intake_examples()
+
+
+@app.get('/api/examples/{example_id}', response_model=IntakeExampleFixture)
+def example_detail(example_id: str):
+    item = get_intake_example(example_id)
+    if item is None:
+        return {}
+    return item
 
 
 @app.get('/api/runtime', response_model=RuntimeScenario)

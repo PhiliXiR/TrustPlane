@@ -7,6 +7,8 @@ import json
 from .scenarios import REPORTING_ACCESS, SCENARIOS, get_scenario
 from .models import (
     ArtifactSummary,
+    IntakeExampleFixture,
+    IntakeExampleSummary,
     IntakeMetadata,
     IntakeRequest,
     IntakeStatus,
@@ -29,6 +31,7 @@ _event_counter = 0
 _request_counter = 3000
 _intake_scenarios = {}
 _STORAGE_PATH = Path(__file__).resolve().parent / 'intake-scenarios.json'
+_EXAMPLES_DIR = Path(__file__).resolve().parent.parent / 'examples' / 'intake-fixtures'
 
 
 def _save_intake_scenarios():
@@ -68,6 +71,30 @@ def _next_request_id():
     global _request_counter
     _request_counter += 1
     return f"req_{_request_counter}"
+
+
+def list_intake_examples():
+    if not _EXAMPLES_DIR.exists():
+        return []
+    items = []
+    for path in sorted(_EXAMPLES_DIR.glob('*.example.json')):
+        payload = json.loads(path.read_text())
+        items.append(IntakeExampleSummary(
+            exampleId=payload['exampleId'],
+            label=payload['label'],
+            category=payload['category'],
+        ))
+    return items
+
+
+def get_intake_example(example_id: str):
+    if not _EXAMPLES_DIR.exists():
+        return None
+    for path in sorted(_EXAMPLES_DIR.glob('*.example.json')):
+        payload = json.loads(path.read_text())
+        if payload.get('exampleId') == example_id:
+            return IntakeExampleFixture.model_validate(payload)
+    return None
 
 
 def subscribe_events(request_id: str | None = None):

@@ -3,6 +3,7 @@ import { ApprovalBar } from './components/ApprovalBar';
 import { CommandEnvelopePanel } from './components/CommandEnvelopePanel';
 import { DecisionPanel } from './components/DecisionPanel';
 import { ExecutionTracePanel } from './components/ExecutionTracePanel';
+import { ExamplesPanel } from './components/ExamplesPanel';
 import { HumanCheckpointsPanel } from './components/HumanCheckpointsPanel';
 import { InspectionDrawer } from './components/InspectionDrawer';
 import { IntakeSpotlightCard } from './components/IntakeSpotlightCard';
@@ -18,6 +19,8 @@ import {
   approveRuntimeRequest,
   changeScenario,
   denyRuntimeRequest,
+  fetchExample,
+  fetchExamples,
   fetchRequestSnapshot,
   fetchRequestTimeline,
   fetchRuntimeSnapshot,
@@ -29,6 +32,7 @@ import {
   releaseExecutionAuthority,
   resumeRuntimeRequest,
 } from './api';
+import type { IntakeExampleFixture, IntakeExampleSummary } from './runtime/exampleTypes';
 import type { RequestSnapshot, RequestTimelineResponse } from './runtime/requestTypes';
 import type { RuntimeScenario } from './runtime/scenarioTypes';
 
@@ -45,15 +49,24 @@ export default function App() {
   const [selectedEventId, setSelectedEventId] = useState('');
   const [requestSnapshot, setRequestSnapshot] = useState<RequestSnapshot | null>(null);
   const [requestTimeline, setRequestTimeline] = useState<RequestTimelineResponse | null>(null);
+  const [exampleSummaries, setExampleSummaries] = useState<IntakeExampleSummary[]>([]);
+  const [selectedExampleId, setSelectedExampleId] = useState('');
+  const [selectedExample, setSelectedExample] = useState<IntakeExampleFixture | null>(null);
   const [inspectionOpen, setInspectionOpen] = useState(true);
   const [liveExecution, setLiveExecution] = useState<ExecutionLogEntry[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [flashMessage, setFlashMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    Promise.all([fetchScenarioOptions(), fetchRuntimeSnapshot()])
-      .then(async ([options, snapshot]) => {
+    Promise.all([fetchScenarioOptions(), fetchRuntimeSnapshot(), fetchExamples()])
+      .then(async ([options, snapshot, examples]) => {
         setScenarioOptions(options);
+        setExampleSummaries(examples);
+        setSelectedExampleId(examples[0]?.exampleId ?? '');
+        if (examples[0]?.exampleId) {
+          const example = await fetchExample(examples[0].exampleId);
+          setSelectedExample(example);
+        }
         applyRuntimeSnapshot(snapshot);
         await hydrateProjectedState(snapshot);
       })
@@ -161,6 +174,16 @@ export default function App() {
     }
   }
 
+  async function handleExampleSelect(exampleId: string) {
+    setSelectedExampleId(exampleId);
+    try {
+      const example = await fetchExample(exampleId);
+      setSelectedExample(example);
+    } catch (err) {
+      setError(String(err));
+    }
+  }
+
   useEffect(() => {
     if (!flashMessage) return;
     const timeout = window.setTimeout(() => setFlashMessage(null), 2600);
@@ -236,6 +259,12 @@ export default function App() {
           <IntakeSpotlightCard request={runtime.request} snapshot={requestSnapshot} />
           <ScenarioSelector options={scenarioOptions} value={scenarioId} onChange={handleScenarioChange} />
         </div>
+        <ExamplesPanel
+          examples={exampleSummaries}
+          selectedExampleId={selectedExampleId}
+          selectedExample={selectedExample}
+          onSelect={handleExampleSelect}
+        />
         <ApprovalBar
           requestState={runtime.request.state}
           autonomyMode={runtime.request.autonomyMode}

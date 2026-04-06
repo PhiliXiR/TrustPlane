@@ -318,3 +318,21 @@ class RequestSnapshot(BaseModel):
 class RequestTimelineResponse(BaseModel):
     requestId: str
     events: List[MvpTimelineEvent]
+
+
+class IntakeExampleFixture(BaseModel):
+    exampleId: str
+    label: str
+    category: str
+    rawIntakeMessage: str
+    clarification: Dict[str, str | bool | List[str]]
+    normalizedN8nOutput: Dict[str, str | bool | List[str] | Dict[str, str]]
+    expectedTrustPlane: Dict[str, str]
+    expectedTimelineEvents: List[str]
+    expectedEvidenceArtifacts: List[str]
+
+
+class IntakeExampleSummary(BaseModel):
+    exampleId: str
+    label: str
+    category: str

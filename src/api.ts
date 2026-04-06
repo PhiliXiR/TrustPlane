@@ -1,4 +1,5 @@
 import type { RuntimeScenario } from './runtime/scenarioTypes';
+import type { IntakeExampleFixture, IntakeExampleSummary } from './runtime/exampleTypes';
 import type { RequestSnapshot, RequestTimelineResponse } from './runtime/requestTypes';
 
 export type RequestActionKind = 'approve' | 'deny' | 'pause' | 'resume' | 'release-execution';
@@ -26,6 +27,14 @@ async function call<T>(path: string, options: RequestInit = {}) {
 
 export function fetchScenarioOptions() {
   return call<ScenarioOption[]>('/api/scenarios');
+}
+
+export function fetchExamples() {
+  return call<IntakeExampleSummary[]>('/api/examples');
+}
+
+export function fetchExample(exampleId: string) {
+  return call<IntakeExampleFixture>(`/api/examples/${exampleId}`);
 }
 
 export function fetchRuntimeSnapshot() {
