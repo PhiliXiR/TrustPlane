@@ -51,6 +51,10 @@ type RuntimeSnapshotEventPayload = RuntimeScenario | { scenario?: RuntimeScenari
 type ExecutionStreamPayload = { eventType: string; stream: 'stdout' | 'stderr'; message: string; requestId?: string };
 
 export default function App() {
+  // App-level state currently has to reconcile three overlapping sources of
+  // truth: the live runtime scenario, the newer request-centric bridge objects,
+  // and canonical example fixtures. The helpers below try to keep that overlap
+  // understandable until the backend becomes more natively request-centric.
   const [scenarioId, setScenarioId] = useState('');
   const [scenarioOptions, setScenarioOptions] = useState<ScenarioOption[]>([]);
   const [sourceOptions, setSourceOptions] = useState<SourceOption[]>([]);
@@ -117,6 +121,9 @@ export default function App() {
     return () => source.close();
   }, [requestSnapshot?.request.requestId, runtime?.request.intake?.requestId]);
 
+  // Once a source is selected, the rest of the UI reads from these effective
+  // derived objects so panels can stay mostly agnostic about whether they are
+  // rendering live runtime state or an example-derived record.
   const effectiveStages = useMemo(() => {
     if (!runtime) return [];
     return selectedExample ? deriveStagesFromExample(selectedExample, runtime.stages) : runtime.stages;
@@ -159,6 +166,9 @@ export default function App() {
       : (payload as RuntimeScenario);
   }
 
+  // Re-hydrate the request-centric bridge objects from the currently selected
+  // runtime scenario. This is the main path that keeps the newer request-based
+  // UI surfaces in sync with the older scenario-backed store.
   async function hydrateProjectedState(snapshot: RuntimeScenario) {
     const requestId = resolveRequestId(snapshot);
     if (requestId) {
@@ -198,6 +208,9 @@ export default function App() {
     }
   }
 
+  // Unified top-level record switcher: a source may be a live runtime record or
+  // an example fixture. Example mode now derives a coherent record view instead
+  // of only layering a few example-specific badges on top of the live record.
   async function handleSourceChange(sourceId: string) {
     setSelectedSourceId(sourceId);
     if (sourceId.startsWith('runtime:')) {

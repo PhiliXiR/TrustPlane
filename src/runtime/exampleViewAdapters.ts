@@ -1,5 +1,8 @@
 import type { IntakeExampleFixture } from './exampleTypes';
 
+// This is intentionally lightweight: it provides just enough example metadata
+// to let the main UI advertise example mode clearly without forcing every panel
+// to know the raw fixture shape.
 export function deriveExampleModeSummary(example: IntakeExampleFixture | null) {
   if (!example) return null;
 

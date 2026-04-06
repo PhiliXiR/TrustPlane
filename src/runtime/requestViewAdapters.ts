@@ -2,6 +2,9 @@ import type { ExecutionStep, HumanCheckpoint, InspectionRecord, Playbook, Stage 
 import type { IntakeExampleFixture } from './exampleTypes';
 import type { RequestSnapshot, RequestTimelineEvent } from './requestTypes';
 
+// These adapter helpers let the UI render a more request-centric surface even
+// though many lower-level runtime objects are still scenario-shaped. The goal
+// is to keep contract translation out of presentational components.
 export function deriveWorkflowRailStages(snapshot: RequestSnapshot | null | undefined, fallbackStages: Stage[]): Stage[] {
   if (!snapshot) return fallbackStages;
 
@@ -72,6 +75,9 @@ export function deriveWorkflowRailStages(snapshot: RequestSnapshot | null | unde
   }));
 }
 
+// Example fixtures do not come from the live runtime stage model, so example
+// mode needs its own rail derivation instead of pretending the runtime stages
+// are the source of truth.
 export function deriveWorkflowRailStagesFromExample(example: IntakeExampleFixture | null | undefined, fallbackStages: Stage[]): Stage[] {
   if (!example) return fallbackStages;
 
@@ -173,6 +179,9 @@ export function deriveHumanCheckpoints(snapshot: RequestSnapshot | null | undefi
   ];
 }
 
+// Example mode uses expected workflow/evidence semantics instead of live
+// operator checkpoint state. This keeps the example path honest rather than
+// leaking live runtime assumptions into the fixture view.
 export function deriveHumanCheckpointsFromExample(example: IntakeExampleFixture | null | undefined, fallbackCheckpoints: HumanCheckpoint[]): HumanCheckpoint[] {
   if (!example) return fallbackCheckpoints;
 
@@ -205,6 +214,9 @@ export function deriveHumanCheckpointsFromExample(example: IntakeExampleFixture 
   ];
 }
 
+// Build a request-style timeline directly from fixture expectations so example
+// mode can switch records coherently instead of only overlaying badges on top of
+// the live runtime timeline.
 export function deriveRequestTimelineFromExample(example: IntakeExampleFixture | null | undefined): RequestTimelineEvent[] {
   if (!example) return [];
 

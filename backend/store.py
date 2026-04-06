@@ -97,6 +97,9 @@ def get_intake_example(example_id: str):
     return None
 
 
+# Subscribers may be global or request-scoped. Request-scoped filtering is a
+# bridge step toward more native record-level streaming without replacing the
+# original global runtime stream all at once.
 def subscribe_events(request_id: str | None = None):
     q = Queue()
     _subscribers.append((q, request_id))
@@ -163,6 +166,9 @@ def find_scenario_by_request_id(request_id: str):
     return None
 
 
+# Central request bridge helper: resolve a request-facing context even though
+# the underlying store is still scenario-backed. This lets multiple projection
+# paths share the same derived request/evidence metadata instead of repeating it.
 def get_request_context(request_id: str | None = None):
     scenario = find_scenario_by_request_id(request_id) if request_id else None
     if scenario is None:
@@ -335,6 +341,9 @@ def project_inspection_record(scenario: RuntimeScenario, inspection_key: str | N
     return deepcopy(next(iter(scenario.inspections.values())))
 
 
+# Project the legacy RuntimeScenario into the newer request-centric snapshot
+# contract used by the evolving UI. This is intentionally a translation layer,
+# not the final native persistence shape.
 def project_request_snapshot(scenario: RuntimeScenario):
     intake = scenario.request.intake
     request_id = intake.requestId if intake else scenario.id
@@ -381,6 +390,9 @@ def project_request_snapshot(scenario: RuntimeScenario):
     )
 
 
+# Timeline projection normalizes the older scenario event vocabulary into the
+# operator-facing request timeline contract. The goal is stable semantics at the
+# UI layer even while runtime internals remain in transition.
 def project_request_timeline(scenario: RuntimeScenario):
     context = get_request_context(scenario.request.intake.requestId if scenario.request.intake else None)
     request_id = context['requestId']
@@ -483,6 +495,8 @@ def set_scenario(scenario_id: str, publish: bool = True):
     return get_runtime_snapshot()
 
 
+# Request-scoped actions still mutate the currently selected scenario under the
+# hood. This helper keeps that request -> scenario resolution in one place.
 def set_current_by_request_id(request_id: str, publish: bool = False):
     scenario = find_scenario_by_request_id(request_id)
     if scenario is None:

@@ -23,6 +23,9 @@ from .store import (
 )
 from .models import IntakeAccepted, IntakeExampleFixture, IntakeExampleSummary, IntakeRequest, RequestSnapshot, RequestTimelineResponse, RuntimeScenario, ScenarioOption
 
+# FastAPI here exposes both the older runtime-global surfaces and the newer
+# request-scoped bridge surfaces. That overlap is intentional while the repo
+# migrates from a scenario-centric prototype into a request-centric control plane.
 app = FastAPI(title='TrustPlane API')
 
 app.add_middleware(
@@ -61,6 +64,9 @@ def get_runtime():
     return get_runtime_snapshot()
 
 
+# Request-scoped read endpoints are the main public bridge into the newer
+# request-centric UI contract. They still project from scenario-backed state
+# underneath, but the UI can treat them as the canonical record view.
 @app.get('/api/requests/{request_id}', response_model=RequestSnapshot)
 def get_request_snapshot(request_id: str):
     context = get_request_context(request_id)
@@ -73,6 +79,9 @@ def get_request_timeline(request_id: str):
     return project_request_timeline(context['scenario'])
 
 
+# Request-scoped write endpoints currently route through the existing runtime
+# mutation flow after resolving the request back to the active scenario. This is
+# intentionally a bridge layer rather than a fully native request store.
 @app.post('/api/requests/{request_id}/approve', response_model=RuntimeScenario)
 def approve_request(request_id: str):
     set_current_by_request_id(request_id)
@@ -103,6 +112,9 @@ def release_request_execution(request_id: str):
     return release_execution_authority()
 
 
+# The global stream remains available for compatibility, while the request-
+# scoped stream below allows newer request-focused views to subscribe more
+# narrowly when a concrete request record is active.
 @app.get('/api/events')
 def events():
     q = subscribe_events()

@@ -2,6 +2,9 @@ import type { HumanCheckpoint, Stage } from '../types';
 import type { IntakeExampleFixture } from './exampleTypes';
 import type { RequestSnapshot, RequestTimelineEvent, RequestTimelineResponse } from './requestTypes';
 
+// Example fixtures need a full request-shaped view model when selected in the
+// app. These adapters build that coherent record state so example selection can
+// switch the visible record, not just decorate the live runtime.
 export function deriveRequestSnapshotFromExample(example: IntakeExampleFixture): RequestSnapshot {
   const normalized = example.normalizedN8nOutput as Record<string, string | boolean | string[] | null | undefined>;
   const clarification = example.clarification;
@@ -83,6 +86,9 @@ export function deriveRequestSnapshotFromExample(example: IntakeExampleFixture):
   };
 }
 
+// The fixture timeline is derived from expected event names rather than live
+// runtime emissions. This keeps example mode deterministic and aligned to the
+// documented governed path.
 export function deriveTimelineFromExample(example: IntakeExampleFixture): RequestTimelineResponse {
   const events: RequestTimelineEvent[] = example.expectedTimelineEvents.map((eventType, index) => {
     const family = eventType.startsWith('intake.')
@@ -126,6 +132,9 @@ export function deriveTimelineFromExample(example: IntakeExampleFixture): Reques
   };
 }
 
+// Stage derivation for examples maps fixture lifecycle expectations onto the
+// existing rail structure so the app can reuse the current rail component while
+// still showing example-native progression.
 export function deriveStagesFromExample(example: IntakeExampleFixture, fallbackStages: Stage[]): Stage[] {
   const events = new Set(example.expectedTimelineEvents);
   const clarificationNeeded = example.clarification.needed;
