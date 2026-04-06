@@ -14,8 +14,8 @@ export function ModeSwitchCard({ example }: Props) {
         title={inExampleMode ? 'Example Mode' : 'Live Runtime Mode'}
         description={
           inExampleMode
-            ? 'The UI is currently highlighting a canonical example fixture alongside the live TrustPlane runtime surface.'
-            : 'The UI is currently focused on the live TrustPlane runtime surface.'
+            ? 'The current record is a canonical example fixture being shown through the same operator surfaces used for live runtime records.'
+            : 'The current record is sourced from the live TrustPlane runtime path.'
         }
         meta={<StatusBadge tone={inExampleMode ? 'warn' : 'success'}>{inExampleMode ? 'example active' : 'live runtime'}</StatusBadge>}
       />

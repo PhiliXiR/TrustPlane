@@ -1,3 +1,7 @@
+import { useEffect, useRef } from 'react';
+import type { IntakeExampleFixture } from '../runtime/exampleTypes';
+import { SectionHeader, StatusBadge } from './ui';
+
 type ExecutionLogEntry = {
   id: string;
   stream: 'stdout' | 'stderr';
@@ -6,21 +10,45 @@ type ExecutionLogEntry = {
 
 type Props = {
   entries: ExecutionLogEntry[];
+  example?: IntakeExampleFixture | null;
 };
 
-export function LiveExecutionPanel({ entries }: Props) {
+export function LiveExecutionPanel({ entries, example }: Props) {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    el.scrollTop = el.scrollHeight;
+  }, [entries]);
+
+  const live = entries.length > 0;
+  const title = example ? 'Expected output and evidence' : 'Live command output';
+  const description = example
+    ? 'When an example is selected, this panel emphasizes the expected execution/evidence story rather than only live runtime output.'
+    : 'Watch governed command execution in real time as the current operator path runs.';
+
   return (
     <section className="rounded-3xl border border-line bg-panel/95 p-6 shadow-panel">
-      <h2 className="text-lg font-semibold text-slate-50">Live Command Output</h2>
-      <p className="mt-1 text-sm text-muted">Watch governed command execution in real time as the current operator path runs.</p>
-      <div className="mt-5 max-h-[320px] overflow-auto rounded-2xl border border-line bg-ink/75 p-4 font-mono text-xs leading-6 text-slate-200">
+      <SectionHeader
+        title={title}
+        description={description}
+        meta={
+          <div className="flex items-center gap-2">
+            <StatusBadge tone={example ? 'warn' : live ? 'success' : 'neutral'}>{example ? 'example' : live ? 'streaming' : 'idle'}</StatusBadge>
+            <StatusBadge>{entries.length} line{entries.length === 1 ? '' : 's'}</StatusBadge>
+          </div>
+        }
+      />
+      <div ref={containerRef} className="mt-5 max-h-[320px] overflow-auto rounded-2xl border border-line bg-ink/75 p-4 font-mono text-xs leading-6 text-slate-200">
         {entries.length === 0 ? (
-          <div className="text-muted">No live command output yet.</div>
+          <div className="text-muted">{example ? 'No live output for this example fixture. Use the expected timeline/evidence context above.' : 'No live command output yet.'}</div>
         ) : (
-          entries.map((entry) => (
-            <div key={entry.id} className={entry.stream === 'stderr' ? 'text-amber-300' : 'text-slate-200'}>
-              <span className="mr-2 text-muted">[{entry.stream}]</span>
-              <span>{entry.message}</span>
+          entries.map((entry, index) => (
+            <div key={entry.id} className={`grid min-w-0 grid-cols-[auto_auto_minmax(0,1fr)] gap-3 ${entry.stream === 'stderr' ? 'text-amber-300' : 'text-slate-200'}`}>
+              <span className="text-muted">{String(index + 1).padStart(2, '0')}</span>
+              <span className="text-muted">[{entry.stream}]</span>
+              <span className="tp-pretty-wrap">{entry.message}</span>
             </div>
           ))
         )}

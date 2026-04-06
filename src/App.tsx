@@ -263,26 +263,22 @@ export default function App() {
           </div>
         ) : null}
 
-        <div className="grid gap-3 lg:grid-cols-4">
-          <MetricCard label="Request state" value={exampleMode?.state ?? runtime.request.state} tone="accent" emphasis="strong" />
-          <MetricCard label="Current owner" value={exampleMode?.owner ?? runtime.ownership.currentOwner.name} />
-          <MetricCard label="Selected stage" value={selectedStage.label} tone="violet" />
-          <MetricCard label="Timeline events" value={String(exampleMode?.timelineCount ?? requestTimeline?.events.length ?? runtime.timeline.length)} tone="success" />
-        </div>
-
-        <div className="grid gap-3 lg:grid-cols-4">
-          <MetricCard label="Authority status" value={runtime.commandEnvelope.approvalState} tone="violet" emphasis="strong" />
-          <MetricCard label="Execution substrate" value={runtime.executionSubstrate.displayName} />
-          <MetricCard label="Autonomy mode" value={runtime.request.autonomyMode} tone="accent" />
-          <MetricCard label={selectedExample ? 'Example evidence' : 'Execution logs'} value={String(selectedExample ? exampleMode?.evidenceCount ?? 0 : liveExecution.length)} tone="success" />
+        <div className="grid gap-3 lg:grid-cols-5">
+          <MetricCard label="State" value={exampleMode?.state ?? runtime.request.state} tone="accent" emphasis="strong" />
+          <MetricCard label="Owner" value={exampleMode?.owner ?? runtime.ownership.currentOwner.name} />
+          <MetricCard label="Workflow" value={exampleMode?.workflow ?? requestSnapshot?.request.workflowCandidate ?? runtime.playbook.name} tone="violet" />
+          <MetricCard label="Authority" value={runtime.commandEnvelope.approvalState} tone="violet" emphasis="strong" />
+          <MetricCard label={selectedExample ? 'Evidence' : 'Logs'} value={String(selectedExample ? exampleMode?.evidenceCount ?? 0 : liveExecution.length)} tone="success" />
         </div>
 
         <RequestHeader request={runtime.request} trustModel={runtime.trustModel} snapshot={requestSnapshot} example={selectedExample} />
         <div className="grid gap-6 xl:grid-cols-[1.08fr_0.92fr]">
           <IntakeSpotlightCard request={runtime.request} snapshot={requestSnapshot} example={selectedExample} />
-          <SourceSelector options={sourceOptions} value={selectedSourceId} onChange={handleSourceChange} />
+          <div className="space-y-6">
+            <SourceSelector options={sourceOptions} value={selectedSourceId} onChange={handleSourceChange} />
+            <ModeSwitchCard example={selectedExample} />
+          </div>
         </div>
-        <ModeSwitchCard example={selectedExample} />
         <ApprovalBar
           requestState={runtime.request.state}
           autonomyMode={runtime.request.autonomyMode}
@@ -332,7 +328,7 @@ export default function App() {
 
         <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
           <PlaybookCard playbook={runtime.playbook} snapshot={requestSnapshot} example={selectedExample} />
-          <LiveExecutionPanel entries={liveExecution} />
+          <LiveExecutionPanel entries={liveExecution} example={selectedExample} />
         </div>
       </div>
     </div>
