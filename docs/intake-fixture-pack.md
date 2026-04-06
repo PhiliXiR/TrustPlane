@@ -980,6 +980,34 @@ A strong intake fixture should:
 - distinguish investigation-only from execute-authorized requests
 - include expected evidence, not just expected action
 
+## Execution readiness note
+
+These 10 fixtures are not all equally suitable for immediate real execution.
+
+A practical near-term split is:
+
+### Stronger near-term execution candidates
+
+- reporting dashboard access
+- finance shared drive access
+- shared mailbox access
+- staging web restart
+- staging worker restart
+
+### Better as governed-but-more-controlled execution later
+
+- contractor VPN access
+- offboarding access removal
+- EBS cleanup
+- IAM credential revoke
+
+### Better treated as investigation-first rather than direct execution
+
+- production CPU investigation
+
+The intended outcome is not that every fixture becomes an immediate execute-now path.
+The intended outcome is that all fixtures can be governed well, while only the bounded ones move quickly toward actual execution wiring.
+
 ## Strong next extensions
 
 If you want to push this further later, the next strongest additions would be:
