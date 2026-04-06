@@ -91,3 +91,7 @@ export function performRequestAction(requestId: string, action: RequestActionKin
 export function getEventsUrl() {
   return EVENTS_URL;
 }
+
+export function getRequestEventsUrl(requestId: string) {
+  return `${API_BASE}/api/requests/${requestId}/stream`;
+}

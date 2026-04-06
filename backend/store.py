@@ -70,25 +70,44 @@ def _next_request_id():
     return f"req_{_request_counter}"
 
 
-def subscribe_events():
+def subscribe_events(request_id: str | None = None):
     q = Queue()
-    _subscribers.append(q)
+    _subscribers.append((q, request_id))
     return q
 
 
+def _event_matches_request(payload: dict, request_id: str | None):
+    if request_id is None:
+        return True
+    if payload.get('requestId') == request_id:
+        return True
+    scenario = payload.get('scenario') or payload.get('payload') or {}
+    intake = scenario.get('request', {}).get('intake') if isinstance(scenario, dict) else None
+    return bool(intake and intake.get('requestId') == request_id)
+
+
 def unsubscribe_events(q):
-    if q in _subscribers:
-        _subscribers.remove(q)
+    for item in list(_subscribers):
+        if item[0] is q:
+            _subscribers.remove(item)
 
 
 def _publish(event_type: str, payload: dict):
     event = {"type": event_type, "payload": payload}
-    for q in list(_subscribers):
-        q.put(event)
+    for q, request_id in list(_subscribers):
+        if _event_matches_request(payload if isinstance(payload, dict) else {}, request_id):
+            q.put(event)
 
 
 def _publish_snapshot():
-    _publish("runtime.snapshot", get_runtime_snapshot().model_dump())
+    snapshot = get_runtime_snapshot().model_dump()
+    intake = snapshot.get('request', {}).get('intake')
+    payload = {
+        'scenario': snapshot,
+        'scenarioId': snapshot.get('id'),
+        'requestId': intake.get('requestId') if intake else None,
+    }
+    _publish("runtime.snapshot", payload)
 
 
 def _persist_current_if_intake():

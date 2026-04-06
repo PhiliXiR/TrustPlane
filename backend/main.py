@@ -107,6 +107,25 @@ def events():
     return StreamingResponse(event_stream(), media_type='text/event-stream')
 
 
+@app.get('/api/requests/{request_id}/stream')
+def request_events(request_id: str):
+    q = subscribe_events(request_id=request_id)
+
+    def event_stream():
+        try:
+            yield f'event: connected\\ndata: {{"ok": true, "requestId": "{request_id}"}}\\n\\n'
+            while True:
+                try:
+                    item = q.get(timeout=15)
+                    yield f"event: {item['type']}\\ndata: {item['payload']}\\n\\n"
+                except Empty:
+                    yield 'event: keepalive\\ndata: {}\\n\\n'
+        finally:
+            unsubscribe_events(q)
+
+    return StreamingResponse(event_stream(), media_type='text/event-stream')
+
+
 @app.post('/api/intake', response_model=IntakeAccepted)
 def intake(request: IntakeRequest):
     accepted = create_intake_request(request)
