@@ -1,10 +1,11 @@
 import type { HumanCheckpoint } from '../types';
+import type { IntakeExampleFixture } from '../runtime/exampleTypes';
 import type { RequestSnapshot } from '../runtime/requestTypes';
 import { deriveHumanCheckpoints } from '../runtime/requestViewAdapters';
 
-type Props = { checkpoints: HumanCheckpoint[]; snapshot?: RequestSnapshot | null };
+type Props = { checkpoints: HumanCheckpoint[]; snapshot?: RequestSnapshot | null; example?: IntakeExampleFixture | null };
 
-export function HumanCheckpointsPanel({ checkpoints, snapshot }: Props) {
+export function HumanCheckpointsPanel({ checkpoints, snapshot, example }: Props) {
   const resolvedCheckpoints = deriveHumanCheckpoints(snapshot, checkpoints);
   return (
     <section className="rounded-3xl border border-line bg-panel/95 p-6 shadow-panel">
@@ -13,7 +14,10 @@ export function HumanCheckpointsPanel({ checkpoints, snapshot }: Props) {
           <h2 className="text-lg font-semibold text-slate-50">Human checkpoints</h2>
           <p className="mt-1 text-sm text-muted">Where authority shifts, pauses, or requires explicit human review.</p>
         </div>
-        <span className="rounded-full border border-line bg-ink/60 px-3 py-1 text-xs text-slate-300">{resolvedCheckpoints.length} checkpoints</span>
+        <div className="flex flex-wrap gap-2">
+          <span className="rounded-full border border-line bg-ink/60 px-3 py-1 text-xs text-slate-300">{resolvedCheckpoints.length} checkpoints</span>
+          {example ? <span className="rounded-full border border-warn/30 bg-warn/10 px-3 py-1 text-xs text-warn">example</span> : null}
+        </div>
       </div>
 
       <div className="mt-5 space-y-3">

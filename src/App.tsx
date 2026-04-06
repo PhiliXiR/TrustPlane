@@ -8,6 +8,7 @@ import { HumanCheckpointsPanel } from './components/HumanCheckpointsPanel';
 import { InspectionDrawer } from './components/InspectionDrawer';
 import { IntakeSpotlightCard } from './components/IntakeSpotlightCard';
 import { LiveExecutionPanel } from './components/LiveExecutionPanel';
+import { ModeSwitchCard } from './components/ModeSwitchCard';
 import { OperatorControlPanel } from './components/OperatorControlPanel';
 import { PlaybookCard } from './components/PlaybookCard';
 import { RequestHeader } from './components/RequestHeader';
@@ -261,6 +262,7 @@ export default function App() {
           <IntakeSpotlightCard request={runtime.request} snapshot={requestSnapshot} example={selectedExample} />
           <ScenarioSelector options={scenarioOptions} value={scenarioId} onChange={handleScenarioChange} />
         </div>
+        <ModeSwitchCard example={selectedExample} />
         <ExamplesPanel
           examples={exampleSummaries}
           selectedExampleId={selectedExampleId}
@@ -272,6 +274,7 @@ export default function App() {
           autonomyMode={runtime.request.autonomyMode}
           currentStageLabel={selectedStage.label}
           snapshot={requestSnapshot}
+          example={selectedExample}
           onApprove={() => performAction('approve')}
           onReleaseExecution={() => performAction('release-execution')}
           onDeny={() => performAction('deny')}
@@ -285,6 +288,7 @@ export default function App() {
           authorityBoundary={runtime.authorityBoundary}
           executionSubstrate={runtime.executionSubstrate}
           snapshot={requestSnapshot}
+          example={selectedExample}
         />
         <WorkflowRail stages={runtime.stages} selectedStageId={selectedStageId} onSelect={setSelectedStageId} snapshot={requestSnapshot} />
 
@@ -302,18 +306,18 @@ export default function App() {
             />
           </div>
           <div className="space-y-6">
-            <HumanCheckpointsPanel checkpoints={runtime.humanCheckpoints} snapshot={requestSnapshot} />
+            <HumanCheckpointsPanel checkpoints={runtime.humanCheckpoints} snapshot={requestSnapshot} example={selectedExample} />
             <TimelinePanel timeline={runtime.timeline} selectedEventId={selectedEventId} onSelect={setSelectedEventId} requestTimeline={requestTimeline?.events} example={selectedExample} />
           </div>
         </div>
 
         <div className="grid gap-6 xl:grid-cols-[1.08fr_0.92fr]">
-          <CommandEnvelopePanel envelope={runtime.commandEnvelope} substrate={runtime.executionSubstrate} snapshot={requestSnapshot} />
-          <ExecutionTracePanel steps={runtime.executionSteps} snapshot={requestSnapshot} />
+          <CommandEnvelopePanel envelope={runtime.commandEnvelope} substrate={runtime.executionSubstrate} snapshot={requestSnapshot} example={selectedExample} />
+          <ExecutionTracePanel steps={runtime.executionSteps} snapshot={requestSnapshot} example={selectedExample} />
         </div>
 
         <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-          <PlaybookCard playbook={runtime.playbook} snapshot={requestSnapshot} />
+          <PlaybookCard playbook={runtime.playbook} snapshot={requestSnapshot} example={selectedExample} />
           <LiveExecutionPanel entries={liveExecution} />
         </div>
       </div>

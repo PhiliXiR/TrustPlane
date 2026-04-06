@@ -1,4 +1,5 @@
 import type { CommandEnvelope, ExecutionSubstrate } from '../types';
+import type { IntakeExampleFixture } from '../runtime/exampleTypes';
 import type { RequestSnapshot } from '../runtime/requestTypes';
 import { SectionHeader, StatusBadge, SurfaceCard } from './ui';
 
@@ -6,9 +7,10 @@ type Props = {
   envelope: CommandEnvelope;
   substrate: ExecutionSubstrate;
   snapshot?: RequestSnapshot | null;
+  example?: IntakeExampleFixture | null;
 };
 
-export function CommandEnvelopePanel({ envelope, substrate, snapshot }: Props) {
+export function CommandEnvelopePanel({ envelope, substrate, snapshot, example }: Props) {
   const approvalState = snapshot?.pendingAction.status ?? envelope.approvalState;
   const actionSummary = snapshot?.pendingAction.summary;
   const riskSummary = snapshot?.pendingAction.riskSummary;
@@ -17,7 +19,7 @@ export function CommandEnvelopePanel({ envelope, substrate, snapshot }: Props) {
       <SectionHeader
         title="Command envelope"
         description="The governed command package the current operator agent may execute through the selected substrate."
-        meta={<StatusBadge tone="accent">{approvalState}</StatusBadge>}
+        meta={<div className="flex flex-wrap gap-2"><StatusBadge tone="accent">{approvalState}</StatusBadge>{example ? <StatusBadge tone="warn">example</StatusBadge> : null}</div>}
       />
 
       <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">

@@ -1,4 +1,5 @@
 import type { AgentAuthorityBoundary, DelegationState, ExecutionSubstrate, OperatorAgent, OwnershipState } from '../types';
+import type { IntakeExampleFixture } from '../runtime/exampleTypes';
 import type { RequestSnapshot } from '../runtime/requestTypes';
 import { SectionHeader, StatusBadge, SurfaceCard } from './ui';
 
@@ -9,6 +10,7 @@ type Props = {
   authorityBoundary: AgentAuthorityBoundary;
   executionSubstrate: ExecutionSubstrate;
   snapshot?: RequestSnapshot | null;
+  example?: IntakeExampleFixture | null;
 };
 
 export function OperatorControlPanel({
@@ -18,6 +20,7 @@ export function OperatorControlPanel({
   authorityBoundary,
   executionSubstrate,
   snapshot,
+  example,
 }: Props) {
   const currentOwner = snapshot?.request.currentOwner ?? ownership.currentOwner.name;
   const delegationMode = snapshot?.trustState.delegationMode ?? delegation.delegationMode.split('_').join(' ');
@@ -28,6 +31,7 @@ export function OperatorControlPanel({
       <SectionHeader
         title="Operator flow and authority"
         description="The shortest explanation of who owns the request, how it got here, and what the current operator can actually do."
+        meta={example ? <StatusBadge tone="warn">example</StatusBadge> : undefined}
       />
 
       <div className="mt-5 grid gap-4 xl:grid-cols-3">

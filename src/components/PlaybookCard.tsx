@@ -1,17 +1,18 @@
 import type { Playbook } from '../types';
+import type { IntakeExampleFixture } from '../runtime/exampleTypes';
 import type { RequestSnapshot } from '../runtime/requestTypes';
 import { derivePlaybookSummary } from '../runtime/requestViewAdapters';
 import { SectionHeader, StatusBadge, SurfaceCard } from './ui';
 
-type Props = { playbook: Playbook; snapshot?: RequestSnapshot | null };
+type Props = { playbook: Playbook; snapshot?: RequestSnapshot | null; example?: IntakeExampleFixture | null };
 
-export function PlaybookCard({ playbook, snapshot }: Props) {
+export function PlaybookCard({ playbook, snapshot, example }: Props) {
   const resolvedPlaybook = derivePlaybookSummary(snapshot, playbook);
   return (
     <section className="rounded-3xl border border-line bg-panel/95 p-6 shadow-panel">
       <SectionHeader
         title="Playbook"
-        meta={<StatusBadge>{resolvedPlaybook.allowedTools.length} tools</StatusBadge>}
+        meta={<div className="flex flex-wrap gap-2"><StatusBadge>{resolvedPlaybook.allowedTools.length} tools</StatusBadge>{example ? <StatusBadge tone="warn">example</StatusBadge> : null}</div>}
       />
 
       <div className="mt-5 grid gap-5 lg:grid-cols-[0.85fr_1.15fr] text-sm text-slate-200">

@@ -1,10 +1,11 @@
 import type { ExecutionStep } from '../types';
+import type { IntakeExampleFixture } from '../runtime/exampleTypes';
 import type { RequestSnapshot } from '../runtime/requestTypes';
 import { deriveExecutionTrace } from '../runtime/requestViewAdapters';
 
-type Props = { steps: ExecutionStep[]; snapshot?: RequestSnapshot | null };
+type Props = { steps: ExecutionStep[]; snapshot?: RequestSnapshot | null; example?: IntakeExampleFixture | null };
 
-export function ExecutionTracePanel({ steps, snapshot }: Props) {
+export function ExecutionTracePanel({ steps, snapshot, example }: Props) {
   const resolvedSteps = deriveExecutionTrace(snapshot, steps);
   return (
     <section className="rounded-3xl border border-line bg-panel/95 p-6 shadow-panel">
@@ -13,7 +14,10 @@ export function ExecutionTracePanel({ steps, snapshot }: Props) {
           <h2 className="text-lg font-semibold text-slate-50">Execution trace</h2>
           <p className="mt-1 text-sm text-muted">Separate the governed execution path from workflow movement and policy authority.</p>
         </div>
-        <span className="rounded-full border border-line bg-ink/60 px-3 py-1 text-xs text-slate-300">{resolvedSteps.length} steps</span>
+        <div className="flex flex-wrap gap-2">
+          <span className="rounded-full border border-line bg-ink/60 px-3 py-1 text-xs text-slate-300">{resolvedSteps.length} steps</span>
+          {example ? <span className="rounded-full border border-warn/30 bg-warn/10 px-3 py-1 text-xs text-warn">example</span> : null}
+        </div>
       </div>
 
       <div className="mt-5 space-y-3">

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import type { IntakeExampleFixture } from '../runtime/exampleTypes';
 import type { RequestSnapshot } from '../runtime/requestTypes';
 import { StatusBadge } from './ui';
 
@@ -12,6 +13,7 @@ type Props = {
   onResume: () => void;
   onReleaseExecution: () => void;
   snapshot?: RequestSnapshot | null;
+  example?: IntakeExampleFixture | null;
 };
 
 type PendingAction = 'approve' | 'release' | 'deny' | 'pause' | 'resume' | null;
@@ -26,6 +28,7 @@ export function ApprovalBar({
   onResume,
   onReleaseExecution,
   snapshot,
+  example,
 }: Props) {
   const [pendingAction, setPendingAction] = useState<PendingAction>(null);
   const [lastAction, setLastAction] = useState<string | null>(null);
@@ -74,6 +77,7 @@ export function ApprovalBar({
               <StatusBadge tone={runtimeLive ? 'success' : paused ? 'warn' : denied ? 'warn' : 'violet'}>
                 {runtimeLive ? 'runtime active' : paused ? 'paused' : denied ? 'denied' : 'review state'}
               </StatusBadge>
+              {example ? <StatusBadge tone="warn">example</StatusBadge> : null}
             </div>
             <div className="mt-1 text-sm text-muted">Use this bar to release, hold, or revoke authority as the request moves through the governed runtime.</div>
             {snapshot ? (
