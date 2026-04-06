@@ -15,16 +15,21 @@ import { TimelinePanel } from './components/TimelinePanel';
 import { WorkflowRail } from './components/WorkflowRail';
 import { MetricCard } from './components/ui';
 import {
+  approveRequestById,
   approveRuntimeRequest,
   changeScenario,
+  denyRequestById,
   denyRuntimeRequest,
   fetchRequestSnapshot,
   fetchRequestTimeline,
   fetchRuntimeSnapshot,
   fetchScenarioOptions,
   getEventsUrl,
+  pauseRequestById,
   pauseRuntimeRequest,
   releaseExecutionAuthority,
+  releaseExecutionById,
+  resumeRequestById,
   resumeRuntimeRequest,
 } from './api';
 import type { RequestSnapshot, RequestTimelineResponse } from './runtime/requestTypes';
@@ -195,6 +200,8 @@ export default function App() {
     );
   }
 
+  const requestId = requestSnapshot?.request.requestId ?? runtime.request.intake?.requestId ?? null;
+
   return (
     <div className="min-h-screen bg-transparent px-4 py-8 text-slate-100 lg:px-8">
       <div className="mx-auto flex max-w-[1500px] flex-col gap-5 lg:gap-6">
@@ -228,11 +235,11 @@ export default function App() {
           autonomyMode={runtime.request.autonomyMode}
           currentStageLabel={selectedStage.label}
           snapshot={requestSnapshot}
-          onApprove={() => refreshFromAction(approveRuntimeRequest()).catch((err) => setError(String(err)))}
-          onReleaseExecution={() => refreshFromAction(releaseExecutionAuthority()).catch((err) => setError(String(err)))}
-          onDeny={() => refreshFromAction(denyRuntimeRequest()).catch((err) => setError(String(err)))}
-          onPause={() => refreshFromAction(pauseRuntimeRequest()).catch((err) => setError(String(err)))}
-          onResume={() => refreshFromAction(resumeRuntimeRequest()).catch((err) => setError(String(err)))}
+          onApprove={() => refreshFromAction((requestId ? approveRequestById(requestId) : approveRuntimeRequest())).catch((err) => setError(String(err)))}
+          onReleaseExecution={() => refreshFromAction((requestId ? releaseExecutionById(requestId) : releaseExecutionAuthority())).catch((err) => setError(String(err)))}
+          onDeny={() => refreshFromAction((requestId ? denyRequestById(requestId) : denyRuntimeRequest())).catch((err) => setError(String(err)))}
+          onPause={() => refreshFromAction((requestId ? pauseRequestById(requestId) : pauseRuntimeRequest())).catch((err) => setError(String(err)))}
+          onResume={() => refreshFromAction((requestId ? resumeRequestById(requestId) : resumeRuntimeRequest())).catch((err) => setError(String(err)))}
         />
         <OperatorControlPanel
           operators={runtime.operators}

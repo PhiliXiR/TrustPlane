@@ -457,11 +457,15 @@ Implemented in code:
 - operator control panel migrated to prefer projected owner/trust/workflow context
 
 Still not done:
-- request-scoped write/action endpoints
 - full replacement of scenario-global API usage
 - broader migration of remaining panels like workflow rail and human checkpoints
 - stronger request-native evidence/artifact model
 - removal of scenario-backed transitional shaping
+
+Newly implemented in a thin bridge form:
+- request-scoped action endpoints for approve, deny, pause, resume, and release execution
+- frontend request-scoped action helpers
+- approval bar now prefers request-scoped actions when a request ID is available
 
 ## Summary
 

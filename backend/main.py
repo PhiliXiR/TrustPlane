@@ -61,6 +61,46 @@ def get_request_timeline(request_id: str):
     return project_request_timeline(scenario)
 
 
+@app.post('/api/requests/{request_id}/approve', response_model=RuntimeScenario)
+def approve_request(request_id: str):
+    scenario = find_scenario_by_request_id(request_id)
+    if scenario is not None:
+        set_scenario(scenario.id)
+    return approve_current_request()
+
+
+@app.post('/api/requests/{request_id}/deny', response_model=RuntimeScenario)
+def deny_request(request_id: str):
+    scenario = find_scenario_by_request_id(request_id)
+    if scenario is not None:
+        set_scenario(scenario.id)
+    return deny_current_request()
+
+
+@app.post('/api/requests/{request_id}/pause', response_model=RuntimeScenario)
+def pause_request(request_id: str):
+    scenario = find_scenario_by_request_id(request_id)
+    if scenario is not None:
+        set_scenario(scenario.id)
+    return pause_current_request()
+
+
+@app.post('/api/requests/{request_id}/resume', response_model=RuntimeScenario)
+def resume_request(request_id: str):
+    scenario = find_scenario_by_request_id(request_id)
+    if scenario is not None:
+        set_scenario(scenario.id)
+    return resume_current_request()
+
+
+@app.post('/api/requests/{request_id}/release-execution', response_model=RuntimeScenario)
+def release_request_execution(request_id: str):
+    scenario = find_scenario_by_request_id(request_id)
+    if scenario is not None:
+        set_scenario(scenario.id)
+    return release_execution_authority()
+
+
 @app.get('/api/events')
 def events():
     q = subscribe_events()
