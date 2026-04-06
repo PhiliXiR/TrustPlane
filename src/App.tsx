@@ -3,7 +3,6 @@ import { ApprovalBar } from './components/ApprovalBar';
 import { CommandEnvelopePanel } from './components/CommandEnvelopePanel';
 import { DecisionPanel } from './components/DecisionPanel';
 import { ExecutionTracePanel } from './components/ExecutionTracePanel';
-import { ExamplesPanel } from './components/ExamplesPanel';
 import { HumanCheckpointsPanel } from './components/HumanCheckpointsPanel';
 import { InspectionDrawer } from './components/InspectionDrawer';
 import { IntakeSpotlightCard } from './components/IntakeSpotlightCard';
@@ -12,7 +11,7 @@ import { ModeSwitchCard } from './components/ModeSwitchCard';
 import { OperatorControlPanel } from './components/OperatorControlPanel';
 import { PlaybookCard } from './components/PlaybookCard';
 import { RequestHeader } from './components/RequestHeader';
-import { ScenarioSelector } from './components/ScenarioSelector';
+import { SourceSelector } from './components/SourceSelector';
 import { TimelinePanel } from './components/TimelinePanel';
 import { WorkflowRail } from './components/WorkflowRail';
 import { MetricCard } from './components/ui';
@@ -39,6 +38,7 @@ import type { RequestSnapshot, RequestTimelineResponse } from './runtime/request
 import type { RuntimeScenario } from './runtime/scenarioTypes';
 
 type ScenarioOption = { id: string; label: string };
+type SourceOption = { id: string; label: string; kind: 'runtime' | 'example'; category?: string };
 type ExecutionLogEntry = { id: string; stream: 'stdout' | 'stderr'; message: string };
 type RuntimeSnapshotEventPayload = RuntimeScenario | { scenario?: RuntimeScenario; requestId?: string; scenarioId?: string };
 type ExecutionStreamPayload = { eventType: string; stream: 'stdout' | 'stderr'; message: string; requestId?: string };
@@ -46,6 +46,8 @@ type ExecutionStreamPayload = { eventType: string; stream: 'stdout' | 'stderr'; 
 export default function App() {
   const [scenarioId, setScenarioId] = useState('');
   const [scenarioOptions, setScenarioOptions] = useState<ScenarioOption[]>([]);
+  const [sourceOptions, setSourceOptions] = useState<SourceOption[]>([]);
+  const [selectedSourceId, setSelectedSourceId] = useState('');
   const [runtime, setRuntime] = useState<RuntimeScenario | null>(null);
   const [selectedStageId, setSelectedStageId] = useState('');
   const [selectedEventId, setSelectedEventId] = useState('');
@@ -64,6 +66,12 @@ export default function App() {
       .then(async ([options, snapshot, examples]) => {
         setScenarioOptions(options);
         setExampleSummaries(examples);
+        const unifiedSources: SourceOption[] = [
+          ...options.map((option) => ({ id: `runtime:${option.id}`, label: option.label, kind: 'runtime' as const })),
+          ...examples.map((example) => ({ id: `example:${example.exampleId}`, label: example.label, kind: 'example' as const, category: example.category })),
+        ];
+        setSourceOptions(unifiedSources);
+        setSelectedSourceId(`runtime:${snapshot.id}`);
         setSelectedExampleId(examples[0]?.exampleId ?? '');
         if (examples[0]?.exampleId) {
           const example = await fetchExample(examples[0].exampleId);
@@ -170,19 +178,31 @@ export default function App() {
   async function handleScenarioChange(nextScenarioId: string) {
     try {
       setLiveExecution([]);
+      setSelectedExample(null);
       await refreshFromAction(changeScenario(nextScenarioId));
+      setSelectedSourceId(`runtime:${nextScenarioId}`);
     } catch (err) {
       setError(String(err));
     }
   }
 
-  async function handleExampleSelect(exampleId: string) {
-    setSelectedExampleId(exampleId);
-    try {
-      const example = await fetchExample(exampleId);
-      setSelectedExample(example);
-    } catch (err) {
-      setError(String(err));
+  async function handleSourceChange(sourceId: string) {
+    setSelectedSourceId(sourceId);
+    if (sourceId.startsWith('runtime:')) {
+      const runtimeId = sourceId.replace('runtime:', '');
+      await handleScenarioChange(runtimeId);
+      return;
+    }
+
+    if (sourceId.startsWith('example:')) {
+      const exampleId = sourceId.replace('example:', '');
+      setSelectedExampleId(exampleId);
+      try {
+        const example = await fetchExample(exampleId);
+        setSelectedExample(example);
+      } catch (err) {
+        setError(String(err));
+      }
     }
   }
 
@@ -260,15 +280,9 @@ export default function App() {
         <RequestHeader request={runtime.request} trustModel={runtime.trustModel} snapshot={requestSnapshot} example={selectedExample} />
         <div className="grid gap-6 xl:grid-cols-[1.08fr_0.92fr]">
           <IntakeSpotlightCard request={runtime.request} snapshot={requestSnapshot} example={selectedExample} />
-          <ScenarioSelector options={scenarioOptions} value={scenarioId} onChange={handleScenarioChange} />
+          <SourceSelector options={sourceOptions} value={selectedSourceId} onChange={handleSourceChange} />
         </div>
         <ModeSwitchCard example={selectedExample} />
-        <ExamplesPanel
-          examples={exampleSummaries}
-          selectedExampleId={selectedExampleId}
-          selectedExample={selectedExample}
-          onSelect={handleExampleSelect}
-        />
         <ApprovalBar
           requestState={runtime.request.state}
           autonomyMode={runtime.request.autonomyMode}
