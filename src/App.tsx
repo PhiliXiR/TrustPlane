@@ -122,9 +122,15 @@ export default function App() {
     return runtime.timeline.find((event) => event.id === selectedEventId) ?? runtime.timeline[0];
   }, [runtime, selectedEventId]);
 
-  const selectedInspection = runtime && selectedEvent
-    ? runtime.inspections[selectedEvent.inspectionKey ?? 'request']
-    : null;
+  const selectedRequestEvent = useMemo(() => {
+    return requestTimeline?.events.find((event) => event.eventId === selectedEventId) ?? requestTimeline?.events[0] ?? null;
+  }, [requestTimeline, selectedEventId]);
+
+  const selectedInspection = useMemo(() => {
+    if (!runtime) return null;
+    const inspectionKey = selectedRequestEvent?.details?.inspectionKey as string | undefined;
+    return runtime.inspections[inspectionKey ?? selectedEvent?.inspectionKey ?? 'request'] ?? runtime.inspections.request;
+  }, [runtime, selectedEvent, selectedRequestEvent]);
 
   async function refreshFromAction(action: Promise<RuntimeScenario>) {
     const snapshot = await action;
@@ -214,7 +220,7 @@ export default function App() {
 
         <RequestHeader request={runtime.request} trustModel={runtime.trustModel} snapshot={requestSnapshot} />
         <div className="grid gap-6 xl:grid-cols-[1.08fr_0.92fr]">
-          <IntakeSpotlightCard request={runtime.request} />
+          <IntakeSpotlightCard request={runtime.request} snapshot={requestSnapshot} />
           <ScenarioSelector options={scenarioOptions} value={scenarioId} onChange={handleScenarioChange} />
         </div>
         <ApprovalBar
@@ -244,6 +250,7 @@ export default function App() {
               record={selectedInspection}
               eventTitle={selectedEvent.title}
               eventCategory={selectedEvent.category}
+              requestEvent={selectedRequestEvent}
               onToggle={() => setInspectionOpen((value) => !value)}
             />
           </div>
@@ -254,7 +261,7 @@ export default function App() {
         </div>
 
         <div className="grid gap-6 xl:grid-cols-[1.08fr_0.92fr]">
-          <CommandEnvelopePanel envelope={runtime.commandEnvelope} substrate={runtime.executionSubstrate} />
+          <CommandEnvelopePanel envelope={runtime.commandEnvelope} substrate={runtime.executionSubstrate} snapshot={requestSnapshot} />
           <ExecutionTracePanel steps={runtime.executionSteps} />
         </div>
 

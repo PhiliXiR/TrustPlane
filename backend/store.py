@@ -231,6 +231,15 @@ def _derive_artifact_summary(scenario: RuntimeScenario):
     )
 
 
+def project_inspection_record(scenario: RuntimeScenario, inspection_key: str | None):
+    key = inspection_key or 'request'
+    if key in scenario.inspections:
+        return deepcopy(scenario.inspections[key])
+    if 'artifact' in scenario.inspections:
+        return deepcopy(scenario.inspections['artifact'])
+    return deepcopy(next(iter(scenario.inspections.values())))
+
+
 def project_request_snapshot(scenario: RuntimeScenario):
     intake = scenario.request.intake
     request_id = intake.requestId if intake else scenario.id
@@ -348,7 +357,10 @@ def project_request_timeline(scenario: RuntimeScenario):
                 summary=event.detail,
                 timestamp=event.time,
                 actor=infer_actor(event),
-                details={'inspectionKey': event.inspectionKey} if event.inspectionKey else None,
+                details={
+                    'inspectionKey': event.inspectionKey,
+                    'requestState': scenario.request.state,
+                } if event.inspectionKey else {'requestState': scenario.request.state},
                 artifactRefs=['artifact'] if event.inspectionKey == 'artifact' else [],
             )
         )
