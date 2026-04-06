@@ -469,6 +469,7 @@ Newly implemented in a thin bridge form:
 - request-aware SSE payload enrichment for runtime snapshots and execution-stream events
 - thin request-scoped stream endpoint at `/api/requests/{request_id}/stream`
 - frontend request-scoped action helper path
+- frontend now prefers the request-scoped stream when a request ID is available, with global stream fallback
 - approval bar now prefers request-scoped actions when a request ID is available
 - workflow rail and human checkpoints now derive contract-aware summaries from the request snapshot
 - execution trace and playbook surfaces now prefer contract-derived summaries when a request snapshot exists

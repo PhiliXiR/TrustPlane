@@ -23,6 +23,7 @@ import {
   fetchRuntimeSnapshot,
   fetchScenarioOptions,
   getEventsUrl,
+  getRequestEventsUrl,
   pauseRuntimeRequest,
   performRequestAction,
   releaseExecutionAuthority,
@@ -63,10 +64,15 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    const source = new EventSource(getEventsUrl());
+    const activeRequestId = requestSnapshot?.request.requestId ?? runtime?.request.intake?.requestId ?? null;
+    const source = new EventSource(activeRequestId ? getRequestEventsUrl(activeRequestId) : getEventsUrl());
 
     source.addEventListener('runtime.snapshot', (event) => {
-      const snapshot = JSON.parse((event as MessageEvent).data) as RuntimeScenario;
+      const payload = JSON.parse((event as MessageEvent).data) as { scenario?: RuntimeScenario; requestId?: string; scenarioId?: string } | RuntimeScenario;
+      const snapshot = typeof payload === 'object' && payload !== null && 'scenario' in payload
+        ? payload.scenario ?? null
+        : (payload as RuntimeScenario);
+      if (!snapshot) return;
       setRuntime(snapshot);
       setScenarioId(snapshot.id);
       setSelectedStageId((current) => current || snapshot.stages.find((stage) => stage.status === 'current')?.id || snapshot.stages[0].id);
@@ -75,7 +81,8 @@ export default function App() {
     });
 
     source.addEventListener('execution.stream', (event) => {
-      const payload = JSON.parse((event as MessageEvent).data) as { eventType: string; stream: 'stdout' | 'stderr'; message: string };
+      const payload = JSON.parse((event as MessageEvent).data) as { eventType: string; stream: 'stdout' | 'stderr'; message: string; requestId?: string };
+      if (activeRequestId && payload.requestId && payload.requestId !== activeRequestId) return;
       setLiveExecution((current) => [...current, { id: `${payload.eventType}-${current.length + 1}`, stream: payload.stream, message: payload.message }]);
     });
 
@@ -84,7 +91,7 @@ export default function App() {
     };
 
     return () => source.close();
-  }, []);
+  }, [requestSnapshot?.request.requestId, runtime?.request.intake?.requestId]);
 
   const selectedStage = useMemo(() => {
     if (!runtime) return null;
