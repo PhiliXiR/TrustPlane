@@ -1,10 +1,11 @@
 import type { Stage } from '../types';
+import type { IntakeExampleFixture } from '../runtime/exampleTypes';
 import type { RequestSnapshot } from '../runtime/requestTypes';
 import { SectionHeader, StatusBadge, SurfaceCard } from './ui';
 
-type Props = { stage: Stage; snapshot?: RequestSnapshot | null };
+type Props = { stage: Stage; snapshot?: RequestSnapshot | null; example?: IntakeExampleFixture | null };
 
-export function DecisionPanel({ stage, snapshot }: Props) {
+export function DecisionPanel({ stage, snapshot, example }: Props) {
   const currentSummary = snapshot?.workflowState.stateReason ?? stage.explanation;
   const policyBasis = snapshot?.policyDecision.basis ?? stage.rule;
   const evidenceItems = snapshot
@@ -20,7 +21,7 @@ export function DecisionPanel({ stage, snapshot }: Props) {
     <section className="rounded-3xl border border-line bg-panel/95 p-6 shadow-panel">
       <SectionHeader
         title="Decision explanation"
-        meta={<StatusBadge tone="accent">{stage.label}</StatusBadge>}
+        meta={<div className="flex flex-wrap gap-2"><StatusBadge tone="accent">{stage.label}</StatusBadge>{example ? <StatusBadge tone="warn">example</StatusBadge> : null}</div>}
       />
 
       <div className="mt-5 grid gap-5 lg:grid-cols-2">

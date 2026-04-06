@@ -33,6 +33,7 @@ import {
   resumeRuntimeRequest,
 } from './api';
 import type { IntakeExampleFixture, IntakeExampleSummary } from './runtime/exampleTypes';
+import { deriveExampleModeSummary } from './runtime/exampleViewAdapters';
 import type { RequestSnapshot, RequestTimelineResponse } from './runtime/requestTypes';
 import type { RuntimeScenario } from './runtime/scenarioTypes';
 
@@ -214,6 +215,7 @@ export default function App() {
   }
 
   const requestId = requestSnapshot?.request.requestId ?? resolveRequestId(runtime);
+  const exampleMode = deriveExampleModeSummary(selectedExample);
 
   function performAction(action: 'approve' | 'deny' | 'pause' | 'resume' | 'release-execution') {
     if (requestId) {
@@ -241,22 +243,22 @@ export default function App() {
         ) : null}
 
         <div className="grid gap-3 lg:grid-cols-4">
-          <MetricCard label="Request state" value={runtime.request.state} tone="accent" emphasis="strong" />
-          <MetricCard label="Current owner" value={runtime.ownership.currentOwner.name} />
+          <MetricCard label="Request state" value={exampleMode?.state ?? runtime.request.state} tone="accent" emphasis="strong" />
+          <MetricCard label="Current owner" value={exampleMode?.owner ?? runtime.ownership.currentOwner.name} />
           <MetricCard label="Selected stage" value={selectedStage.label} tone="violet" />
-          <MetricCard label="Timeline events" value={String(requestTimeline?.events.length ?? runtime.timeline.length)} tone="success" />
+          <MetricCard label="Timeline events" value={String(exampleMode?.timelineCount ?? requestTimeline?.events.length ?? runtime.timeline.length)} tone="success" />
         </div>
 
         <div className="grid gap-3 lg:grid-cols-4">
           <MetricCard label="Authority status" value={runtime.commandEnvelope.approvalState} tone="violet" emphasis="strong" />
           <MetricCard label="Execution substrate" value={runtime.executionSubstrate.displayName} />
           <MetricCard label="Autonomy mode" value={runtime.request.autonomyMode} tone="accent" />
-          <MetricCard label="Execution logs" value={String(liveExecution.length)} tone="success" />
+          <MetricCard label={selectedExample ? 'Example evidence' : 'Execution logs'} value={String(selectedExample ? exampleMode?.evidenceCount ?? 0 : liveExecution.length)} tone="success" />
         </div>
 
-        <RequestHeader request={runtime.request} trustModel={runtime.trustModel} snapshot={requestSnapshot} />
+        <RequestHeader request={runtime.request} trustModel={runtime.trustModel} snapshot={requestSnapshot} example={selectedExample} />
         <div className="grid gap-6 xl:grid-cols-[1.08fr_0.92fr]">
-          <IntakeSpotlightCard request={runtime.request} snapshot={requestSnapshot} />
+          <IntakeSpotlightCard request={runtime.request} snapshot={requestSnapshot} example={selectedExample} />
           <ScenarioSelector options={scenarioOptions} value={scenarioId} onChange={handleScenarioChange} />
         </div>
         <ExamplesPanel
@@ -288,7 +290,7 @@ export default function App() {
 
         <div className="grid gap-6 xl:grid-cols-[1.08fr_0.92fr]">
           <div className="space-y-6">
-            <DecisionPanel stage={selectedStage} snapshot={requestSnapshot} />
+            <DecisionPanel stage={selectedStage} snapshot={requestSnapshot} example={selectedExample} />
             <InspectionDrawer
               open={inspectionOpen}
               record={selectedInspection}
@@ -301,7 +303,7 @@ export default function App() {
           </div>
           <div className="space-y-6">
             <HumanCheckpointsPanel checkpoints={runtime.humanCheckpoints} snapshot={requestSnapshot} />
-            <TimelinePanel timeline={runtime.timeline} selectedEventId={selectedEventId} onSelect={setSelectedEventId} requestTimeline={requestTimeline?.events} />
+            <TimelinePanel timeline={runtime.timeline} selectedEventId={selectedEventId} onSelect={setSelectedEventId} requestTimeline={requestTimeline?.events} example={selectedExample} />
           </div>
         </div>
 

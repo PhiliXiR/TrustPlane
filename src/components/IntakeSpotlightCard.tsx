@@ -1,12 +1,14 @@
 import type { RequestModel } from '../types';
+import type { IntakeExampleFixture } from '../runtime/exampleTypes';
 import type { RequestSnapshot } from '../runtime/requestTypes';
 
 type Props = {
   request: RequestModel;
   snapshot?: RequestSnapshot | null;
+  example?: IntakeExampleFixture | null;
 };
 
-export function IntakeSpotlightCard({ request, snapshot }: Props) {
+export function IntakeSpotlightCard({ request, snapshot, example }: Props) {
   const intake = request.intake;
 
   if (!intake) {
@@ -21,7 +23,7 @@ export function IntakeSpotlightCard({ request, snapshot }: Props) {
     <section className="rounded-[28px] border border-accent/30 bg-[linear-gradient(135deg,rgba(104,234,255,0.13),rgba(112,86,255,0.08))] p-5 shadow-panel lg:p-6">
       <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <div className="text-[11px] uppercase tracking-[0.22em] text-accent">Newest governed intake</div>
+          <div className="text-[11px] uppercase tracking-[0.22em] text-accent">{example ? 'Selected example intake' : 'Newest governed intake'}</div>
           <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-50">{snapshot?.request.title ?? request.title}</h2>
           <p className="mt-2 max-w-3xl text-sm leading-7 text-slate-200">
             {(snapshot?.intakeStatus.clarificationNeeded ?? intake.clarificationNeeded)

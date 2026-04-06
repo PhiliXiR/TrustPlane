@@ -1,4 +1,5 @@
 import type { RequestModel } from '../types';
+import type { IntakeExampleFixture } from '../runtime/exampleTypes';
 import type { RequestSnapshot } from '../runtime/requestTypes';
 import { SectionHeader, StatusBadge, SurfaceCard } from './ui';
 
@@ -11,6 +12,7 @@ type Props = {
     downgradeRule: string;
   };
   snapshot?: RequestSnapshot | null;
+  example?: IntakeExampleFixture | null;
 };
 
 const pillStyles: Record<string, string> = {
@@ -23,7 +25,7 @@ const pillStyles: Record<string, string> = {
   'human-approved execution': 'border-accent/30 text-accent bg-accent/10',
 };
 
-export function RequestHeader({ request, trustModel, snapshot }: Props) {
+export function RequestHeader({ request, trustModel, snapshot, example }: Props) {
   const intake = request.intake;
   const workflow = snapshot?.request.workflowCandidate ?? intake?.candidateWorkflows[0] ?? 'unclassified_intake';
   const trustLevel = snapshot?.trustState.trustLevel ?? trustModel.level.toLowerCase();
@@ -49,6 +51,7 @@ export function RequestHeader({ request, trustModel, snapshot }: Props) {
               <StatusBadge tone="accent">Execution record</StatusBadge>
               <StatusBadge tone="violet">Human-governed</StatusBadge>
               <StatusBadge tone="success">Operator-visible</StatusBadge>
+              {example ? <StatusBadge tone="warn">Example mode</StatusBadge> : null}
             </div>
           </div>
 

@@ -1,4 +1,5 @@
 import type { TimelineEvent } from '../types';
+import type { IntakeExampleFixture } from '../runtime/exampleTypes';
 import type { RequestTimelineEvent } from '../runtime/requestTypes';
 import { SectionHeader, StatusBadge } from './ui';
 
@@ -7,6 +8,7 @@ type Props = {
   selectedEventId: string;
   onSelect: (id: string) => void;
   requestTimeline?: RequestTimelineEvent[] | null;
+  example?: IntakeExampleFixture | null;
 };
 
 const categoryTone: Record<TimelineEvent['category'], 'accent' | 'violet' | 'success' | 'warn' | 'neutral'> = {
@@ -31,7 +33,7 @@ const familyTone: Record<RequestTimelineEvent['family'], 'accent' | 'violet' | '
   ownership: 'accent',
 };
 
-export function TimelinePanel({ timeline, selectedEventId, onSelect, requestTimeline }: Props) {
+export function TimelinePanel({ timeline, selectedEventId, onSelect, requestTimeline, example }: Props) {
   const projected = requestTimeline && requestTimeline.length > 0;
   const selectedEvent = projected
     ? requestTimeline.find((event) => event.eventId === selectedEventId) ?? requestTimeline[requestTimeline.length - 1]
@@ -42,7 +44,7 @@ export function TimelinePanel({ timeline, selectedEventId, onSelect, requestTime
       <SectionHeader
         title="Timeline"
         description="Select an event to inspect the evidence and context attached to it."
-        meta={<StatusBadge>{timeline.length} events</StatusBadge>}
+        meta={<div className="flex flex-wrap gap-2"><StatusBadge>{projected ? requestTimeline?.length ?? 0 : timeline.length} events</StatusBadge>{example ? <StatusBadge tone="warn">example</StatusBadge> : null}</div>}
       />
 
       {selectedEvent ? (
