@@ -47,6 +47,8 @@ This index groups the current TrustPlane docs by purpose so the repo is easier t
 ## Planning and implementation
 
 - `implementation-backlog.md` — concrete implementation queue derived from the MVP contract and roadmap
+- `current-code-vs-mvp-contract.md` — gap map between the current repo implementation and the newer MVP contract
+- `first-implementation-cut.md` — smallest practical contract-to-code migration pass
 
 ## Suggested reading order
 

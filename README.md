@@ -218,6 +218,8 @@ npm run build
 - `docs/mvp-api-shape.md` — first practical backend API shape
 - `docs/event-taxonomy.md` — stable operator-facing event vocabulary
 - `docs/implementation-backlog.md` — concrete implementation queue for the first credible slice
+- `docs/current-code-vs-mvp-contract.md` — gap map between current code and the newer MVP contract
+- `docs/first-implementation-cut.md` — smallest practical contract-to-code migration pass
 - `docs/integration-contract.md` — broader runtime contract direction
 - `docs/runtime-adapter-architecture.md` — backend adapter/projection model
 - `docs/minimal-operator-team.md` — small deployable operator team
