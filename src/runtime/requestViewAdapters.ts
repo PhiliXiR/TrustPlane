@@ -1,4 +1,5 @@
 import type { ExecutionStep, HumanCheckpoint, InspectionRecord, Playbook, Stage } from '../types';
+import type { IntakeExampleFixture } from './exampleTypes';
 import type { RequestSnapshot, RequestTimelineEvent } from './requestTypes';
 
 export function deriveWorkflowRailStages(snapshot: RequestSnapshot | null | undefined, fallbackStages: Stage[]): Stage[] {
@@ -67,6 +68,62 @@ export function deriveWorkflowRailStages(snapshot: RequestSnapshot | null | unde
     next:
       stage.id === workflowState.state
         ? workflowState.nextStep
+        : stage.next,
+  }));
+}
+
+export function deriveWorkflowRailStagesFromExample(example: IntakeExampleFixture | null | undefined, fallbackStages: Stage[]): Stage[] {
+  if (!example) return fallbackStages;
+
+  const events = new Set(example.expectedTimelineEvents);
+  const state = example.expectedTrustPlane.currentState ?? 'awaiting_review';
+
+  const stageFor = (id: string): Stage['status'] => {
+    if (id === 'intake') {
+      return events.has('intake.request.received') ? 'completed' : 'current';
+    }
+    if (id === 'classification') {
+      return example.clarification.needed && !events.has('intake.clarification.received') ? 'blocked' : events.has('intake.request.normalized') ? 'completed' : 'current';
+    }
+    if (id === 'policy') {
+      if (events.has('policy.decision.changed') && state === 'awaiting_review') return 'current';
+      return events.has('policy.decision.changed') ? 'completed' : 'future';
+    }
+    if (id === 'approval') {
+      return state === 'awaiting_review' || events.has('human.approval.requested') ? 'current' : 'future';
+    }
+    if (id === 'tool') {
+      return events.has('execution.change.prepared') ? 'future' : 'future';
+    }
+    if (id === 'verification') {
+      return 'future';
+    }
+    if (id === 'done') {
+      return 'future';
+    }
+    return fallbackStages.find((stage) => stage.id === id)?.status ?? 'future';
+  };
+
+  return fallbackStages.map((stage) => ({
+    ...stage,
+    status: stageFor(stage.id),
+    explanation:
+      stage.id === 'intake'
+        ? example.rawIntakeMessage
+        : stage.id === 'classification'
+          ? example.clarification.reason
+          : stage.id === 'policy'
+            ? `Workflow: ${example.expectedTrustPlane.workflowCandidate ?? 'unknown'}`
+            : stage.id === 'approval'
+              ? example.expectedTrustPlane.operatorSummary ?? stage.explanation
+              : stage.explanation,
+    reason:
+      stage.id === 'classification' && example.clarification.needed
+        ? example.clarification.reason
+        : stage.reason,
+    next:
+      stage.id === 'approval'
+        ? 'Review the example request and compare its expected policy/timeline/evidence path.'
         : stage.next,
   }));
 }

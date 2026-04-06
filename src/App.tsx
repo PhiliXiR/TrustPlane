@@ -34,6 +34,7 @@ import {
 } from './api';
 import type { IntakeExampleFixture, IntakeExampleSummary } from './runtime/exampleTypes';
 import { deriveExampleModeSummary } from './runtime/exampleViewAdapters';
+import { deriveWorkflowRailStagesFromExample } from './runtime/requestViewAdapters';
 import type { RequestSnapshot, RequestTimelineResponse } from './runtime/requestTypes';
 import type { RuntimeScenario } from './runtime/scenarioTypes';
 
@@ -200,6 +201,11 @@ export default function App() {
       try {
         const example = await fetchExample(exampleId);
         setSelectedExample(example);
+        if (runtime) {
+          const derivedStages = deriveWorkflowRailStagesFromExample(example, runtime.stages);
+          const activeStage = derivedStages.find((stage) => stage.status === 'current') ?? derivedStages.find((stage) => stage.status === 'blocked') ?? derivedStages[0];
+          setSelectedStageId(activeStage?.id ?? runtime.stages[0]?.id ?? '');
+        }
       } catch (err) {
         setError(String(err));
       }
@@ -300,7 +306,7 @@ export default function App() {
           snapshot={requestSnapshot}
           example={selectedExample}
         />
-        <WorkflowRail stages={runtime.stages} selectedStageId={selectedStageId} onSelect={setSelectedStageId} snapshot={requestSnapshot} />
+        <WorkflowRail stages={runtime.stages} selectedStageId={selectedStageId} onSelect={setSelectedStageId} snapshot={requestSnapshot} example={selectedExample} />
 
         <div className="grid gap-6 xl:grid-cols-[1.08fr_0.92fr]">
           <div className="space-y-6">

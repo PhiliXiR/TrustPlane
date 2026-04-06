@@ -1,16 +1,20 @@
 import type { Stage } from '../types';
+import type { IntakeExampleFixture } from '../runtime/exampleTypes';
 import type { RequestSnapshot } from '../runtime/requestTypes';
-import { deriveWorkflowRailStages } from '../runtime/requestViewAdapters';
+import { deriveWorkflowRailStages, deriveWorkflowRailStagesFromExample } from '../runtime/requestViewAdapters';
 
 type Props = {
   stages: Stage[];
   selectedStageId: string;
   onSelect: (id: string) => void;
   snapshot?: RequestSnapshot | null;
+  example?: IntakeExampleFixture | null;
 };
 
-export function WorkflowRail({ stages, selectedStageId, onSelect, snapshot }: Props) {
-  const resolvedStages = deriveWorkflowRailStages(snapshot, stages);
+export function WorkflowRail({ stages, selectedStageId, onSelect, snapshot, example }: Props) {
+  const resolvedStages = example
+    ? deriveWorkflowRailStagesFromExample(example, stages)
+    : deriveWorkflowRailStages(snapshot, stages);
   const currentStage = resolvedStages.find((stage) => stage.status === 'current');
 
   return (
