@@ -299,20 +299,59 @@ def project_request_timeline(scenario: RuntimeScenario):
         'artifact': 'runtime',
     }
 
-    events = [
-        MvpTimelineEvent(
-            eventId=event.id,
-            requestId=request_id,
-            family=family_map.get(event.category, 'workflow'),
-            type=event.title,
-            summary=event.detail,
-            timestamp=event.time,
-            actor=actor_map.get(event.category, 'runtime'),
-            details={'inspectionKey': event.inspectionKey} if event.inspectionKey else None,
-            artifactRefs=['artifact'] if event.inspectionKey == 'artifact' else [],
+    def normalize_type(title: str, family: str):
+        lowered = title.lower()
+        if family == 'human_checkpoint' and 'approval' in lowered and 'granted' in lowered:
+            return 'human.approval.granted'
+        if family == 'human_checkpoint' and 'approval' in lowered and 'denied' in lowered:
+            return 'human.approval.denied'
+        if family == 'human_checkpoint' and 'approval' in lowered and 'requested' in lowered:
+            return 'human.approval.requested'
+        if family == 'execution' and 'started' in lowered:
+            return 'execution.change.started'
+        if family == 'execution' and 'completed' in lowered:
+            return 'execution.change.completed'
+        if family == 'verification' and 'started' in lowered:
+            return 'verification.check.started'
+        if family == 'verification' and 'completed' in lowered:
+            return 'verification.check.passed'
+        if family == 'artifact' and 'created' in lowered:
+            return 'artifact.created'
+        if family == 'workflow' and 'playbook' in lowered:
+            return 'workflow.playbook.selected'
+        if family == 'ownership' and 'transferred' in lowered:
+            return 'ownership.transferred'
+        return title
+
+    def infer_actor(event):
+        lowered = event.title.lower()
+        if 'ownership' in lowered:
+            return 'router'
+        if 'playbook' in lowered:
+            return 'runtime'
+        if 'approval' in lowered:
+            return 'operator'
+        return actor_map.get(event.category, 'runtime')
+
+    events = []
+    for event in scenario.timeline:
+        family = family_map.get(event.category, 'workflow')
+        event_type = normalize_type(event.title, family)
+        if event_type == 'ownership.transferred':
+            family = 'ownership'
+        events.append(
+            MvpTimelineEvent(
+                eventId=event.id,
+                requestId=request_id,
+                family=family,
+                type=event_type,
+                summary=event.detail,
+                timestamp=event.time,
+                actor=infer_actor(event),
+                details={'inspectionKey': event.inspectionKey} if event.inspectionKey else None,
+                artifactRefs=['artifact'] if event.inspectionKey == 'artifact' else [],
+            )
         )
-        for event in scenario.timeline
-    ]
 
     return RequestTimelineResponse(requestId=request_id, events=events)
 

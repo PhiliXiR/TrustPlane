@@ -19,6 +19,7 @@ import {
   changeScenario,
   denyRuntimeRequest,
   fetchRequestSnapshot,
+  fetchRequestTimeline,
   fetchRuntimeSnapshot,
   fetchScenarioOptions,
   getEventsUrl,
@@ -26,7 +27,7 @@ import {
   releaseExecutionAuthority,
   resumeRuntimeRequest,
 } from './api';
-import type { RequestSnapshot } from './runtime/requestTypes';
+import type { RequestSnapshot, RequestTimelineResponse } from './runtime/requestTypes';
 import type { RuntimeScenario } from './runtime/scenarioTypes';
 
 type ScenarioOption = { id: string; label: string };
@@ -39,6 +40,7 @@ export default function App() {
   const [selectedStageId, setSelectedStageId] = useState('');
   const [selectedEventId, setSelectedEventId] = useState('');
   const [requestSnapshot, setRequestSnapshot] = useState<RequestSnapshot | null>(null);
+  const [requestTimeline, setRequestTimeline] = useState<RequestTimelineResponse | null>(null);
   const [inspectionOpen, setInspectionOpen] = useState(true);
   const [liveExecution, setLiveExecution] = useState<ExecutionLogEntry[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -54,10 +56,16 @@ export default function App() {
         setSelectedEventId(snapshot.timeline[snapshot.timeline.length - 1]?.id ?? snapshot.timeline[0].id);
         const requestId = snapshot.request.intake?.requestId;
         if (requestId) {
-          const projected = await fetchRequestSnapshot(requestId);
+          const [projected, projectedTimeline] = await Promise.all([
+            fetchRequestSnapshot(requestId),
+            fetchRequestTimeline(requestId),
+          ]);
           setRequestSnapshot(projected);
+          setRequestTimeline(projectedTimeline);
+          setSelectedEventId(projectedTimeline.events[projectedTimeline.events.length - 1]?.eventId ?? snapshot.timeline[snapshot.timeline.length - 1]?.id ?? '');
         } else {
           setRequestSnapshot(null);
+          setRequestTimeline(null);
         }
       })
       .catch((err) => {
@@ -76,9 +84,19 @@ export default function App() {
       setSelectedEventId(snapshot.timeline[snapshot.timeline.length - 1]?.id ?? snapshot.timeline[0].id);
       const requestId = snapshot.request.intake?.requestId;
       if (requestId) {
-        fetchRequestSnapshot(requestId).then(setRequestSnapshot).catch(() => setRequestSnapshot(null));
+        Promise.all([fetchRequestSnapshot(requestId), fetchRequestTimeline(requestId)])
+          .then(([snapshotData, timelineData]) => {
+            setRequestSnapshot(snapshotData);
+            setRequestTimeline(timelineData);
+            setSelectedEventId(timelineData.events[timelineData.events.length - 1]?.eventId ?? snapshot.timeline[snapshot.timeline.length - 1]?.id ?? '');
+          })
+          .catch(() => {
+            setRequestSnapshot(null);
+            setRequestTimeline(null);
+          });
       } else {
         setRequestSnapshot(null);
+        setRequestTimeline(null);
       }
     });
 
@@ -116,9 +134,19 @@ export default function App() {
     setSelectedEventId(snapshot.timeline[snapshot.timeline.length - 1]?.id ?? snapshot.timeline[0].id);
     const requestId = snapshot.request.intake?.requestId;
     if (requestId) {
-      fetchRequestSnapshot(requestId).then(setRequestSnapshot).catch(() => setRequestSnapshot(null));
+      Promise.all([fetchRequestSnapshot(requestId), fetchRequestTimeline(requestId)])
+        .then(([snapshotData, timelineData]) => {
+          setRequestSnapshot(snapshotData);
+          setRequestTimeline(timelineData);
+          setSelectedEventId(timelineData.events[timelineData.events.length - 1]?.eventId ?? snapshot.timeline[snapshot.timeline.length - 1]?.id ?? '');
+        })
+        .catch(() => {
+          setRequestSnapshot(null);
+          setRequestTimeline(null);
+        });
     } else {
       setRequestSnapshot(null);
+      setRequestTimeline(null);
     }
     setFlashMessage(snapshot.request.state);
   }
@@ -174,7 +202,7 @@ export default function App() {
           <MetricCard label="Request state" value={runtime.request.state} tone="accent" emphasis="strong" />
           <MetricCard label="Current owner" value={runtime.ownership.currentOwner.name} />
           <MetricCard label="Selected stage" value={selectedStage.label} tone="violet" />
-          <MetricCard label="Timeline events" value={String(runtime.timeline.length)} tone="success" />
+          <MetricCard label="Timeline events" value={String(requestTimeline?.events.length ?? runtime.timeline.length)} tone="success" />
         </div>
 
         <div className="grid gap-3 lg:grid-cols-4">
@@ -210,7 +238,7 @@ export default function App() {
 
         <div className="grid gap-6 xl:grid-cols-[1.08fr_0.92fr]">
           <div className="space-y-6">
-            <DecisionPanel stage={selectedStage} />
+            <DecisionPanel stage={selectedStage} snapshot={requestSnapshot} />
             <InspectionDrawer
               open={inspectionOpen}
               record={selectedInspection}
@@ -221,7 +249,7 @@ export default function App() {
           </div>
           <div className="space-y-6">
             <HumanCheckpointsPanel checkpoints={runtime.humanCheckpoints} />
-            <TimelinePanel timeline={runtime.timeline} selectedEventId={selectedEventId} onSelect={setSelectedEventId} />
+            <TimelinePanel timeline={runtime.timeline} selectedEventId={selectedEventId} onSelect={setSelectedEventId} requestTimeline={requestTimeline?.events} />
           </div>
         </div>
 

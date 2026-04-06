@@ -1,26 +1,51 @@
 import type { Stage } from '../types';
+import type { RequestSnapshot } from '../runtime/requestTypes';
+import { SectionHeader, StatusBadge, SurfaceCard } from './ui';
 
-type Props = { stage: Stage };
+type Props = { stage: Stage; snapshot?: RequestSnapshot | null };
 
-export function DecisionPanel({ stage }: Props) {
+export function DecisionPanel({ stage, snapshot }: Props) {
+  const currentSummary = snapshot?.workflowState.stateReason ?? stage.explanation;
+  const policyBasis = snapshot?.policyDecision.basis ?? stage.rule;
+  const evidenceItems = snapshot
+    ? [
+        `policyDecision=${snapshot.policyDecision.decision}`,
+        `pendingAction=${snapshot.pendingAction.actionType}`,
+        `requiresHumanReview=${String(snapshot.policyDecision.requiresHumanReview)}`,
+        `verificationStatus=${snapshot.verificationState.status}`,
+      ]
+    : stage.evidence;
+  const nextStep = snapshot?.workflowState.nextStep ?? stage.next;
   return (
     <section className="rounded-3xl border border-line bg-panel/95 p-6 shadow-panel">
-      <h2 className="text-lg font-semibold text-slate-50">Decision Explanation</h2>
-      <div className="mt-5 space-y-5">
-        <Block title="What is happening right now?" content={stage.explanation} />
-        <Block title="Why is it allowed?" content={stage.rule} />
-        <div>
-          <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted">Evidence used</h3>
-          <ul className="mt-3 space-y-2">
-            {stage.evidence.map((item) => (
-              <li key={item} className="rounded-2xl border border-line bg-ink/60 px-4 py-3 text-sm text-slate-200">
-                {item}
-              </li>
-            ))}
-          </ul>
-        </div>
-        <Block title="What happens next?" content={stage.next} />
+      <SectionHeader
+        title="Decision explanation"
+        meta={<StatusBadge tone="accent">{stage.label}</StatusBadge>}
+      />
+
+      <div className="mt-5 grid gap-5 lg:grid-cols-2">
+        <SurfaceCard>
+          <Block title="What is happening right now?" content={currentSummary} />
+        </SurfaceCard>
+        <SurfaceCard>
+          <Block title="Why is it allowed?" content={policyBasis} />
+        </SurfaceCard>
       </div>
+
+      <SurfaceCard className="mt-5">
+        <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted">Evidence used</h3>
+        <ul className="mt-3 grid gap-2">
+          {evidenceItems.map((item) => (
+            <li key={item} className="rounded-2xl border border-line bg-ink/60 px-4 py-3 text-sm text-slate-200">
+              {item}
+            </li>
+          ))}
+        </ul>
+      </SurfaceCard>
+
+      <SurfaceCard className="mt-5">
+        <Block title="What happens next?" content={nextStep} />
+      </SurfaceCard>
     </section>
   );
 }
