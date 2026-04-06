@@ -760,26 +760,6 @@ This set should help demonstrate:
 - how TrustPlane turns intake into an operator-facing governed record
 - a believable range of operational use cases across IT and AWS/ops work
 
-## Portfolio / showcase value
-
-As a demonstration set, this shows that the system is designed to handle:
-
-- access requests
-- mailbox and shared-resource delegation
-- contractor onboarding
-- deprovisioning and cleanup
-- AWS restart and cleanup work
-- credential hygiene
-- production investigation with constrained authority
-
-That range is useful if you are showing:
-
-- systems thinking
-- agent governance design
-- human-in-the-loop workflow design
-- operational AI safety instincts
-- practical product architecture for agent control planes
-
 ## Strong next extensions
 
 If you want to push this further later, the next strongest additions would be:
