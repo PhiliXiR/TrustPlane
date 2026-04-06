@@ -1,4 +1,4 @@
-import type { HumanCheckpoint, Stage } from '../types';
+import type { ExecutionStep, HumanCheckpoint, Playbook, Stage } from '../types';
 import type { RequestSnapshot } from './requestTypes';
 
 export function deriveWorkflowRailStages(snapshot: RequestSnapshot | null | undefined, fallbackStages: Stage[]): Stage[] {
@@ -114,4 +114,58 @@ export function deriveHumanCheckpoints(snapshot: RequestSnapshot | null | undefi
       detail: snapshot.verificationState.summary,
     },
   ];
+}
+
+export function deriveExecutionTrace(snapshot: RequestSnapshot | null | undefined, fallbackSteps: ExecutionStep[]): ExecutionStep[] {
+  if (!snapshot) return fallbackSteps;
+
+  const pending = snapshot.pendingAction;
+  const verification = snapshot.verificationState;
+
+  return [
+    {
+      id: 'exec-prepared',
+      label: 'Prepared governed action',
+      state: ['prepared', 'executing', 'completed'].includes(pending.status) ? 'completed' : 'upcoming',
+      detail: pending.summary,
+    },
+    {
+      id: 'exec-release',
+      label: 'Execution release window',
+      state: pending.status === 'executing' ? 'current' : pending.status === 'completed' ? 'completed' : 'upcoming',
+      detail: pending.requiresApproval
+        ? 'Execution remains gated until the human review requirement is satisfied.'
+        : 'The action can proceed within its current governed execution window.',
+    },
+    {
+      id: 'exec-verify',
+      label: 'Verification outcome',
+      state: verification.status === 'pending' ? 'current' : verification.status === 'passed' ? 'completed' : 'upcoming',
+      detail: verification.summary,
+    },
+  ];
+}
+
+export function derivePlaybookSummary(snapshot: RequestSnapshot | null | undefined, fallbackPlaybook: Playbook): Playbook {
+  if (!snapshot) return fallbackPlaybook;
+
+  return {
+    ...fallbackPlaybook,
+    name: snapshot.request.workflowCandidate,
+    trigger: `${snapshot.request.source} request for ${String(snapshot.request.normalizedRequest.targetSystem ?? 'unknown target')}`,
+    approvalRequirement: snapshot.policyDecision.requiresHumanReview
+      ? snapshot.policyDecision.basis
+      : 'No human approval is currently required for the next governed step.',
+    rollback: snapshot.pendingAction.riskSummary ?? fallbackPlaybook.rollback,
+    preconditions: [
+      `Trust level: ${snapshot.trustState.trustLevel}`,
+      `Delegation mode: ${snapshot.trustState.delegationMode}`,
+      `Verification status: ${snapshot.verificationState.status}`,
+      ...fallbackPlaybook.preconditions,
+    ],
+    allowedTools: Array.from(new Set([
+      ...fallbackPlaybook.allowedTools,
+      snapshot.pendingAction.actionType,
+    ])),
+  };
 }

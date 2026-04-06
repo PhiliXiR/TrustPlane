@@ -262,11 +262,11 @@ export default function App() {
 
         <div className="grid gap-6 xl:grid-cols-[1.08fr_0.92fr]">
           <CommandEnvelopePanel envelope={runtime.commandEnvelope} substrate={runtime.executionSubstrate} snapshot={requestSnapshot} />
-          <ExecutionTracePanel steps={runtime.executionSteps} />
+          <ExecutionTracePanel steps={runtime.executionSteps} snapshot={requestSnapshot} />
         </div>
 
         <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-          <PlaybookCard playbook={runtime.playbook} />
+          <PlaybookCard playbook={runtime.playbook} snapshot={requestSnapshot} />
           <LiveExecutionPanel entries={liveExecution} />
         </div>
       </div>
