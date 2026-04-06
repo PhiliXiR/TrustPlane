@@ -1,0 +1,50 @@
+{
+  "exampleId": "example-10-staging-worker-restart",
+  "label": "Example: Staging worker restart request",
+  "category": "aws-ops",
+  "rawIntakeMessage": "The background invoice worker in staging stopped processing jobs again. Please restart it.",
+  "clarification": {
+    "needed": false,
+    "reason": "The service and environment are specific enough for routing in a typical staging environment.",
+    "questions": []
+  },
+  "normalizedN8nOutput": {
+    "source": "slack",
+    "requester": "unknown_requester",
+    "rawRequest": "The background invoice worker in staging stopped processing jobs again. Please restart it.",
+    "normalizedType": "service_restart_request",
+    "targetSystem": "aws_staging",
+    "requestedEntitlement": "restart_invoice_worker",
+    "businessReason": "restore stalled background job processing in staging",
+    "clarificationNeeded": false,
+    "missingFields": [],
+    "candidateWorkflows": ["staging_worker_recovery"],
+    "initialTrustMode": "human_approved_execution",
+    "metadata": {
+      "serviceName": "invoice_worker",
+      "environment": "staging"
+    }
+  },
+  "expectedTrustPlane": {
+    "currentState": "awaiting_review",
+    "currentOwner": "operator",
+    "workflowCandidate": "staging_worker_recovery",
+    "trustLevel": "bounded",
+    "operatorSummary": "Staging invoice-worker restart request after stalled queue processing."
+  },
+  "expectedTimelineEvents": [
+    "intake.request.received",
+    "intake.request.normalized",
+    "intake.request.admitted",
+    "workflow.playbook.selected",
+    "ownership.transferred",
+    "policy.decision.changed",
+    "human.approval.requested",
+    "execution.change.prepared"
+  ],
+  "expectedEvidenceArtifacts": [
+    "restart_policy_snapshot",
+    "worker_restart_execution_log",
+    "queue_recovery_verification"
+  ]
+}

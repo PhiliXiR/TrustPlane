@@ -1,0 +1,57 @@
+{
+  "exampleId": "example-03-contractor-vpn-access",
+  "label": "Example: Contractor VPN access request",
+  "category": "it-vpn",
+  "rawIntakeMessage": "Can we get VPN access set up for the new contractor starting tomorrow? Name is Alex, working with infra for two weeks.",
+  "clarification": {
+    "needed": true,
+    "reason": "Contractor identity, VPN profile, and sponsoring approver must be explicit before routing.",
+    "questions": [
+      "Which Alex is this, and what is their directory/email identity?",
+      "Which VPN profile or internal network segment do they need?",
+      "Who is sponsoring/approving this contractor access?"
+    ]
+  },
+  "normalizedN8nOutput": {
+    "source": "slack",
+    "requester": "Alex Rivera",
+    "rawRequest": "Can we get VPN access set up for the new contractor starting tomorrow? Name is Alex, working with infra for two weeks.",
+    "normalizedType": "vpn_access_request",
+    "targetSystem": "corporate_vpn",
+    "requestedEntitlement": "vpn.contractor.infra",
+    "businessReason": "infra contractor onboarding for two-week engagement",
+    "clarificationNeeded": false,
+    "missingFields": [],
+    "candidateWorkflows": ["vpn_access_request"],
+    "initialTrustMode": "human_approved_execution",
+    "metadata": {
+      "directoryIdentity": "alex.rivera.contractor@vendorco.com",
+      "vpnProfile": "infra_contractor",
+      "approvingManager": "Dana",
+      "duration": "2_weeks"
+    }
+  },
+  "expectedTrustPlane": {
+    "currentState": "awaiting_review",
+    "currentOwner": "operator",
+    "workflowCandidate": "vpn_access_request",
+    "trustLevel": "bounded",
+    "operatorSummary": "Contractor VPN profile request for Alex Rivera with infra-contractor scope and two-week duration."
+  },
+  "expectedTimelineEvents": [
+    "intake.request.received",
+    "intake.clarification.requested",
+    "intake.clarification.received",
+    "intake.request.normalized",
+    "intake.request.admitted",
+    "workflow.playbook.selected",
+    "policy.decision.changed",
+    "human.approval.requested",
+    "execution.change.prepared"
+  ],
+  "expectedEvidenceArtifacts": [
+    "policy_snapshot",
+    "identity_verification",
+    "vpn_profile_verification"
+  ]
+}

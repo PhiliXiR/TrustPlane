@@ -1,0 +1,55 @@
+{
+  "exampleId": "example-02-finance-shared-drive-access",
+  "label": "Example: Finance shared drive access request",
+  "category": "it-access",
+  "rawIntakeMessage": "Need Priya added to the Finance shared drive for month-end close.",
+  "clarification": {
+    "needed": true,
+    "reason": "The exact resource name and access duration are required before routing.",
+    "questions": [
+      "Which exact Finance shared drive or Google group should Priya be added to?",
+      "Is this temporary access for month-end close or ongoing access?"
+    ]
+  },
+  "normalizedN8nOutput": {
+    "source": "slack",
+    "requester": "Priya",
+    "rawRequest": "Need Priya added to the Finance shared drive for month-end close.",
+    "normalizedType": "access_request",
+    "targetSystem": "google_workspace",
+    "requestedEntitlement": "finance_close_shared_drive_access",
+    "businessReason": "month-end close",
+    "clarificationNeeded": false,
+    "missingFields": [],
+    "candidateWorkflows": ["shared_drive_access_request"],
+    "initialTrustMode": "human_approved_execution",
+    "metadata": {
+      "resourceName": "Finance Close shared drive",
+      "duration": "temporary_this_week"
+    }
+  },
+  "expectedTrustPlane": {
+    "currentState": "awaiting_review",
+    "currentOwner": "operator",
+    "workflowCandidate": "shared_drive_access_request",
+    "trustLevel": "bounded",
+    "operatorSummary": "Temporary Finance Close shared-drive access for Priya tied to month-end close."
+  },
+  "expectedTimelineEvents": [
+    "intake.request.received",
+    "intake.clarification.requested",
+    "intake.clarification.received",
+    "intake.request.normalized",
+    "intake.request.admitted",
+    "workflow.playbook.selected",
+    "ownership.transferred",
+    "policy.decision.changed",
+    "human.approval.requested",
+    "execution.change.prepared"
+  ],
+  "expectedEvidenceArtifacts": [
+    "policy_snapshot",
+    "membership_verification",
+    "duration_audit_note"
+  ]
+}

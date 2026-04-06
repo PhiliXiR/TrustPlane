@@ -1,0 +1,55 @@
+{
+  "exampleId": "example-06-staging-web-restart",
+  "label": "Example: Staging web restart request",
+  "category": "aws-ops",
+  "rawIntakeMessage": "staging web is wedged again, can someone restart it?",
+  "clarification": {
+    "needed": true,
+    "reason": "The service identity and environment must be explicit before routing a restart request.",
+    "questions": [
+      "Which exact staging service should be restarted?",
+      "Can you confirm this is staging and not production?"
+    ]
+  },
+  "normalizedN8nOutput": {
+    "source": "slack",
+    "requester": "unknown_requester",
+    "rawRequest": "staging web is wedged again, can someone restart it?",
+    "normalizedType": "service_restart_request",
+    "targetSystem": "aws_staging",
+    "requestedEntitlement": "restart_staging_web_api",
+    "businessReason": "recover stalled staging web service",
+    "clarificationNeeded": false,
+    "missingFields": [],
+    "candidateWorkflows": ["service_restart_request"],
+    "initialTrustMode": "human_approved_execution",
+    "metadata": {
+      "serviceName": "staging-web-api",
+      "environment": "staging"
+    }
+  },
+  "expectedTrustPlane": {
+    "currentState": "awaiting_review",
+    "currentOwner": "operator",
+    "workflowCandidate": "service_restart_request",
+    "trustLevel": "bounded",
+    "operatorSummary": "Restart request for staging-web-api in staging after service stall."
+  },
+  "expectedTimelineEvents": [
+    "intake.request.received",
+    "intake.clarification.requested",
+    "intake.clarification.received",
+    "intake.request.normalized",
+    "intake.request.admitted",
+    "workflow.playbook.selected",
+    "ownership.transferred",
+    "policy.decision.changed",
+    "human.approval.requested",
+    "execution.change.prepared"
+  ],
+  "expectedEvidenceArtifacts": [
+    "restart_policy_snapshot",
+    "restart_execution_log",
+    "health_check_verification"
+  ]
+}

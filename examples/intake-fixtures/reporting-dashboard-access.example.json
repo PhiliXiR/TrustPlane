@@ -1,0 +1,49 @@
+{
+  "exampleId": "example-01-reporting-dashboard-access",
+  "label": "Example: Reporting dashboard access request",
+  "category": "it-access",
+  "rawIntakeMessage": "Hey, can someone give Jamie access to the reporting dashboard? They’re helping with the Monday metrics review.",
+  "clarification": {
+    "needed": false,
+    "reason": "Identity, resource, and business reason are sufficiently specific for routing.",
+    "questions": []
+  },
+  "normalizedN8nOutput": {
+    "source": "slack",
+    "requester": "Jamie",
+    "rawRequest": "Hey, can someone give Jamie access to the reporting dashboard? They’re helping with the Monday metrics review.",
+    "normalizedType": "access_request",
+    "targetSystem": "reporting_dashboard",
+    "requestedEntitlement": "reporting.read",
+    "businessReason": "helping with Monday metrics review",
+    "clarificationNeeded": false,
+    "missingFields": [],
+    "candidateWorkflows": ["access_request_standard"],
+    "initialTrustMode": "human_approved_execution",
+    "metadata": {
+      "resourceName": "reporting_dashboard",
+      "accessScope": "read"
+    }
+  },
+  "expectedTrustPlane": {
+    "currentState": "awaiting_review",
+    "currentOwner": "operator",
+    "workflowCandidate": "access_request_standard",
+    "trustLevel": "bounded",
+    "operatorSummary": "Temporary reporting dashboard access for Jamie tied to Monday metrics review."
+  },
+  "expectedTimelineEvents": [
+    "intake.request.received",
+    "intake.request.normalized",
+    "intake.request.admitted",
+    "workflow.playbook.selected",
+    "ownership.transferred",
+    "policy.decision.changed",
+    "human.approval.requested",
+    "execution.change.prepared"
+  ],
+  "expectedEvidenceArtifacts": [
+    "policy_snapshot",
+    "entitlement_verification"
+  ]
+}

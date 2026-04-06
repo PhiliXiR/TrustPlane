@@ -1,0 +1,55 @@
+{
+  "exampleId": "example-09-prod-cpu-investigation",
+  "label": "Example: Production CPU investigation request",
+  "category": "aws-incident",
+  "rawIntakeMessage": "prod api cpu is pinned on one node, can someone take a look?",
+  "clarification": {
+    "needed": true,
+    "reason": "The exact prod target and investigation-vs-remediation boundary must be explicit before routing.",
+    "questions": [
+      "Which service or instance group is affected?",
+      "Is this request for investigation only, or is restart/remediation already authorized if needed?"
+    ]
+  },
+  "normalizedN8nOutput": {
+    "source": "slack",
+    "requester": "unknown_requester",
+    "rawRequest": "prod api cpu is pinned on one node, can someone take a look?",
+    "normalizedType": "incident_triage_request",
+    "targetSystem": "aws_production",
+    "requestedEntitlement": "investigate_high_cpu",
+    "businessReason": "investigate production performance degradation",
+    "clarificationNeeded": false,
+    "missingFields": [],
+    "candidateWorkflows": ["incident_triage_investigate_only"],
+    "initialTrustMode": "observe_and_escalate",
+    "metadata": {
+      "serviceIdentifier": "prod-api-asg",
+      "region": "us-west-2",
+      "authorizedActionScope": "investigation_only"
+    }
+  },
+  "expectedTrustPlane": {
+    "currentState": "awaiting_review",
+    "currentOwner": "operator",
+    "workflowCandidate": "incident_triage_investigate_only",
+    "trustLevel": "observed",
+    "operatorSummary": "Production CPU investigation request for prod-api ASG with investigation-only authority."
+  },
+  "expectedTimelineEvents": [
+    "intake.request.received",
+    "intake.clarification.requested",
+    "intake.clarification.received",
+    "intake.request.normalized",
+    "intake.request.admitted",
+    "workflow.playbook.selected",
+    "policy.decision.changed",
+    "human.approval.requested",
+    "execution.change.prepared"
+  ],
+  "expectedEvidenceArtifacts": [
+    "investigation_policy_snapshot",
+    "metrics_or_diagnostic_snapshot",
+    "investigation_summary_artifact"
+  ]
+}

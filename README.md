@@ -204,6 +204,7 @@ npm run build
 - `backend/store.py` - in-memory runtime state and event publishing
 - `backend/scenarios.py` - scenario definitions
 - `examples/agent-workspaces/` - intake/operator workspace scaffolds
+- `examples/intake-fixtures/` - clearly labeled example intake fixtures in machine-readable form
 - `ops/n8n/` - starter n8n workflow assets for local intake bridging
 - `docs/` - architecture, trust model, intake, deployment, and integration docs
 
@@ -227,8 +228,8 @@ npm run build
 - `docs/live-command-observability.md` — CLI execution visibility model
 - `docs/n8n-integration-starter.md` — local n8n webhook-to-TrustPlane starter path
 - `docs/intake-agent-tuning-notes.md` — guidance for keeping the intake bot focused
-- `docs/intake-submission-examples.md` — curated realistic intake-bot submissions across IT and AWS/ops cases
-- `docs/intake-fixture-pack.md` — fully fleshed demo/regression-style intake fixtures for all 10 curated examples
+- `docs/intake-submission-examples.md` — canonical example submissions across IT and AWS/ops cases
+- `docs/intake-fixture-pack.md` — canonical fully fleshed example fixtures for all 10 curated cases
 - `docs/nemoclaw-slack-intake-plan.md` — staged NemoClaw + Slack intake plan
 - `docs/first-linux-deployment-instructions.md` — first Linux deployment path
 

@@ -1,0 +1,46 @@
+{
+  "exampleId": "example-04-offboarding-access-removal",
+  "label": "Example: Offboarding access removal request",
+  "category": "it-offboarding",
+  "rawIntakeMessage": "Please remove Morgan’s VPN and internal group access today — they left Friday.",
+  "clarification": {
+    "needed": false,
+    "reason": "The offboarding intent and requested removal scope are specific enough to route if identity is resolvable.",
+    "questions": []
+  },
+  "normalizedN8nOutput": {
+    "source": "slack",
+    "requester": "Morgan",
+    "rawRequest": "Please remove Morgan’s VPN and internal group access today — they left Friday.",
+    "normalizedType": "deprovision_request",
+    "targetSystem": "identity_and_access",
+    "requestedEntitlement": "remove_vpn_and_group_access",
+    "businessReason": "employee departure offboarding",
+    "clarificationNeeded": false,
+    "missingFields": [],
+    "candidateWorkflows": ["offboarding_access_removal"],
+    "initialTrustMode": "human_approved_execution"
+  },
+  "expectedTrustPlane": {
+    "currentState": "awaiting_review",
+    "currentOwner": "operator",
+    "workflowCandidate": "offboarding_access_removal",
+    "trustLevel": "bounded",
+    "operatorSummary": "Offboarding access-removal request for Morgan covering VPN and internal groups."
+  },
+  "expectedTimelineEvents": [
+    "intake.request.received",
+    "intake.request.normalized",
+    "intake.request.admitted",
+    "workflow.playbook.selected",
+    "ownership.transferred",
+    "policy.decision.changed",
+    "human.approval.requested",
+    "execution.change.prepared"
+  ],
+  "expectedEvidenceArtifacts": [
+    "offboarding_policy_snapshot",
+    "entitlement_removal_verification",
+    "group_removal_verification"
+  ]
+}

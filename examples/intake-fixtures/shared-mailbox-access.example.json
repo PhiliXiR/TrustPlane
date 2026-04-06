@@ -1,0 +1,55 @@
+{
+  "exampleId": "example-05-shared-mailbox-access",
+  "label": "Example: Shared mailbox access request",
+  "category": "it-mailbox",
+  "rawIntakeMessage": "Sarah needs access to support@ mailbox while Chris is away.",
+  "clarification": {
+    "needed": true,
+    "reason": "Permission scope and duration materially affect mailbox delegation risk.",
+    "questions": [
+      "Does Sarah need read access only, or send-as/send-on-behalf permissions too?",
+      "How long should this mailbox access last?"
+    ]
+  },
+  "normalizedN8nOutput": {
+    "source": "slack",
+    "requester": "Sarah",
+    "rawRequest": "Sarah needs access to support@ mailbox while Chris is away.",
+    "normalizedType": "mailbox_access_request",
+    "targetSystem": "email_system",
+    "requestedEntitlement": "shared_mailbox_reply_access",
+    "businessReason": "coverage while mailbox owner is away",
+    "clarificationNeeded": false,
+    "missingFields": [],
+    "candidateWorkflows": ["mailbox_access_request"],
+    "initialTrustMode": "human_approved_execution",
+    "metadata": {
+      "mailbox": "support@",
+      "permissionScope": "read_and_reply_no_send_as",
+      "duration": "through_next_friday"
+    }
+  },
+  "expectedTrustPlane": {
+    "currentState": "awaiting_review",
+    "currentOwner": "operator",
+    "workflowCandidate": "mailbox_access_request",
+    "trustLevel": "bounded",
+    "operatorSummary": "Temporary reply-capable mailbox delegation for Sarah to support@ through next Friday."
+  },
+  "expectedTimelineEvents": [
+    "intake.request.received",
+    "intake.clarification.requested",
+    "intake.clarification.received",
+    "intake.request.normalized",
+    "intake.request.admitted",
+    "workflow.playbook.selected",
+    "policy.decision.changed",
+    "human.approval.requested",
+    "execution.change.prepared"
+  ],
+  "expectedEvidenceArtifacts": [
+    "mailbox_policy_snapshot",
+    "mailbox_permission_verification",
+    "duration_audit_artifact"
+  ]
+}

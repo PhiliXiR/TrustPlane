@@ -1,0 +1,55 @@
+{
+  "exampleId": "example-07-ebs-cleanup-reviewed",
+  "label": "Example: Reviewed EBS cleanup request",
+  "category": "aws-cleanup",
+  "rawIntakeMessage": "We should probably clean up those unattached EBS volumes in dev, they’ve been hanging around forever.",
+  "clarification": {
+    "needed": true,
+    "reason": "Cleanup scope and safe-delete criteria must be explicit before routing a destructive cleanup request.",
+    "questions": [
+      "Which AWS account and region should this cleanup target?",
+      "What criteria should define safe to delete for unattached volumes?"
+    ]
+  },
+  "normalizedN8nOutput": {
+    "source": "slack",
+    "requester": "unknown_requester",
+    "rawRequest": "We should probably clean up those unattached EBS volumes in dev, they’ve been hanging around forever.",
+    "normalizedType": "cloud_cleanup_request",
+    "targetSystem": "aws_ebs",
+    "requestedEntitlement": "delete_unattached_volumes",
+    "businessReason": "reduce stale resource cost in development environment",
+    "clarificationNeeded": false,
+    "missingFields": [],
+    "candidateWorkflows": ["cloud_cleanup_reviewed"],
+    "initialTrustMode": "human_approved_execution",
+    "metadata": {
+      "awsAccount": "dev",
+      "region": "us-west-2",
+      "safeDeleteCriteria": "unattached_gt_30_days_and_not_tagged_keep"
+    }
+  },
+  "expectedTrustPlane": {
+    "currentState": "awaiting_review",
+    "currentOwner": "operator",
+    "workflowCandidate": "cloud_cleanup_reviewed",
+    "trustLevel": "bounded",
+    "operatorSummary": "Reviewed EBS cleanup request in dev/us-west-2 using explicit safe-delete criteria."
+  },
+  "expectedTimelineEvents": [
+    "intake.request.received",
+    "intake.clarification.requested",
+    "intake.clarification.received",
+    "intake.request.normalized",
+    "intake.request.admitted",
+    "workflow.playbook.selected",
+    "policy.decision.changed",
+    "human.approval.requested",
+    "execution.change.prepared"
+  ],
+  "expectedEvidenceArtifacts": [
+    "cleanup_policy_snapshot",
+    "candidate_resource_review",
+    "deletion_result_verification"
+  ]
+}

@@ -27,9 +27,9 @@ This index groups the current TrustPlane docs by purpose so the repo is easier t
 ## Intake and external entry
 
 - `intake-ownership.md` — why governed intake belongs in TrustPlane’s boundary
-- `intake-examples.md` — Slack/Jira-style intake examples
-- `intake-submission-examples.md` — curated realistic intake-bot submissions with normalization and trust notes
-- `intake-fixture-pack.md` — fully fleshed end-to-end intake fixtures for demo, tuning, and future regression work
+- `intake-examples.md` — compatibility pointer to the canonical example set
+- `intake-submission-examples.md` — canonical example submissions with normalization and trust notes
+- `intake-fixture-pack.md` — canonical fully fleshed example fixtures with clarification, timeline, lifecycle, and evidence expectations
 - `slack-intake-slice.md` — smallest sane Slack integration slice
 - `nemoclaw-slack-intake-plan.md` — staged plan for NemoClaw as Slack intake bot
 - `minimal-intake-bot-template.md` — deployable-ish intake bot workspace/config shape
