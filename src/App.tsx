@@ -5,6 +5,7 @@ import { DecisionPanel } from './components/DecisionPanel';
 import { ExecutionTracePanel } from './components/ExecutionTracePanel';
 import { HumanCheckpointsPanel } from './components/HumanCheckpointsPanel';
 import { InspectionDrawer } from './components/InspectionDrawer';
+import { IntakeSpotlightCard } from './components/IntakeSpotlightCard';
 import { LiveExecutionPanel } from './components/LiveExecutionPanel';
 import { OperatorControlPanel } from './components/OperatorControlPanel';
 import { PlaybookCard } from './components/PlaybookCard';
@@ -12,10 +13,12 @@ import { RequestHeader } from './components/RequestHeader';
 import { ScenarioSelector } from './components/ScenarioSelector';
 import { TimelinePanel } from './components/TimelinePanel';
 import { WorkflowRail } from './components/WorkflowRail';
+import { MetricCard } from './components/ui';
 import {
   approveRuntimeRequest,
   changeScenario,
   denyRuntimeRequest,
+  fetchRequestSnapshot,
   fetchRuntimeSnapshot,
   fetchScenarioOptions,
   getEventsUrl,
@@ -23,6 +26,7 @@ import {
   releaseExecutionAuthority,
   resumeRuntimeRequest,
 } from './api';
+import type { RequestSnapshot } from './runtime/requestTypes';
 import type { RuntimeScenario } from './runtime/scenarioTypes';
 
 type ScenarioOption = { id: string; label: string };
@@ -34,18 +38,27 @@ export default function App() {
   const [runtime, setRuntime] = useState<RuntimeScenario | null>(null);
   const [selectedStageId, setSelectedStageId] = useState('');
   const [selectedEventId, setSelectedEventId] = useState('');
+  const [requestSnapshot, setRequestSnapshot] = useState<RequestSnapshot | null>(null);
   const [inspectionOpen, setInspectionOpen] = useState(true);
   const [liveExecution, setLiveExecution] = useState<ExecutionLogEntry[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [flashMessage, setFlashMessage] = useState<string | null>(null);
 
   useEffect(() => {
     Promise.all([fetchScenarioOptions(), fetchRuntimeSnapshot()])
-      .then(([options, snapshot]) => {
+      .then(async ([options, snapshot]) => {
         setScenarioOptions(options);
         setScenarioId(snapshot.id);
         setRuntime(snapshot);
         setSelectedStageId(snapshot.stages.find((stage) => stage.status === 'current')?.id ?? snapshot.stages[0].id);
         setSelectedEventId(snapshot.timeline[snapshot.timeline.length - 1]?.id ?? snapshot.timeline[0].id);
+        const requestId = snapshot.request.intake?.requestId;
+        if (requestId) {
+          const projected = await fetchRequestSnapshot(requestId);
+          setRequestSnapshot(projected);
+        } else {
+          setRequestSnapshot(null);
+        }
       })
       .catch((err) => {
         setError(String(err));
@@ -61,6 +74,12 @@ export default function App() {
       setScenarioId(snapshot.id);
       setSelectedStageId((current) => current || snapshot.stages.find((stage) => stage.status === 'current')?.id || snapshot.stages[0].id);
       setSelectedEventId(snapshot.timeline[snapshot.timeline.length - 1]?.id ?? snapshot.timeline[0].id);
+      const requestId = snapshot.request.intake?.requestId;
+      if (requestId) {
+        fetchRequestSnapshot(requestId).then(setRequestSnapshot).catch(() => setRequestSnapshot(null));
+      } else {
+        setRequestSnapshot(null);
+      }
     });
 
     source.addEventListener('execution.stream', (event) => {
@@ -95,6 +114,13 @@ export default function App() {
     setScenarioId(snapshot.id);
     setSelectedStageId(snapshot.stages.find((stage) => stage.status === 'current')?.id ?? snapshot.stages[0].id);
     setSelectedEventId(snapshot.timeline[snapshot.timeline.length - 1]?.id ?? snapshot.timeline[0].id);
+    const requestId = snapshot.request.intake?.requestId;
+    if (requestId) {
+      fetchRequestSnapshot(requestId).then(setRequestSnapshot).catch(() => setRequestSnapshot(null));
+    } else {
+      setRequestSnapshot(null);
+    }
+    setFlashMessage(snapshot.request.state);
   }
 
   async function handleScenarioChange(nextScenarioId: string) {
@@ -105,6 +131,12 @@ export default function App() {
       setError(String(err));
     }
   }
+
+  useEffect(() => {
+    if (!flashMessage) return;
+    const timeout = window.setTimeout(() => setFlashMessage(null), 2600);
+    return () => window.clearTimeout(timeout);
+  }, [flashMessage]);
 
   if (error) {
     return (
@@ -131,10 +163,36 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-transparent px-4 py-8 text-slate-100 lg:px-8">
-      <div className="mx-auto flex max-w-[1500px] flex-col gap-6">
-        <RequestHeader request={runtime.request} trustModel={runtime.trustModel} />
-        <ScenarioSelector options={scenarioOptions} value={scenarioId} onChange={handleScenarioChange} />
+      <div className="mx-auto flex max-w-[1500px] flex-col gap-5 lg:gap-6">
+        {flashMessage ? (
+          <div className="animate-rise-in rounded-2xl border border-success/25 bg-success/10 px-4 py-3 text-sm text-slate-100 shadow-panel">
+            Runtime updated: <span className="font-semibold">{flashMessage}</span>
+          </div>
+        ) : null}
+
+        <div className="grid gap-3 lg:grid-cols-4">
+          <MetricCard label="Request state" value={runtime.request.state} tone="accent" emphasis="strong" />
+          <MetricCard label="Current owner" value={runtime.ownership.currentOwner.name} />
+          <MetricCard label="Selected stage" value={selectedStage.label} tone="violet" />
+          <MetricCard label="Timeline events" value={String(runtime.timeline.length)} tone="success" />
+        </div>
+
+        <div className="grid gap-3 lg:grid-cols-4">
+          <MetricCard label="Authority status" value={runtime.commandEnvelope.approvalState} tone="violet" emphasis="strong" />
+          <MetricCard label="Execution substrate" value={runtime.executionSubstrate.displayName} />
+          <MetricCard label="Autonomy mode" value={runtime.request.autonomyMode} tone="accent" />
+          <MetricCard label="Execution logs" value={String(liveExecution.length)} tone="success" />
+        </div>
+
+        <RequestHeader request={runtime.request} trustModel={runtime.trustModel} snapshot={requestSnapshot} />
+        <div className="grid gap-6 xl:grid-cols-[1.08fr_0.92fr]">
+          <IntakeSpotlightCard request={runtime.request} />
+          <ScenarioSelector options={scenarioOptions} value={scenarioId} onChange={handleScenarioChange} />
+        </div>
         <ApprovalBar
+          requestState={runtime.request.state}
+          autonomyMode={runtime.request.autonomyMode}
+          currentStageLabel={selectedStage.label}
           onApprove={() => refreshFromAction(approveRuntimeRequest()).catch((err) => setError(String(err)))}
           onReleaseExecution={() => refreshFromAction(releaseExecutionAuthority()).catch((err) => setError(String(err)))}
           onDeny={() => refreshFromAction(denyRuntimeRequest()).catch((err) => setError(String(err)))}
@@ -151,7 +209,16 @@ export default function App() {
         <WorkflowRail stages={runtime.stages} selectedStageId={selectedStageId} onSelect={setSelectedStageId} />
 
         <div className="grid gap-6 xl:grid-cols-[1.08fr_0.92fr]">
-          <DecisionPanel stage={selectedStage} />
+          <div className="space-y-6">
+            <DecisionPanel stage={selectedStage} />
+            <InspectionDrawer
+              open={inspectionOpen}
+              record={selectedInspection}
+              eventTitle={selectedEvent.title}
+              eventCategory={selectedEvent.category}
+              onToggle={() => setInspectionOpen((value) => !value)}
+            />
+          </div>
           <div className="space-y-6">
             <HumanCheckpointsPanel checkpoints={runtime.humanCheckpoints} />
             <TimelinePanel timeline={runtime.timeline} selectedEventId={selectedEventId} onSelect={setSelectedEventId} />
@@ -167,12 +234,6 @@ export default function App() {
           <PlaybookCard playbook={runtime.playbook} />
           <LiveExecutionPanel entries={liveExecution} />
         </div>
-
-        <InspectionDrawer
-          open={inspectionOpen}
-          record={selectedInspection}
-          onToggle={() => setInspectionOpen((value) => !value)}
-        />
       </div>
     </div>
   );

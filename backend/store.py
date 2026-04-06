@@ -5,7 +5,22 @@ from queue import Queue
 from pathlib import Path
 import json
 from .scenarios import REPORTING_ACCESS, SCENARIOS, get_scenario
-from .models import IntakeMetadata, IntakeRequest, RuntimeScenario
+from .models import (
+    ArtifactSummary,
+    IntakeMetadata,
+    IntakeRequest,
+    IntakeStatus,
+    MvpRequest,
+    MvpTimelineEvent,
+    PendingActionSummary,
+    PolicyDecisionSummary,
+    RequestSnapshot,
+    RequestTimelineResponse,
+    RuntimeScenario,
+    TrustStateSummary,
+    VerificationStateSummary,
+    WorkflowStateSummary,
+)
 
 _current = deepcopy(REPORTING_ACCESS)
 _lock = Lock()
@@ -85,6 +100,221 @@ def _persist_current_if_intake():
 def get_runtime_snapshot():
     with _lock:
         return deepcopy(_current)
+
+
+def _all_scenarios():
+    items = {scenario.id: deepcopy(scenario) for scenario in SCENARIOS.values()}
+    items.update({scenario.id: deepcopy(scenario) for scenario in _intake_scenarios.values()})
+    items[_current.id] = deepcopy(_current)
+    return items
+
+
+def find_scenario_by_request_id(request_id: str):
+    with _lock:
+        for scenario in _all_scenarios().values():
+            if scenario.request.intake and scenario.request.intake.requestId == request_id:
+                return deepcopy(scenario)
+    return None
+
+
+def _derive_workflow_state(scenario: RuntimeScenario):
+    current_stage = next((stage for stage in scenario.stages if stage.status == 'current'), scenario.stages[-1])
+    blocked = current_stage.status == 'blocked' or 'paused' in scenario.request.state.lower() or 'denied' in scenario.request.state.lower()
+    blocked_reason = current_stage.reason
+    if not blocked_reason and 'approval' in current_stage.label.lower():
+        blocked_reason = 'Human review or approval is required before execution can continue.'
+    elif not blocked_reason and 'paused' in scenario.request.state.lower():
+        blocked_reason = 'The workflow is paused and waiting for operator action.'
+    elif not blocked_reason and 'denied' in scenario.request.state.lower():
+        blocked_reason = 'The current path was denied and execution cannot continue.'
+
+    return WorkflowStateSummary(
+        state=current_stage.id,
+        stateReason=current_stage.explanation,
+        nextStep=current_stage.next,
+        blocked=blocked,
+        blockedReason=blocked_reason,
+    )
+
+
+def _derive_policy_decision(scenario: RuntimeScenario):
+    policy_stage = next((stage for stage in scenario.stages if stage.id == 'policy'), None)
+    approval_required = bool(scenario.authorityBoundary.requiresHumanApprovalBeforeExecution)
+    decision = 'held' if approval_required and scenario.commandEnvelope.approvalState not in {'released', 'executed'} else 'allowed'
+    if 'denied' in scenario.commandEnvelope.approvalState:
+        decision = 'blocked'
+
+    return PolicyDecisionSummary(
+        decision=decision,
+        basis=policy_stage.explanation if policy_stage else scenario.trustModel.delegationRule,
+        requiresHumanReview=approval_required,
+        policyRef='policy.derived.from.scenario',
+    )
+
+
+def _derive_execution_mode(scenario: RuntimeScenario):
+    mode = scenario.executionSubstrate.mode
+    if 'prepared' in mode or scenario.commandEnvelope.approvalState in {'pending', 'not_yet_released', 'held_for_clarification'}:
+        return 'prepared_only'
+    if scenario.commandEnvelope.approvalState == 'released':
+        return 'released_for_execution'
+    if scenario.commandEnvelope.approvalState == 'executed':
+        return 'executed'
+    if 'blocked' in mode:
+        return 'blocked'
+    return mode
+
+
+def _derive_trust_state(scenario: RuntimeScenario):
+    return TrustStateSummary(
+        trustLevel=scenario.trustModel.level.lower(),
+        delegationMode=scenario.request.autonomyMode,
+        executionMode=_derive_execution_mode(scenario),
+        why=scenario.trustModel.delegationRule,
+        downgradeTriggers=[scenario.trustModel.downgradeRule],
+    )
+
+
+def _derive_pending_action(scenario: RuntimeScenario):
+    current_step = next((step for step in scenario.executionSteps if step.state == 'current'), scenario.executionSteps[-1])
+    return PendingActionSummary(
+        actionId=f"act_{scenario.id}",
+        actionType=current_step.id,
+        summary=current_step.detail,
+        status=scenario.commandEnvelope.approvalState,
+        preparedBy=scenario.commandEnvelope.preparedByAgentId,
+        requiresApproval=scenario.authorityBoundary.requiresHumanApprovalBeforeExecution and scenario.commandEnvelope.approvalState not in {'released', 'executed'},
+        riskSummary=f"Risk class: {scenario.commandEnvelope.riskClass}",
+    )
+
+
+def _derive_verification_state(scenario: RuntimeScenario):
+    verification_stage = next((stage for stage in scenario.stages if stage.id == 'verification'), None)
+    status = 'not_started'
+    if verification_stage:
+        if verification_stage.status == 'current':
+            status = 'pending'
+        elif verification_stage.status == 'completed':
+            status = 'passed'
+        elif verification_stage.status == 'blocked':
+            status = 'failed'
+
+    if 'verified' in scenario.request.state.lower():
+        status = 'passed'
+    if 'failed' in scenario.request.state.lower():
+        status = 'failed'
+
+    return VerificationStateSummary(
+        status=status,
+        summary=verification_stage.explanation if verification_stage else scenario.commandEnvelope.expectedVerification,
+        lastCheckedAt='now',
+        evidenceRefs=['artifact'] if 'artifact' in scenario.inspections else [],
+        failureReason=verification_stage.reason if verification_stage and verification_stage.status == 'blocked' else None,
+    )
+
+
+def _derive_artifact_summary(scenario: RuntimeScenario):
+    artifact_types = []
+    highlights = []
+    if 'artifact' in scenario.inspections:
+        artifact_types.append('artifact_record')
+        highlights.append(scenario.inspections['artifact'].title)
+    if scenario.commandEnvelope.rollbackCommand:
+        artifact_types.append('rollback_reference')
+    if scenario.executionSubstrate.supportsVerificationArtifacts:
+        artifact_types.append('verification_artifact')
+
+    return ArtifactSummary(
+        artifactCount=len(artifact_types),
+        artifactTypes=artifact_types,
+        highlights=highlights,
+    )
+
+
+def project_request_snapshot(scenario: RuntimeScenario):
+    intake = scenario.request.intake
+    request_id = intake.requestId if intake else scenario.id
+    source = intake.source if intake else 'runtime'
+    raw_request = intake.rawRequest if intake else scenario.request.title
+    workflow_candidate = intake.candidateWorkflows[0] if intake and intake.candidateWorkflows else scenario.playbook.name
+
+    return RequestSnapshot(
+        request=MvpRequest(
+            requestId=request_id,
+            source=source,
+            sourceRef=(f"{source}:{intake.channelId}:{intake.userId}" if intake and (intake.channelId or intake.userId) else None),
+            title=scenario.request.title,
+            rawRequest=raw_request,
+            normalizedRequest={
+                'type': intake.normalizedType if intake else scenario.playbook.name,
+                'targetSystem': intake.targetSystem if intake else scenario.executionSubstrate.substrateId,
+                'requestedEntitlement': intake.requestedEntitlement if intake else None,
+                'businessReason': intake.businessReason if intake else None,
+                'clarificationNeeded': intake.clarificationNeeded if intake else False,
+                'candidateWorkflows': intake.candidateWorkflows if intake else [scenario.playbook.name],
+            },
+            currentState=scenario.request.state,
+            currentOwner=scenario.ownership.currentOwner.name,
+            workflowCandidate=workflow_candidate,
+            trustState=scenario.trustModel.level.lower(),
+            delegationMode=scenario.request.autonomyMode,
+            createdAt='now',
+            updatedAt='now',
+        ),
+        intakeStatus=IntakeStatus(
+            intakeState='clarification_needed' if intake and intake.clarificationNeeded else 'normalized',
+            clarificationNeeded=intake.clarificationNeeded if intake else False,
+            missingContext=intake.missingFields if intake else [],
+            candidateWorkflows=intake.candidateWorkflows if intake else [scenario.playbook.name],
+            initialTrustPosture=intake.initialTrustMode if intake else scenario.request.autonomyMode,
+        ),
+        workflowState=_derive_workflow_state(scenario),
+        policyDecision=_derive_policy_decision(scenario),
+        trustState=_derive_trust_state(scenario),
+        pendingAction=_derive_pending_action(scenario),
+        verificationState=_derive_verification_state(scenario),
+        artifactSummary=_derive_artifact_summary(scenario),
+    )
+
+
+def project_request_timeline(scenario: RuntimeScenario):
+    intake = scenario.request.intake
+    request_id = intake.requestId if intake else scenario.id
+    family_map = {
+        'request': 'intake',
+        'workflow': 'workflow',
+        'policy': 'policy',
+        'human': 'human_checkpoint',
+        'tool': 'execution',
+        'verification': 'verification',
+        'artifact': 'artifact',
+    }
+    actor_map = {
+        'request': 'intake',
+        'workflow': 'runtime',
+        'policy': 'policy',
+        'human': 'operator',
+        'tool': 'runtime',
+        'verification': 'verification',
+        'artifact': 'runtime',
+    }
+
+    events = [
+        MvpTimelineEvent(
+            eventId=event.id,
+            requestId=request_id,
+            family=family_map.get(event.category, 'workflow'),
+            type=event.title,
+            summary=event.detail,
+            timestamp=event.time,
+            actor=actor_map.get(event.category, 'runtime'),
+            details={'inspectionKey': event.inspectionKey} if event.inspectionKey else None,
+            artifactRefs=['artifact'] if event.inspectionKey == 'artifact' else [],
+        )
+        for event in scenario.timeline
+    ]
+
+    return RequestTimelineResponse(requestId=request_id, events=events)
 
 
 def set_scenario(scenario_id: str):

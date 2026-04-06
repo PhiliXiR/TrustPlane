@@ -1,4 +1,5 @@
 import type { RuntimeScenario } from './runtime/scenarioTypes';
+import type { RequestSnapshot, RequestTimelineResponse } from './runtime/requestTypes';
 
 const API_BASE = import.meta.env.VITE_TRUSTPLANE_API_BASE ?? 'http://127.0.0.1:8011';
 const EVENTS_URL = `${API_BASE}/api/events`;
@@ -27,6 +28,14 @@ export function fetchScenarioOptions() {
 
 export function fetchRuntimeSnapshot() {
   return call<RuntimeScenario>('/api/runtime');
+}
+
+export function fetchRequestSnapshot(requestId: string) {
+  return call<RequestSnapshot>(`/api/requests/${requestId}`);
+}
+
+export function fetchRequestTimeline(requestId: string) {
+  return call<RequestTimelineResponse>(`/api/requests/${requestId}/timeline`);
 }
 
 export function changeScenario(id: string) {

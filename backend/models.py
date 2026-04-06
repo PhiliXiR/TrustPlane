@@ -215,3 +215,106 @@ class IntakeAccepted(BaseModel):
     requestId: str
     scenarioId: str
     clarificationNeeded: bool
+
+
+MvpTimelineFamily = Literal['intake', 'workflow', 'policy', 'human_checkpoint', 'execution', 'verification', 'artifact', 'trust', 'ownership']
+
+
+class MvpRequest(BaseModel):
+    requestId: str
+    source: str
+    sourceRef: Optional[str] = None
+    title: str
+    rawRequest: str
+    normalizedRequest: Dict[str, Optional[str] | str | bool | List[str]]
+    currentState: str
+    currentOwner: str
+    workflowCandidate: str
+    trustState: str
+    delegationMode: str
+    createdAt: str
+    updatedAt: str
+
+
+class IntakeStatus(BaseModel):
+    intakeState: str
+    clarificationNeeded: bool
+    missingContext: List[str]
+    candidateWorkflows: List[str]
+    initialTrustPosture: str
+
+
+class WorkflowStateSummary(BaseModel):
+    state: str
+    stateReason: str
+    nextStep: str
+    blocked: bool
+    blockedReason: Optional[str] = None
+
+
+class PolicyDecisionSummary(BaseModel):
+    decision: str
+    basis: str
+    requiresHumanReview: bool
+    policyRef: Optional[str] = None
+
+
+class TrustStateSummary(BaseModel):
+    trustLevel: str
+    delegationMode: str
+    executionMode: str
+    why: str
+    downgradeTriggers: List[str]
+
+
+class PendingActionSummary(BaseModel):
+    actionId: str
+    actionType: str
+    summary: str
+    status: str
+    preparedBy: str
+    requiresApproval: bool
+    riskSummary: Optional[str] = None
+
+
+class VerificationStateSummary(BaseModel):
+    status: str
+    summary: str
+    lastCheckedAt: str
+    evidenceRefs: List[str] = []
+    failureReason: Optional[str] = None
+
+
+class ArtifactSummary(BaseModel):
+    artifactCount: int
+    artifactTypes: List[str]
+    highlights: List[str] = []
+
+
+class MvpTimelineEvent(BaseModel):
+    eventId: str
+    requestId: str
+    family: MvpTimelineFamily
+    type: str
+    summary: str
+    timestamp: str
+    actor: str
+    details: Optional[Dict[str, str | bool | List[str]]] = None
+    correlationId: Optional[str] = None
+    artifactRefs: List[str] = []
+
+
+class RequestSnapshot(BaseModel):
+    request: MvpRequest
+    intakeStatus: IntakeStatus
+    workflowState: WorkflowStateSummary
+    policyDecision: PolicyDecisionSummary
+    trustState: TrustStateSummary
+    pendingAction: PendingActionSummary
+    verificationState: VerificationStateSummary
+    artifactSummary: ArtifactSummary
+
+
+class RequestTimelineResponse(BaseModel):
+    requestId: str
+    events: List[MvpTimelineEvent]

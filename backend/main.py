@@ -6,16 +6,19 @@ from .store import (
     approve_current_request,
     create_intake_request,
     deny_current_request,
+    find_scenario_by_request_id,
     get_runtime_snapshot,
     list_runtime_scenarios,
     pause_current_request,
+    project_request_snapshot,
+    project_request_timeline,
     release_execution_authority,
     resume_current_request,
     set_scenario,
     subscribe_events,
     unsubscribe_events,
 )
-from .models import IntakeAccepted, IntakeRequest, RuntimeScenario, ScenarioOption
+from .models import IntakeAccepted, IntakeRequest, RequestSnapshot, RequestTimelineResponse, RuntimeScenario, ScenarioOption
 
 app = FastAPI(title='TrustPlane API')
 
@@ -40,6 +43,22 @@ def scenarios():
 @app.get('/api/runtime', response_model=RuntimeScenario)
 def get_runtime():
     return get_runtime_snapshot()
+
+
+@app.get('/api/requests/{request_id}', response_model=RequestSnapshot)
+def get_request_snapshot(request_id: str):
+    scenario = find_scenario_by_request_id(request_id)
+    if scenario is None:
+        scenario = get_runtime_snapshot()
+    return project_request_snapshot(scenario)
+
+
+@app.get('/api/requests/{request_id}/timeline', response_model=RequestTimelineResponse)
+def get_request_timeline(request_id: str):
+    scenario = find_scenario_by_request_id(request_id)
+    if scenario is None:
+        scenario = get_runtime_snapshot()
+    return project_request_timeline(scenario)
 
 
 @app.get('/api/events')
