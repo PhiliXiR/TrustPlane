@@ -1,0 +1,117 @@
+import type { HumanCheckpoint, Stage } from '../types';
+import type { RequestSnapshot } from './requestTypes';
+
+export function deriveWorkflowRailStages(snapshot: RequestSnapshot | null | undefined, fallbackStages: Stage[]): Stage[] {
+  if (!snapshot) return fallbackStages;
+
+  const workflowState = snapshot.workflowState;
+  const pending = snapshot.pendingAction;
+  const verification = snapshot.verificationState;
+  const blocked = workflowState.blocked;
+  const policyHeld = snapshot.policyDecision.requiresHumanReview && pending.requiresApproval;
+
+  const stageFor = (id: string): Stage['status'] => {
+    if (id === 'intake') {
+      return snapshot.intakeStatus.clarificationNeeded ? 'current' : 'completed';
+    }
+    if (id === 'classification') {
+      if (snapshot.intakeStatus.clarificationNeeded) return 'blocked';
+      if (workflowState.state === 'classification') return 'current';
+      return 'completed';
+    }
+    if (id === 'policy') {
+      if (snapshot.policyDecision.decision === 'blocked') return 'blocked';
+      if (policyHeld) return 'current';
+      return pending.status === 'prepared' || pending.status === 'executing' || pending.status === 'completed' ? 'completed' : 'future';
+    }
+    if (id === 'approval') {
+      if (policyHeld) return 'current';
+      if (pending.status === 'denied') return 'blocked';
+      return ['executing', 'completed'].includes(pending.status) ? 'completed' : 'future';
+    }
+    if (id === 'tool') {
+      if (pending.status === 'executing') return 'current';
+      return pending.status === 'completed' ? 'completed' : blocked ? 'blocked' : 'future';
+    }
+    if (id === 'verification') {
+      if (verification.status === 'pending') return 'current';
+      if (verification.status === 'failed') return 'blocked';
+      return verification.status === 'passed' ? 'completed' : 'future';
+    }
+    if (id === 'done') {
+      return verification.status === 'passed' ? 'completed' : 'future';
+    }
+    if (workflowState.state === id) return blocked ? 'blocked' : 'current';
+    return fallbackStages.find((stage) => stage.id === id)?.status ?? 'future';
+  };
+
+  return fallbackStages.map((stage) => ({
+    ...stage,
+    status: stageFor(stage.id),
+    explanation:
+      stage.id === workflowState.state
+        ? workflowState.stateReason
+        : stage.id === 'policy'
+          ? snapshot.policyDecision.basis
+          : stage.id === 'tool'
+            ? pending.summary
+            : stage.id === 'verification'
+              ? verification.summary
+              : stage.explanation,
+    reason:
+      stage.id === workflowState.state && blocked
+        ? workflowState.blockedReason ?? stage.reason
+        : stage.id === 'verification' && verification.failureReason
+          ? verification.failureReason
+          : stage.reason,
+    next:
+      stage.id === workflowState.state
+        ? workflowState.nextStep
+        : stage.next,
+  }));
+}
+
+export function deriveHumanCheckpoints(snapshot: RequestSnapshot | null | undefined, fallbackCheckpoints: HumanCheckpoint[]): HumanCheckpoint[] {
+  if (!snapshot) return fallbackCheckpoints;
+
+  const reviewState: HumanCheckpoint['state'] = snapshot.policyDecision.requiresHumanReview
+    ? (snapshot.pendingAction.requiresApproval ? 'current' : 'completed')
+    : 'completed';
+
+  const executionState: HumanCheckpoint['state'] = snapshot.pendingAction.status === 'executing'
+    ? 'current'
+    : snapshot.pendingAction.status === 'completed'
+      ? 'completed'
+      : 'upcoming';
+
+  const verificationState: HumanCheckpoint['state'] = snapshot.verificationState.status === 'pending'
+    ? 'current'
+    : snapshot.verificationState.status === 'passed'
+      ? 'completed'
+      : snapshot.verificationState.status === 'failed'
+        ? 'current'
+        : 'upcoming';
+
+  return [
+    {
+      id: 'hcp-review',
+      label: 'Human review gate',
+      state: reviewState,
+      detail: snapshot.policyDecision.requiresHumanReview
+        ? snapshot.policyDecision.basis
+        : 'No human review gate is currently required for the next step.',
+    },
+    {
+      id: 'hcp-execution',
+      label: 'Execution authority',
+      state: executionState,
+      detail: snapshot.pendingAction.summary,
+    },
+    {
+      id: 'hcp-verification',
+      label: 'Outcome verification',
+      state: verificationState,
+      detail: snapshot.verificationState.summary,
+    },
+  ];
+}

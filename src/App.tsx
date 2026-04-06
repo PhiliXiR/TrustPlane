@@ -87,22 +87,7 @@ export default function App() {
       setScenarioId(snapshot.id);
       setSelectedStageId((current) => current || snapshot.stages.find((stage) => stage.status === 'current')?.id || snapshot.stages[0].id);
       setSelectedEventId(snapshot.timeline[snapshot.timeline.length - 1]?.id ?? snapshot.timeline[0].id);
-      const requestId = snapshot.request.intake?.requestId;
-      if (requestId) {
-        Promise.all([fetchRequestSnapshot(requestId), fetchRequestTimeline(requestId)])
-          .then(([snapshotData, timelineData]) => {
-            setRequestSnapshot(snapshotData);
-            setRequestTimeline(timelineData);
-            setSelectedEventId(timelineData.events[timelineData.events.length - 1]?.eventId ?? snapshot.timeline[snapshot.timeline.length - 1]?.id ?? '');
-          })
-          .catch(() => {
-            setRequestSnapshot(null);
-            setRequestTimeline(null);
-          });
-      } else {
-        setRequestSnapshot(null);
-        setRequestTimeline(null);
-      }
+      hydrateProjectedState(snapshot);
     });
 
     source.addEventListener('execution.stream', (event) => {
@@ -137,28 +122,34 @@ export default function App() {
     return runtime.inspections[inspectionKey ?? selectedEvent?.inspectionKey ?? 'request'] ?? runtime.inspections.request;
   }, [runtime, selectedEvent, selectedRequestEvent]);
 
+  async function hydrateProjectedState(snapshot: RuntimeScenario) {
+    const requestId = snapshot.request.intake?.requestId;
+    if (requestId) {
+      try {
+        const [snapshotData, timelineData] = await Promise.all([
+          fetchRequestSnapshot(requestId),
+          fetchRequestTimeline(requestId),
+        ]);
+        setRequestSnapshot(snapshotData);
+        setRequestTimeline(timelineData);
+        setSelectedEventId(timelineData.events[timelineData.events.length - 1]?.eventId ?? snapshot.timeline[snapshot.timeline.length - 1]?.id ?? '');
+      } catch {
+        setRequestSnapshot(null);
+        setRequestTimeline(null);
+      }
+    } else {
+      setRequestSnapshot(null);
+      setRequestTimeline(null);
+    }
+  }
+
   async function refreshFromAction(action: Promise<RuntimeScenario>) {
     const snapshot = await action;
     setRuntime(snapshot);
     setScenarioId(snapshot.id);
     setSelectedStageId(snapshot.stages.find((stage) => stage.status === 'current')?.id ?? snapshot.stages[0].id);
     setSelectedEventId(snapshot.timeline[snapshot.timeline.length - 1]?.id ?? snapshot.timeline[0].id);
-    const requestId = snapshot.request.intake?.requestId;
-    if (requestId) {
-      Promise.all([fetchRequestSnapshot(requestId), fetchRequestTimeline(requestId)])
-        .then(([snapshotData, timelineData]) => {
-          setRequestSnapshot(snapshotData);
-          setRequestTimeline(timelineData);
-          setSelectedEventId(timelineData.events[timelineData.events.length - 1]?.eventId ?? snapshot.timeline[snapshot.timeline.length - 1]?.id ?? '');
-        })
-        .catch(() => {
-          setRequestSnapshot(null);
-          setRequestTimeline(null);
-        });
-    } else {
-      setRequestSnapshot(null);
-      setRequestTimeline(null);
-    }
+    await hydrateProjectedState(snapshot);
     setFlashMessage(snapshot.request.state);
   }
 
@@ -249,7 +240,7 @@ export default function App() {
           executionSubstrate={runtime.executionSubstrate}
           snapshot={requestSnapshot}
         />
-        <WorkflowRail stages={runtime.stages} selectedStageId={selectedStageId} onSelect={setSelectedStageId} />
+        <WorkflowRail stages={runtime.stages} selectedStageId={selectedStageId} onSelect={setSelectedStageId} snapshot={requestSnapshot} />
 
         <div className="grid gap-6 xl:grid-cols-[1.08fr_0.92fr]">
           <div className="space-y-6">
@@ -264,7 +255,7 @@ export default function App() {
             />
           </div>
           <div className="space-y-6">
-            <HumanCheckpointsPanel checkpoints={runtime.humanCheckpoints} />
+            <HumanCheckpointsPanel checkpoints={runtime.humanCheckpoints} snapshot={requestSnapshot} />
             <TimelinePanel timeline={runtime.timeline} selectedEventId={selectedEventId} onSelect={setSelectedEventId} requestTimeline={requestTimeline?.events} />
           </div>
         </div>
