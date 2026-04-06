@@ -18,10 +18,48 @@ Each fixture includes:
 2. expected clarification behavior
 3. expected normalized `n8n` output
 4. expected TrustPlane request snapshot summary
-5. expected timeline events
-6. notes on what the example demonstrates
+5. expected lifecycle posture
+6. expected timeline events
+7. expected evidence artifacts
+8. notes on what the example demonstrates
 
 These are written to be readable by humans first while still being structured enough to guide future testing.
+
+## Canonical vocabulary used in this pack
+
+### Initial trust posture values
+
+- `human_approved_execution`
+- `clarify_then_route`
+- `observe_and_escalate`
+
+### Canonical workflow candidate families
+
+- `access_request_standard`
+- `shared_drive_access_request`
+- `vpn_access_request`
+- `offboarding_access_removal`
+- `mailbox_access_request`
+- `service_restart_request`
+- `cloud_cleanup_reviewed`
+- `credential_revoke_or_rotate`
+- `incident_triage_investigate_only`
+- `staging_worker_recovery`
+
+## Matrix summary
+
+| # | Example | Category | Clarification | Initial Trust | Candidate Workflow | Expected Path | Approval Expected |
+|---|---|---|---|---|---|---|---|
+| 1 | Reporting dashboard access | IT / access | No | `human_approved_execution` | `access_request_standard` | execute | Yes |
+| 2 | Finance shared drive access | IT / access | Yes | `clarify_then_route` | `shared_drive_access_request` | execute | Yes |
+| 3 | Contractor VPN access | IT / VPN | Yes | `clarify_then_route` | `vpn_access_request` | execute | Yes |
+| 4 | Offboarding access removal | IT / offboarding | No | `human_approved_execution` | `offboarding_access_removal` | execute | Yes |
+| 5 | Shared mailbox access | IT / mailbox | Yes | `clarify_then_route` | `mailbox_access_request` | execute | Yes |
+| 6 | Restart staging web service | AWS / ops | Yes | `clarify_then_route` | `service_restart_request` | execute | Yes |
+| 7 | Clean up unattached EBS volumes | AWS / cleanup | Yes | `clarify_then_route` | `cloud_cleanup_reviewed` | execute | Yes |
+| 8 | Revoke stale IAM credential | AWS / security | Yes | `clarify_then_route` | `credential_revoke_or_rotate` | execute | Yes |
+| 9 | Investigate CPU spike on prod | AWS / incident | Yes | `observe_and_escalate` | `incident_triage_investigate_only` | investigate | Usually yes |
+| 10 | Restart failed staging worker | AWS / ops | No | `human_approved_execution` | `staging_worker_recovery` | execute | Yes |
 
 ---
 
@@ -52,30 +90,49 @@ No clarification required if Jamie’s identity is resolvable through the identi
   "businessReason": "helping with Monday metrics review",
   "clarificationNeeded": false,
   "missingFields": [],
-  "candidateWorkflows": ["access_request_standard", "reporting_access"],
-  "initialTrustMode": "human_approved_execution"
+  "candidateWorkflows": ["access_request_standard"],
+  "initialTrustMode": "human_approved_execution",
+  "metadata": {
+    "resourceName": "reporting_dashboard",
+    "accessScope": "read"
+  }
 }
 ```
 
 ## Expected TrustPlane request snapshot summary
 
 - **request title:** Access Request · reporting_dashboard
-- **current state:** Received from intake and awaiting governed review
-- **current owner:** Access Operator
-- **workflow candidate:** access_request_standard or reporting_access
-- **trust level:** moderate / bounded-human-approved
+- **current state:** `awaiting_review`
+- **current owner:** operator
+- **workflow candidate:** `access_request_standard`
+- **trust level:** `bounded`
 - **policy decision:** held pending human approval
-- **pending action:** prepared access grant for reporting.read
+- **pending action:** prepare access grant for `reporting.read`
 - **verification expectation:** confirm final entitlement state
+- **operator summary:** Temporary reporting dashboard access for Jamie tied to Monday metrics review.
+
+## Expected lifecycle posture
+
+- `intake_received`
+- `normalized`
+- `admitted`
+- `awaiting_review`
 
 ## Expected timeline events
 
 1. `intake.request.received`
 2. `intake.request.normalized`
-3. `workflow.playbook.selected`
-4. `ownership.transferred`
-5. `policy.decision.changed`
-6. `human.approval.requested`
+3. `intake.request.admitted`
+4. `workflow.playbook.selected`
+5. `ownership.transferred`
+6. `policy.decision.changed`
+7. `human.approval.requested`
+8. `execution.change.prepared`
+
+## Expected evidence artifacts
+
+- policy snapshot for reporting access rule
+- entitlement verification artifact showing final reporting membership
 
 ## What this demonstrates
 
@@ -122,7 +179,7 @@ Clarification required.
   "businessReason": "month-end close",
   "clarificationNeeded": false,
   "missingFields": [],
-  "candidateWorkflows": ["access_request_standard", "shared_drive_access", "temporary_access_request"],
+  "candidateWorkflows": ["shared_drive_access_request"],
   "initialTrustMode": "human_approved_execution",
   "metadata": {
     "resourceName": "Finance Close shared drive",
@@ -134,13 +191,22 @@ Clarification required.
 ## Expected TrustPlane request snapshot summary
 
 - **request title:** Access Request · google_workspace
-- **current state:** Received from intake and awaiting governed review
-- **current owner:** Access Operator
-- **workflow candidate:** shared_drive_access
-- **trust level:** moderate / bounded-human-approved
+- **current state:** `awaiting_review`
+- **current owner:** operator
+- **workflow candidate:** `shared_drive_access_request`
+- **trust level:** `bounded`
 - **policy decision:** held pending review because resource access is temporary but sensitive
 - **pending action:** prepare shared-drive membership grant with duration note
 - **verification expectation:** confirm group/drive membership applied and duration recorded
+- **operator summary:** Temporary Finance Close shared-drive access for Priya tied to month-end close.
+
+## Expected lifecycle posture
+
+- `intake_received`
+- `clarification_needed`
+- `normalized`
+- `admitted`
+- `awaiting_review`
 
 ## Expected timeline events
 
@@ -148,10 +214,18 @@ Clarification required.
 2. `intake.clarification.requested`
 3. `intake.clarification.received`
 4. `intake.request.normalized`
-5. `workflow.playbook.selected`
-6. `ownership.transferred`
-7. `policy.decision.changed`
-8. `human.approval.requested`
+5. `intake.request.admitted`
+6. `workflow.playbook.selected`
+7. `ownership.transferred`
+8. `policy.decision.changed`
+9. `human.approval.requested`
+10. `execution.change.prepared`
+
+## Expected evidence artifacts
+
+- policy snapshot for shared-drive delegation rule
+- membership verification artifact
+- temporary-duration annotation artifact or audit note
 
 ## What this demonstrates
 
@@ -202,7 +276,7 @@ Clarification required.
   "businessReason": "infra contractor onboarding for two-week engagement",
   "clarificationNeeded": false,
   "missingFields": [],
-  "candidateWorkflows": ["vpn_access_request", "contractor_access_request"],
+  "candidateWorkflows": ["vpn_access_request"],
   "initialTrustMode": "human_approved_execution",
   "metadata": {
     "directoryIdentity": "alex.rivera.contractor@vendorco.com",
@@ -215,14 +289,23 @@ Clarification required.
 
 ## Expected TrustPlane request snapshot summary
 
-- **request title:** Vpn Access Request · corporate_vpn
-- **current state:** Received from intake and awaiting governed review
-- **current owner:** Access Operator
-- **workflow candidate:** vpn_access_request
-- **trust level:** moderate but tightly gated
+- **request title:** VPN Access Request · corporate_vpn
+- **current state:** `awaiting_review`
+- **current owner:** operator
+- **workflow candidate:** `vpn_access_request`
+- **trust level:** `bounded`
 - **policy decision:** held because contractor VPN access requires explicit review
 - **pending action:** prepare contractor VPN profile assignment
 - **verification expectation:** confirm VPN profile and expiration window
+- **operator summary:** Contractor VPN profile request for Alex Rivera with infra-contractor scope and two-week duration.
+
+## Expected lifecycle posture
+
+- `intake_received`
+- `clarification_needed`
+- `normalized`
+- `admitted`
+- `awaiting_review`
 
 ## Expected timeline events
 
@@ -230,9 +313,17 @@ Clarification required.
 2. `intake.clarification.requested`
 3. `intake.clarification.received`
 4. `intake.request.normalized`
-5. `workflow.playbook.selected`
-6. `policy.decision.changed`
-7. `human.approval.requested`
+5. `intake.request.admitted`
+6. `workflow.playbook.selected`
+7. `policy.decision.changed`
+8. `human.approval.requested`
+9. `execution.change.prepared`
+
+## Expected evidence artifacts
+
+- policy snapshot for contractor VPN access
+- contractor identity verification artifact
+- VPN profile assignment verification artifact
 
 ## What this demonstrates
 
@@ -271,7 +362,7 @@ Otherwise proceed directly.
   "businessReason": "employee departure offboarding",
   "clarificationNeeded": false,
   "missingFields": [],
-  "candidateWorkflows": ["offboarding_access_removal", "deprovision_standard"],
+  "candidateWorkflows": ["offboarding_access_removal"],
   "initialTrustMode": "human_approved_execution"
 }
 ```
@@ -279,22 +370,38 @@ Otherwise proceed directly.
 ## Expected TrustPlane request snapshot summary
 
 - **request title:** Deprovision Request · identity_and_access
-- **current state:** Received from intake and awaiting governed review
-- **current owner:** Access Operator
-- **workflow candidate:** offboarding_access_removal
-- **trust level:** bounded, likely lower controversy than new-access grant
+- **current state:** `awaiting_review`
+- **current owner:** operator
+- **workflow candidate:** `offboarding_access_removal`
+- **trust level:** `bounded`
 - **policy decision:** held for confirmation/review
 - **pending action:** prepare access-removal changes
 - **verification expectation:** confirm VPN access removed and target groups removed
+- **operator summary:** Offboarding access-removal request for Morgan covering VPN and internal groups.
+
+## Expected lifecycle posture
+
+- `intake_received`
+- `normalized`
+- `admitted`
+- `awaiting_review`
 
 ## Expected timeline events
 
 1. `intake.request.received`
 2. `intake.request.normalized`
-3. `workflow.playbook.selected`
-4. `ownership.transferred`
-5. `policy.decision.changed`
-6. `human.approval.requested`
+3. `intake.request.admitted`
+4. `workflow.playbook.selected`
+5. `ownership.transferred`
+6. `policy.decision.changed`
+7. `human.approval.requested`
+8. `execution.change.prepared`
+
+## Expected evidence artifacts
+
+- offboarding policy snapshot
+- entitlement removal verification artifact
+- group-membership removal verification artifact
 
 ## What this demonstrates
 
@@ -340,7 +447,7 @@ Clarification required.
   "businessReason": "coverage while mailbox owner is away",
   "clarificationNeeded": false,
   "missingFields": [],
-  "candidateWorkflows": ["mailbox_access_request", "temporary_coverage_access"],
+  "candidateWorkflows": ["mailbox_access_request"],
   "initialTrustMode": "human_approved_execution",
   "metadata": {
     "mailbox": "support@",
@@ -353,13 +460,22 @@ Clarification required.
 ## Expected TrustPlane request snapshot summary
 
 - **request title:** Mailbox Access Request · email_system
-- **current state:** Received from intake and awaiting governed review
-- **current owner:** Access Operator
-- **workflow candidate:** mailbox_access_request
-- **trust level:** moderate and privacy-sensitive
+- **current state:** `awaiting_review`
+- **current owner:** operator
+- **workflow candidate:** `mailbox_access_request`
+- **trust level:** `bounded`
 - **policy decision:** held because mailbox delegation needs explicit review
 - **pending action:** prepare mailbox delegation with restricted permission scope
 - **verification expectation:** confirm delegation scope and duration
+- **operator summary:** Temporary reply-capable mailbox delegation for Sarah to support@ through next Friday.
+
+## Expected lifecycle posture
+
+- `intake_received`
+- `clarification_needed`
+- `normalized`
+- `admitted`
+- `awaiting_review`
 
 ## Expected timeline events
 
@@ -367,9 +483,17 @@ Clarification required.
 2. `intake.clarification.requested`
 3. `intake.clarification.received`
 4. `intake.request.normalized`
-5. `workflow.playbook.selected`
-6. `policy.decision.changed`
-7. `human.approval.requested`
+5. `intake.request.admitted`
+6. `workflow.playbook.selected`
+7. `policy.decision.changed`
+8. `human.approval.requested`
+9. `execution.change.prepared`
+
+## Expected evidence artifacts
+
+- mailbox delegation policy snapshot
+- mailbox permission verification artifact
+- duration/expiry audit artifact
 
 ## What this demonstrates
 
@@ -415,7 +539,7 @@ Clarification required.
   "businessReason": "recover stalled staging web service",
   "clarificationNeeded": false,
   "missingFields": [],
-  "candidateWorkflows": ["service_restart", "staging_recovery_action"],
+  "candidateWorkflows": ["service_restart_request"],
   "initialTrustMode": "human_approved_execution",
   "metadata": {
     "serviceName": "staging-web-api",
@@ -427,13 +551,22 @@ Clarification required.
 ## Expected TrustPlane request snapshot summary
 
 - **request title:** Service Restart Request · aws_staging
-- **current state:** Received from intake and awaiting governed review
-- **current owner:** Change Operator
-- **workflow candidate:** service_restart
-- **trust level:** bounded, moderate risk
+- **current state:** `awaiting_review`
+- **current owner:** operator
+- **workflow candidate:** `service_restart_request`
+- **trust level:** `bounded`
 - **policy decision:** held pending release of restart authority
 - **pending action:** prepare service restart command envelope
 - **verification expectation:** confirm service recovery and healthy status
+- **operator summary:** Restart request for staging-web-api in staging after service stall.
+
+## Expected lifecycle posture
+
+- `intake_received`
+- `clarification_needed`
+- `normalized`
+- `admitted`
+- `awaiting_review`
 
 ## Expected timeline events
 
@@ -441,9 +574,18 @@ Clarification required.
 2. `intake.clarification.requested`
 3. `intake.clarification.received`
 4. `intake.request.normalized`
-5. `workflow.playbook.selected`
-6. `ownership.transferred`
-7. `human.approval.requested`
+5. `intake.request.admitted`
+6. `workflow.playbook.selected`
+7. `ownership.transferred`
+8. `policy.decision.changed`
+9. `human.approval.requested`
+10. `execution.change.prepared`
+
+## Expected evidence artifacts
+
+- service restart policy snapshot
+- restart execution log artifact
+- health-check verification artifact
 
 ## What this demonstrates
 
@@ -489,7 +631,7 @@ Clarification required.
   "businessReason": "reduce stale resource cost in development environment",
   "clarificationNeeded": false,
   "missingFields": [],
-  "candidateWorkflows": ["aws_cleanup_reviewed", "ebs_cleanup"],
+  "candidateWorkflows": ["cloud_cleanup_reviewed"],
   "initialTrustMode": "human_approved_execution",
   "metadata": {
     "awsAccount": "dev",
@@ -502,13 +644,22 @@ Clarification required.
 ## Expected TrustPlane request snapshot summary
 
 - **request title:** Cloud Cleanup Request · aws_ebs
-- **current state:** Received from intake and awaiting governed review
-- **current owner:** Change Operator
-- **workflow candidate:** aws_cleanup_reviewed
-- **trust level:** bounded / review-heavy
+- **current state:** `awaiting_review`
+- **current owner:** operator
+- **workflow candidate:** `cloud_cleanup_reviewed`
+- **trust level:** `bounded`
 - **policy decision:** held because destructive cleanup criteria must be explicit
 - **pending action:** prepare reviewed EBS cleanup plan
 - **verification expectation:** confirm deleted set matches approved criteria only
+- **operator summary:** Reviewed EBS cleanup request in dev/us-west-2 using explicit safe-delete criteria.
+
+## Expected lifecycle posture
+
+- `intake_received`
+- `clarification_needed`
+- `normalized`
+- `admitted`
+- `awaiting_review`
 
 ## Expected timeline events
 
@@ -516,9 +667,17 @@ Clarification required.
 2. `intake.clarification.requested`
 3. `intake.clarification.received`
 4. `intake.request.normalized`
-5. `workflow.playbook.selected`
-6. `policy.decision.changed`
-7. `human.approval.requested`
+5. `intake.request.admitted`
+6. `workflow.playbook.selected`
+7. `policy.decision.changed`
+8. `human.approval.requested`
+9. `execution.change.prepared`
+
+## Expected evidence artifacts
+
+- cleanup policy snapshot
+- candidate-resource review artifact
+- deletion result verification artifact
 
 ## What this demonstrates
 
@@ -568,7 +727,7 @@ Clarification required.
   "businessReason": "remove stale IAM credential exposure",
   "clarificationNeeded": false,
   "missingFields": [],
-  "candidateWorkflows": ["credential_revoke_or_rotate", "iam_key_hygiene"],
+  "candidateWorkflows": ["credential_revoke_or_rotate"],
   "initialTrustMode": "human_approved_execution",
   "metadata": {
     "iamUser": "deploy-bot-old",
@@ -582,13 +741,22 @@ Clarification required.
 ## Expected TrustPlane request snapshot summary
 
 - **request title:** Credential Rotation Request · aws_iam
-- **current state:** Received from intake and awaiting governed review
-- **current owner:** Change Operator
-- **workflow candidate:** credential_revoke_or_rotate
-- **trust level:** moderate/high sensitivity, bounded by approval
+- **current state:** `awaiting_review`
+- **current owner:** operator
+- **workflow candidate:** `credential_revoke_or_rotate`
+- **trust level:** `bounded`
 - **policy decision:** held because credential actions are security-sensitive
 - **pending action:** prepare IAM key revocation action
 - **verification expectation:** confirm target key disabled/revoked and no unintended replacement issued
+- **operator summary:** Revoke-only IAM credential hygiene request for deploy-bot-old in staging shared services.
+
+## Expected lifecycle posture
+
+- `intake_received`
+- `clarification_needed`
+- `normalized`
+- `admitted`
+- `awaiting_review`
 
 ## Expected timeline events
 
@@ -596,9 +764,17 @@ Clarification required.
 2. `intake.clarification.requested`
 3. `intake.clarification.received`
 4. `intake.request.normalized`
-5. `workflow.playbook.selected`
-6. `policy.decision.changed`
-7. `human.approval.requested`
+5. `intake.request.admitted`
+6. `workflow.playbook.selected`
+7. `policy.decision.changed`
+8. `human.approval.requested`
+9. `execution.change.prepared`
+
+## Expected evidence artifacts
+
+- IAM credential policy snapshot
+- target-key identification artifact
+- revocation verification artifact
 
 ## What this demonstrates
 
@@ -644,7 +820,7 @@ Clarification required.
   "businessReason": "investigate production performance degradation",
   "clarificationNeeded": false,
   "missingFields": [],
-  "candidateWorkflows": ["incident_triage_investigate_only", "prod_runtime_investigation"],
+  "candidateWorkflows": ["incident_triage_investigate_only"],
   "initialTrustMode": "observe_and_escalate",
   "metadata": {
     "serviceIdentifier": "prod-api-asg",
@@ -657,13 +833,22 @@ Clarification required.
 ## Expected TrustPlane request snapshot summary
 
 - **request title:** Incident Triage Request · aws_production
-- **current state:** Received from intake and awaiting governed review
-- **current owner:** Change Operator or incident operator
-- **workflow candidate:** incident_triage_investigate_only
-- **trust level:** restrictive / observe-first
+- **current state:** `awaiting_review` or tightly held investigate-only posture
+- **current owner:** operator
+- **workflow candidate:** `incident_triage_investigate_only`
+- **trust level:** `observed` or restrictive investigate-first posture
 - **policy decision:** allow investigation preparation, hold remediation execution
 - **pending action:** investigation-only access/inspection plan
 - **verification expectation:** collect diagnostic artifact rather than immediate change verification
+- **operator summary:** Production CPU investigation request for prod-api ASG with investigation-only authority.
+
+## Expected lifecycle posture
+
+- `intake_received`
+- `clarification_needed`
+- `normalized`
+- `admitted`
+- `awaiting_review`
 
 ## Expected timeline events
 
@@ -671,9 +856,17 @@ Clarification required.
 2. `intake.clarification.requested`
 3. `intake.clarification.received`
 4. `intake.request.normalized`
-5. `workflow.playbook.selected`
-6. `policy.decision.changed`
-7. `human.approval.requested` or `workflow.state.changed` into investigate-only posture
+5. `intake.request.admitted`
+6. `workflow.playbook.selected`
+7. `policy.decision.changed`
+8. `human.approval.requested`
+9. `execution.change.prepared`
+
+## Expected evidence artifacts
+
+- production investigation policy snapshot
+- diagnostic artifact or metrics snapshot
+- investigation summary artifact
 
 ## What this demonstrates
 
@@ -711,7 +904,7 @@ Otherwise proceed.
   "businessReason": "restore stalled background job processing in staging",
   "clarificationNeeded": false,
   "missingFields": [],
-  "candidateWorkflows": ["service_restart", "staging_worker_recovery"],
+  "candidateWorkflows": ["staging_worker_recovery"],
   "initialTrustMode": "human_approved_execution",
   "metadata": {
     "serviceName": "invoice_worker",
@@ -723,22 +916,38 @@ Otherwise proceed.
 ## Expected TrustPlane request snapshot summary
 
 - **request title:** Service Restart Request · aws_staging
-- **current state:** Received from intake and awaiting governed review
-- **current owner:** Change Operator
-- **workflow candidate:** staging_worker_recovery
-- **trust level:** bounded-human-approved
+- **current state:** `awaiting_review`
+- **current owner:** operator
+- **workflow candidate:** `staging_worker_recovery`
+- **trust level:** `bounded`
 - **policy decision:** held pending release of restart authority
 - **pending action:** prepare worker restart envelope
 - **verification expectation:** confirm queue processing resumes after restart
+- **operator summary:** Staging invoice-worker restart request after stalled queue processing.
+
+## Expected lifecycle posture
+
+- `intake_received`
+- `normalized`
+- `admitted`
+- `awaiting_review`
 
 ## Expected timeline events
 
 1. `intake.request.received`
 2. `intake.request.normalized`
-3. `workflow.playbook.selected`
-4. `ownership.transferred`
-5. `policy.decision.changed`
-6. `human.approval.requested`
+3. `intake.request.admitted`
+4. `workflow.playbook.selected`
+5. `ownership.transferred`
+6. `policy.decision.changed`
+7. `human.approval.requested`
+8. `execution.change.prepared`
+
+## Expected evidence artifacts
+
+- restart policy snapshot
+- worker restart execution log
+- queue recovery verification artifact
 
 ## What this demonstrates
 
@@ -759,11 +968,23 @@ This set should help demonstrate:
 - how TrustPlane turns intake into an operator-facing governed record
 - a believable range of operational use cases across IT and AWS/ops work
 
+## Fixture quality bar
+
+A strong intake fixture should:
+
+- use realistic human phrasing
+- capture only materially needed clarification
+- normalize into canonical field/value shapes
+- assign a workflow family that matches the request class
+- choose an initial trust posture with operational meaning
+- distinguish investigation-only from execute-authorized requests
+- include expected evidence, not just expected action
+
 ## Strong next extensions
 
 If you want to push this further later, the next strongest additions would be:
 
 1. fixture JSON files checked into a test directory
 2. expected TrustPlane timeline fixtures in machine-readable form
-3. one or two fully narrated demo scripts using these fixtures
-4. a short appendix explaining how trust posture differs between the examples
+3. a short trust-posture appendix explaining why each example gets its initial mode
+4. one or two narrated demo scripts built from these fixtures
