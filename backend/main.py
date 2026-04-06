@@ -6,7 +6,7 @@ from .store import (
     approve_current_request,
     create_intake_request,
     deny_current_request,
-    find_scenario_by_request_id,
+    get_request_context,
     get_runtime_snapshot,
     list_runtime_scenarios,
     pause_current_request,
@@ -48,18 +48,14 @@ def get_runtime():
 
 @app.get('/api/requests/{request_id}', response_model=RequestSnapshot)
 def get_request_snapshot(request_id: str):
-    scenario = find_scenario_by_request_id(request_id)
-    if scenario is None:
-        scenario = get_runtime_snapshot()
-    return project_request_snapshot(scenario)
+    context = get_request_context(request_id)
+    return project_request_snapshot(context['scenario'])
 
 
 @app.get('/api/requests/{request_id}/timeline', response_model=RequestTimelineResponse)
 def get_request_timeline(request_id: str):
-    scenario = find_scenario_by_request_id(request_id)
-    if scenario is None:
-        scenario = get_runtime_snapshot()
-    return project_request_timeline(scenario)
+    context = get_request_context(request_id)
+    return project_request_timeline(context['scenario'])
 
 
 @app.post('/api/requests/{request_id}/approve', response_model=RuntimeScenario)

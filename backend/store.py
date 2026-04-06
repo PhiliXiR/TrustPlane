@@ -117,6 +117,25 @@ def find_scenario_by_request_id(request_id: str):
     return None
 
 
+def get_request_context(request_id: str | None = None):
+    scenario = find_scenario_by_request_id(request_id) if request_id else None
+    if scenario is None:
+        scenario = get_runtime_snapshot()
+
+    intake = scenario.request.intake
+    resolved_request_id = intake.requestId if intake else scenario.id
+    artifact_summary = _derive_artifact_summary(scenario)
+    verification_state = _derive_verification_state(scenario)
+
+    return {
+        'scenario': scenario,
+        'intake': intake,
+        'requestId': resolved_request_id,
+        'artifactSummary': artifact_summary,
+        'verificationState': verification_state,
+    }
+
+
 def _derive_workflow_state(scenario: RuntimeScenario):
     current_stage = next((stage for stage in scenario.stages if stage.status == 'current'), scenario.stages[-1])
     blocked = current_stage.status == 'blocked' or 'paused' in scenario.request.state.lower() or 'denied' in scenario.request.state.lower()
@@ -317,8 +336,10 @@ def project_request_snapshot(scenario: RuntimeScenario):
 
 
 def project_request_timeline(scenario: RuntimeScenario):
-    intake = scenario.request.intake
-    request_id = intake.requestId if intake else scenario.id
+    context = get_request_context(scenario.request.intake.requestId if scenario.request.intake else None)
+    request_id = context['requestId']
+    artifact_summary = context['artifactSummary']
+    verification_state = context['verificationState']
     family_map = {
         'request': 'intake',
         'workflow': 'workflow',
@@ -390,14 +411,14 @@ def project_request_timeline(scenario: RuntimeScenario):
                 details={
                     'inspectionKey': event.inspectionKey,
                     'requestState': scenario.request.state,
-                    'artifactTypes': _derive_artifact_summary(scenario).artifactTypes,
-                    'verificationStatus': _derive_verification_state(scenario).status,
+                    'artifactTypes': artifact_summary.artifactTypes,
+                    'verificationStatus': verification_state.status,
                 } if event.inspectionKey else {
                     'requestState': scenario.request.state,
-                    'artifactTypes': _derive_artifact_summary(scenario).artifactTypes,
-                    'verificationStatus': _derive_verification_state(scenario).status,
+                    'artifactTypes': artifact_summary.artifactTypes,
+                    'verificationStatus': verification_state.status,
                 },
-                artifactRefs=_derive_verification_state(scenario).evidenceRefs if event.inspectionKey in {'artifact', 'policy'} else ([] if event.inspectionKey != 'tool' else ['tool']),
+                artifactRefs=verification_state.evidenceRefs if event.inspectionKey in {'artifact', 'policy'} else ([] if event.inspectionKey != 'tool' else ['tool']),
             )
         )
 

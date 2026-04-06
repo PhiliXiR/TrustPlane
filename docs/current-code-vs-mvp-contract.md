@@ -465,6 +465,7 @@ Still not done:
 Newly implemented in a thin bridge form:
 - request-scoped action endpoints for approve, deny, pause, resume, and release execution
 - backend request-to-current routing helper for request-scoped actions
+- backend request-context helper for request-facing reads/projections
 - frontend request-scoped action helper path
 - approval bar now prefers request-scoped actions when a request ID is available
 - workflow rail and human checkpoints now derive contract-aware summaries from the request snapshot
@@ -479,6 +480,7 @@ The main remaining gap is now less about visible UI migration and more about:
 - deeper write-path cleanup
 - stronger request-native evidence/artifact modeling
 - reducing scenario-global assumptions behind the bridge
+- continuing the backend transition from scenario-centric helpers toward request-native helpers
 
 The most important implementation insight remains:
 
