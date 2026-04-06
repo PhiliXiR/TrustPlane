@@ -227,6 +227,7 @@ export default function App() {
           requestState={runtime.request.state}
           autonomyMode={runtime.request.autonomyMode}
           currentStageLabel={selectedStage.label}
+          snapshot={requestSnapshot}
           onApprove={() => refreshFromAction(approveRuntimeRequest()).catch((err) => setError(String(err)))}
           onReleaseExecution={() => refreshFromAction(releaseExecutionAuthority()).catch((err) => setError(String(err)))}
           onDeny={() => refreshFromAction(denyRuntimeRequest()).catch((err) => setError(String(err)))}
@@ -239,6 +240,7 @@ export default function App() {
           delegation={runtime.delegation}
           authorityBoundary={runtime.authorityBoundary}
           executionSubstrate={runtime.executionSubstrate}
+          snapshot={requestSnapshot}
         />
         <WorkflowRail stages={runtime.stages} selectedStageId={selectedStageId} onSelect={setSelectedStageId} />
 

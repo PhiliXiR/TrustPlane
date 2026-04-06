@@ -434,12 +434,41 @@ Keep the scenario-driven demo selector temporarily if useful, but decouple it fr
 - deep replay tooling
 - multi-runtime abstraction polish
 
+## Implemented so far
+
+The newer MVP contract is no longer only documented. The repo now has a real first migration slice in code.
+
+Implemented in code:
+- MVP request snapshot DTOs in the backend
+- MVP timeline DTOs in the backend
+- request snapshot projection from current scenario-backed state
+- timeline projection from current scenario-backed state
+- `GET /api/requests/{request_id}`
+- `GET /api/requests/{request_id}/timeline`
+- frontend request snapshot types
+- frontend request timeline types
+- request header migrated to prefer projected contract data
+- timeline panel migrated to prefer projected contract data
+- decision panel migrated to prefer projected contract data
+- inspection drawer migrated to use projected event details when present
+- intake spotlight card migrated to prefer projected intake/request data
+- command envelope panel migrated to prefer projected pending-action context
+- approval bar migrated to prefer projected state/action gating
+- operator control panel migrated to prefer projected owner/trust/workflow context
+
+Still not done:
+- request-scoped write/action endpoints
+- full replacement of scenario-global API usage
+- broader migration of remaining panels like workflow rail and human checkpoints
+- stronger request-native evidence/artifact model
+- removal of scenario-backed transitional shaping
+
 ## Summary
 
-The current code is close enough to the MVP docs that the next pass should be an **adapter/projection migration**, not a rewrite.
+The current code is close enough to the MVP docs that the next pass should continue the **adapter/projection migration**, not switch into rewrite mode.
 
-The most important implementation insight is:
+The most important implementation insight remains:
 
-**keep the scenario-backed prototype internals for now, but introduce a new request-snapshot contract on top of them.**
+**keep the scenario-backed prototype internals for now, but continue introducing the request-snapshot contract on top of them.**
 
-That is the shortest path from current repo reality to the newer TrustPlane MVP shape.
+That is still the shortest path from current repo reality to the newer TrustPlane MVP shape.

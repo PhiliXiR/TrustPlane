@@ -1,4 +1,6 @@
 import type { AgentAuthorityBoundary, DelegationState, ExecutionSubstrate, OperatorAgent, OwnershipState } from '../types';
+import type { RequestSnapshot } from '../runtime/requestTypes';
+import { SectionHeader, StatusBadge, SurfaceCard } from './ui';
 
 type Props = {
   operators: OperatorAgent[];
@@ -6,6 +8,7 @@ type Props = {
   delegation: DelegationState;
   authorityBoundary: AgentAuthorityBoundary;
   executionSubstrate: ExecutionSubstrate;
+  snapshot?: RequestSnapshot | null;
 };
 
 export function OperatorControlPanel({
@@ -14,107 +17,105 @@ export function OperatorControlPanel({
   delegation,
   authorityBoundary,
   executionSubstrate,
+  snapshot,
 }: Props) {
+  const currentOwner = snapshot?.request.currentOwner ?? ownership.currentOwner.name;
+  const delegationMode = snapshot?.trustState.delegationMode ?? delegation.delegationMode.split('_').join(' ');
+  const executionMode = snapshot?.trustState.executionMode ?? executionSubstrate.mode.split('_').join(' ');
+  const blockedReason = snapshot?.workflowState.blockedReason ?? delegation.reason;
   return (
     <section className="rounded-3xl border border-line bg-panel/95 p-6 shadow-panel">
-      <h2 className="text-lg font-semibold text-slate-50">NemoClaw Operator Topology</h2>
-      <p className="mt-1 text-sm text-muted">Who owns the request, how it was routed, and what the current operator is allowed to do inside NemoClaw.</p>
+      <SectionHeader
+        title="Operator flow and authority"
+        description="The shortest explanation of who owns the request, how it got here, and what the current operator can actually do."
+      />
 
-      <div className="mt-5 grid gap-6 xl:grid-cols-[1.02fr_0.98fr]">
-        <div className="space-y-4">
-          <Card title="Current ownership">
-            <div className="grid gap-3 md:grid-cols-2">
-              <Meta label="Current owner" value={ownership.currentOwner.name} />
-              <Meta label="Current lane" value={ownership.currentOwner.lane} />
-              <Meta label="Assigned at" value={ownership.assignedAt} />
-              <Meta label="Previous owner" value={ownership.previousOwner?.name ?? '—'} />
-            </div>
-            <p className="mt-3 text-sm leading-6 text-slate-300">{ownership.ownershipReason}</p>
-          </Card>
+      <div className="mt-5 grid gap-4 xl:grid-cols-3">
+        <SurfaceCard tone="accent">
+          <div className="text-sm font-semibold uppercase tracking-[0.16em] text-muted">Current owner</div>
+          <div className="mt-4 text-base font-semibold text-slate-50 tp-wrap-anywhere">{currentOwner}</div>
+          <div className="mt-1 text-sm text-slate-300 tp-wrap-anywhere">Lane: {ownership.currentOwner.lane}</div>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <Meta label="Assigned at" value={ownership.assignedAt} />
+            <Meta label="Previous owner" value={ownership.previousOwner?.name ?? '—'} />
+          </div>
+          <p className="mt-4 text-sm leading-6 text-slate-300 tp-wrap-anywhere">{ownership.ownershipReason}</p>
+        </SurfaceCard>
 
-          <Card title="Delegation and routing">
-            <div className="grid gap-3 md:grid-cols-2">
-              <Meta label="Delegation mode" value={delegation.delegationMode} />
-              <Meta label="Routing component" value={delegation.routingComponent} />
-              <Meta label="Selected lane" value={delegation.selectedLane} />
-              <Meta label="Confidence" value={delegation.confidence} />
-            </div>
-            <p className="mt-3 text-sm leading-6 text-slate-300">{delegation.reason}</p>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {delegation.candidateLanes.map((lane) => <Chip key={lane}>{lane}</Chip>)}
-              {delegation.rejectedLanes.map((lane) => <Chip key={lane} tone="warn">rejected: {lane}</Chip>)}
-              {delegation.humanConfirmationRequired ? <Chip tone="warn">human confirmation required</Chip> : null}
-            </div>
-          </Card>
-        </div>
+        <SurfaceCard tone="violet">
+          <div className="text-sm font-semibold uppercase tracking-[0.16em] text-muted">Routing decision</div>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <Meta label="Delegation mode" value={delegationMode} />
+            <Meta label="Confidence" value={delegation.confidence} />
+            <Meta label="Selected lane" value={delegation.selectedLane} />
+            <Meta label="Router" value={delegation.routingComponent} />
+          </div>
+          <p className="mt-4 text-sm leading-6 text-slate-300 tp-wrap-anywhere">{blockedReason}</p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            {delegation.candidateLanes.map((lane) => <StatusBadge key={lane} tone="accent">{lane}</StatusBadge>)}
+            {delegation.rejectedLanes.map((lane) => <StatusBadge key={lane} tone="warn">rejected: {lane}</StatusBadge>)}
+            {delegation.humanConfirmationRequired ? <StatusBadge tone="warn">human confirmation required</StatusBadge> : null}
+          </div>
+        </SurfaceCard>
 
-        <div className="space-y-4">
-          <Card title="Operator authority boundary">
-            <div className="grid gap-3 md:grid-cols-2">
-              <Meta label="Authority profile" value={authorityBoundary.authorityMode} />
-              <Meta label="Execution substrate" value={executionSubstrate.displayName} />
-              <Meta label="Substrate mode" value={executionSubstrate.mode} />
-              <Meta label="Streaming" value={executionSubstrate.supportsStreaming ? 'supported' : 'not supported'} />
-            </div>
-            <div className="mt-3 flex flex-wrap gap-2">
-              <Chip tone={authorityBoundary.mayClarify ? 'accent' : 'warn'}>{authorityBoundary.mayClarify ? 'may clarify' : 'no clarify'}</Chip>
-              <Chip tone={authorityBoundary.mayPrepare ? 'accent' : 'warn'}>{authorityBoundary.mayPrepare ? 'may prepare' : 'no prepare'}</Chip>
-              <Chip tone={authorityBoundary.mayExecute ? 'accent' : 'warn'}>{authorityBoundary.mayExecute ? 'may execute' : 'no execute'}</Chip>
-              <Chip tone={authorityBoundary.mayApprove ? 'accent' : 'warn'}>{authorityBoundary.mayApprove ? 'may approve' : 'no approve'}</Chip>
-              <Chip tone={authorityBoundary.mayDelegate ? 'accent' : 'warn'}>{authorityBoundary.mayDelegate ? 'may delegate' : 'no delegate'}</Chip>
-            </div>
-            <p className="mt-3 text-sm leading-6 text-slate-300">{authorityBoundary.separationOfDutiesRule}</p>
-          </Card>
-
-          <Card title="Active NemoClaw agents">
-            <div className="space-y-3">
-              {operators.map((operator) => (
-                <div key={operator.agentId} className="rounded-2xl border border-line bg-ink/60 px-4 py-4">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <div className="text-sm font-semibold text-slate-100">{operator.name}</div>
-                    <Chip>{operator.kind}</Chip>
-                    <Chip>{operator.lane}</Chip>
-                    <Chip>{operator.runtime}</Chip>
-                  </div>
-                  <div className="mt-2 text-sm leading-6 text-slate-300">
-                    {operator.authorityProfile ? <span><span className="font-semibold text-slate-100">Authority:</span> {operator.authorityProfile}. </span> : null}
-                    <span><span className="font-semibold text-slate-100">Status:</span> {operator.status}.</span>
-                  </div>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {operator.allowedSubstrates.map((substrate) => <Chip key={substrate}>{substrate}</Chip>)}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </Card>
-        </div>
+        <SurfaceCard>
+          <div className="text-sm font-semibold uppercase tracking-[0.16em] text-muted">Execution authority</div>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <Meta label="Authority profile" value={authorityBoundary.authorityMode.split('_').join(' ')} />
+            <Meta label="Execution substrate" value={executionSubstrate.displayName} />
+            <Meta label="Substrate mode" value={executionMode} />
+            <Meta label="Streaming" value={executionSubstrate.supportsStreaming ? 'supported' : 'not supported'} />
+          </div>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <Capability enabled={authorityBoundary.mayClarify} label="clarify" />
+            <Capability enabled={authorityBoundary.mayPrepare} label="prepare" />
+            <Capability enabled={authorityBoundary.mayExecute} label="execute" />
+            <Capability enabled={authorityBoundary.mayApprove} label="approve" />
+            <Capability enabled={authorityBoundary.mayDelegate} label="delegate" />
+          </div>
+          <p className="mt-4 text-sm leading-6 text-slate-300 tp-wrap-anywhere">{snapshot?.trustState.why ?? authorityBoundary.separationOfDutiesRule}</p>
+        </SurfaceCard>
       </div>
-    </section>
-  );
-}
 
-function Card({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div className="rounded-3xl border border-line bg-ink/45 p-5">
-      <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted">{title}</h3>
-      <div className="mt-4">{children}</div>
-    </div>
+      <SurfaceCard className="mt-6">
+        <SectionHeader
+          title="Active agents"
+          meta={<StatusBadge>{operators.length} total</StatusBadge>}
+        />
+
+        <div className="mt-4 grid gap-3 lg:grid-cols-2">
+          {operators.map((operator) => (
+            <div key={operator.agentId} className="min-w-0 rounded-2xl border border-line bg-ink/60 px-4 py-4">
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="text-sm font-semibold text-slate-100 tp-wrap-anywhere">{operator.name}</div>
+                <StatusBadge tone="accent">{operator.kind}</StatusBadge>
+                <StatusBadge>{operator.lane}</StatusBadge>
+                <StatusBadge>{operator.runtime}</StatusBadge>
+              </div>
+              <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                <Meta label="Status" value={operator.status} />
+                <Meta label="Authority" value={operator.authorityProfile ?? '—'} />
+              </div>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {operator.allowedSubstrates.map((substrate) => <StatusBadge key={substrate}>{substrate}</StatusBadge>)}
+              </div>
+            </div>
+          ))}
+        </div>
+      </SurfaceCard>
+    </section>
   );
 }
 
 function Meta({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-line bg-ink/70 px-4 py-3">
+    <div className="min-w-0 rounded-2xl border border-line bg-panel/35 px-4 py-3">
       <div className="text-[11px] uppercase tracking-[0.18em] text-muted">{label}</div>
-      <div className="mt-1 text-sm font-medium text-slate-100">{value}</div>
+      <div className="mt-1 text-sm font-medium text-slate-100 tp-wrap-anywhere">{value}</div>
     </div>
   );
 }
 
-function Chip({ children, tone = 'accent' }: { children: React.ReactNode; tone?: 'accent' | 'warn' }) {
-  const toneClass = tone === 'warn'
-    ? 'border-warn/30 bg-warn/10 text-warn'
-    : 'border-accent/25 bg-accent/10 text-accent';
-
-  return <span className={`rounded-full border px-3 py-1 text-xs font-medium ${toneClass}`}>{children}</span>;
+function Capability({ enabled, label }: { enabled: boolean; label: string }) {
+  return <StatusBadge tone={enabled ? 'success' : 'neutral'}>{enabled ? 'can' : 'cannot'} {label}</StatusBadge>;
 }

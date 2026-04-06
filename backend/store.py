@@ -177,13 +177,37 @@ def _derive_trust_state(scenario: RuntimeScenario):
 
 def _derive_pending_action(scenario: RuntimeScenario):
     current_step = next((step for step in scenario.executionSteps if step.state == 'current'), scenario.executionSteps[-1])
+    lowered_state = scenario.request.state.lower()
+    if 'paused' in lowered_state:
+        status = 'paused'
+    elif 'denied' in lowered_state:
+        status = 'denied'
+    elif scenario.commandEnvelope.approvalState == 'executed':
+        status = 'completed'
+    elif scenario.commandEnvelope.approvalState == 'released':
+        status = 'executing'
+    elif scenario.authorityBoundary.requiresHumanApprovalBeforeExecution:
+        status = 'prepared'
+    else:
+        status = scenario.commandEnvelope.approvalState
+
+    if scenario.authorityBoundary.requiresHumanApprovalBeforeExecution and scenario.commandEnvelope.approvalState not in {'released', 'executed', 'denied'}:
+        action_type = 'approval_gate'
+        summary = 'A prepared governed action is waiting for human approval before execution can proceed.'
+    elif 'released' in scenario.commandEnvelope.approvalState or 'released' in lowered_state:
+        action_type = 'execution_release'
+        summary = 'Execution authority has been released and the prepared governed action may proceed.'
+    else:
+        action_type = current_step.id
+        summary = current_step.detail
+
     return PendingActionSummary(
         actionId=f"act_{scenario.id}",
-        actionType=current_step.id,
-        summary=current_step.detail,
-        status=scenario.commandEnvelope.approvalState,
+        actionType=action_type,
+        summary=summary,
+        status=status,
         preparedBy=scenario.commandEnvelope.preparedByAgentId,
-        requiresApproval=scenario.authorityBoundary.requiresHumanApprovalBeforeExecution and scenario.commandEnvelope.approvalState not in {'released', 'executed'},
+        requiresApproval=scenario.authorityBoundary.requiresHumanApprovalBeforeExecution and scenario.commandEnvelope.approvalState not in {'released', 'executed', 'denied'},
         riskSummary=f"Risk class: {scenario.commandEnvelope.riskClass}",
     )
 
