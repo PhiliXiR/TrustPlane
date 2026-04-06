@@ -392,15 +392,23 @@ def project_request_timeline(scenario: RuntimeScenario):
     return RequestTimelineResponse(requestId=request_id, events=events)
 
 
-def set_scenario(scenario_id: str):
+def set_scenario(scenario_id: str, publish: bool = True):
     global _current
     with _lock:
         if scenario_id in _intake_scenarios:
             _current = deepcopy(_intake_scenarios[scenario_id])
         else:
             _current = get_scenario(scenario_id)
-    _publish_snapshot()
+    if publish:
+        _publish_snapshot()
     return get_runtime_snapshot()
+
+
+def set_current_by_request_id(request_id: str, publish: bool = False):
+    scenario = find_scenario_by_request_id(request_id)
+    if scenario is None:
+        return None
+    return set_scenario(scenario.id, publish=publish)
 
 
 def list_runtime_scenarios():

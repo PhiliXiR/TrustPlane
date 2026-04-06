@@ -464,14 +464,20 @@ Still not done:
 
 Newly implemented in a thin bridge form:
 - request-scoped action endpoints for approve, deny, pause, resume, and release execution
-- frontend request-scoped action helpers
+- backend request-to-current routing helper for request-scoped actions
+- frontend request-scoped action helper path
 - approval bar now prefers request-scoped actions when a request ID is available
 - workflow rail and human checkpoints now derive contract-aware summaries from the request snapshot
 - execution trace and playbook surfaces now prefer contract-derived summaries when a request snapshot exists
 
 ## Summary
 
-The current code is close enough to the MVP docs that the next pass should continue the **adapter/projection migration**, not switch into rewrite mode.
+The current code is close enough to the MVP docs that the next pass should continue the **adapter/projection migration**, but the center of gravity is shifting.
+
+The main remaining gap is now less about visible UI migration and more about:
+- deeper write-path cleanup
+- stronger request-native evidence/artifact modeling
+- reducing scenario-global assumptions behind the bridge
 
 The most important implementation insight remains:
 

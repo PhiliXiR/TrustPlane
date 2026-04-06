@@ -15,21 +15,17 @@ import { TimelinePanel } from './components/TimelinePanel';
 import { WorkflowRail } from './components/WorkflowRail';
 import { MetricCard } from './components/ui';
 import {
-  approveRequestById,
   approveRuntimeRequest,
   changeScenario,
-  denyRequestById,
   denyRuntimeRequest,
   fetchRequestSnapshot,
   fetchRequestTimeline,
   fetchRuntimeSnapshot,
   fetchScenarioOptions,
   getEventsUrl,
-  pauseRequestById,
   pauseRuntimeRequest,
+  performRequestAction,
   releaseExecutionAuthority,
-  releaseExecutionById,
-  resumeRequestById,
   resumeRuntimeRequest,
 } from './api';
 import type { RequestSnapshot, RequestTimelineResponse } from './runtime/requestTypes';
@@ -59,19 +55,7 @@ export default function App() {
         setRuntime(snapshot);
         setSelectedStageId(snapshot.stages.find((stage) => stage.status === 'current')?.id ?? snapshot.stages[0].id);
         setSelectedEventId(snapshot.timeline[snapshot.timeline.length - 1]?.id ?? snapshot.timeline[0].id);
-        const requestId = snapshot.request.intake?.requestId;
-        if (requestId) {
-          const [projected, projectedTimeline] = await Promise.all([
-            fetchRequestSnapshot(requestId),
-            fetchRequestTimeline(requestId),
-          ]);
-          setRequestSnapshot(projected);
-          setRequestTimeline(projectedTimeline);
-          setSelectedEventId(projectedTimeline.events[projectedTimeline.events.length - 1]?.eventId ?? snapshot.timeline[snapshot.timeline.length - 1]?.id ?? '');
-        } else {
-          setRequestSnapshot(null);
-          setRequestTimeline(null);
-        }
+        await hydrateProjectedState(snapshot);
       })
       .catch((err) => {
         setError(String(err));
@@ -193,6 +177,22 @@ export default function App() {
 
   const requestId = requestSnapshot?.request.requestId ?? runtime.request.intake?.requestId ?? null;
 
+  function performAction(action: 'approve' | 'deny' | 'pause' | 'resume' | 'release-execution') {
+    if (requestId) {
+      return refreshFromAction(performRequestAction(requestId, action)).catch((err) => setError(String(err)));
+    }
+
+    const fallback = {
+      approve: approveRuntimeRequest,
+      deny: denyRuntimeRequest,
+      pause: pauseRuntimeRequest,
+      resume: resumeRuntimeRequest,
+      'release-execution': releaseExecutionAuthority,
+    } as const;
+
+    return refreshFromAction(fallback[action]()).catch((err) => setError(String(err)));
+  }
+
   return (
     <div className="min-h-screen bg-transparent px-4 py-8 text-slate-100 lg:px-8">
       <div className="mx-auto flex max-w-[1500px] flex-col gap-5 lg:gap-6">
@@ -226,11 +226,11 @@ export default function App() {
           autonomyMode={runtime.request.autonomyMode}
           currentStageLabel={selectedStage.label}
           snapshot={requestSnapshot}
-          onApprove={() => refreshFromAction((requestId ? approveRequestById(requestId) : approveRuntimeRequest())).catch((err) => setError(String(err)))}
-          onReleaseExecution={() => refreshFromAction((requestId ? releaseExecutionById(requestId) : releaseExecutionAuthority())).catch((err) => setError(String(err)))}
-          onDeny={() => refreshFromAction((requestId ? denyRequestById(requestId) : denyRuntimeRequest())).catch((err) => setError(String(err)))}
-          onPause={() => refreshFromAction((requestId ? pauseRequestById(requestId) : pauseRuntimeRequest())).catch((err) => setError(String(err)))}
-          onResume={() => refreshFromAction((requestId ? resumeRequestById(requestId) : resumeRuntimeRequest())).catch((err) => setError(String(err)))}
+          onApprove={() => performAction('approve')}
+          onReleaseExecution={() => performAction('release-execution')}
+          onDeny={() => performAction('deny')}
+          onPause={() => performAction('pause')}
+          onResume={() => performAction('resume')}
         />
         <OperatorControlPanel
           operators={runtime.operators}

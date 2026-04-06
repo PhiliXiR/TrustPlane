@@ -1,6 +1,8 @@
 import type { RuntimeScenario } from './runtime/scenarioTypes';
 import type { RequestSnapshot, RequestTimelineResponse } from './runtime/requestTypes';
 
+export type RequestActionKind = 'approve' | 'deny' | 'pause' | 'resume' | 'release-execution';
+
 const API_BASE = import.meta.env.VITE_TRUSTPLANE_API_BASE ?? 'http://127.0.0.1:8011';
 const EVENTS_URL = `${API_BASE}/api/events`;
 
@@ -80,6 +82,10 @@ export function releaseExecutionAuthority() {
 
 export function releaseExecutionById(requestId: string) {
   return call<RuntimeScenario>(`/api/requests/${requestId}/release-execution`, { method: 'POST' });
+}
+
+export function performRequestAction(requestId: string, action: RequestActionKind) {
+  return call<RuntimeScenario>(`/api/requests/${requestId}/${action}`, { method: 'POST' });
 }
 
 export function getEventsUrl() {
