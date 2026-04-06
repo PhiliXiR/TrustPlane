@@ -34,7 +34,13 @@ import {
 } from './api';
 import type { IntakeExampleFixture, IntakeExampleSummary } from './runtime/exampleTypes';
 import { deriveExampleModeSummary } from './runtime/exampleViewAdapters';
-import { deriveRequestTimelineFromExample, deriveWorkflowRailStagesFromExample } from './runtime/requestViewAdapters';
+import {
+  deriveCheckpointsFromExample,
+  deriveRequestSnapshotFromExample,
+  deriveStagesFromExample,
+  deriveTimelineFromExample,
+} from './runtime/exampleRecordAdapters';
+import { deriveWorkflowRailStagesFromExample } from './runtime/requestViewAdapters';
 import type { RequestSnapshot, RequestTimelineResponse } from './runtime/requestTypes';
 import type { RuntimeScenario } from './runtime/scenarioTypes';
 
@@ -111,10 +117,15 @@ export default function App() {
     return () => source.close();
   }, [requestSnapshot?.request.requestId, runtime?.request.intake?.requestId]);
 
+  const effectiveStages = useMemo(() => {
+    if (!runtime) return [];
+    return selectedExample ? deriveStagesFromExample(selectedExample, runtime.stages) : runtime.stages;
+  }, [runtime, selectedExample]);
+
   const selectedStage = useMemo(() => {
     if (!runtime) return null;
-    return runtime.stages.find((stage) => stage.id === selectedStageId) ?? runtime.stages[0];
-  }, [runtime, selectedStageId]);
+    return effectiveStages.find((stage) => stage.id === selectedStageId) ?? effectiveStages[0];
+  }, [runtime, effectiveStages, selectedStageId]);
 
   const selectedEvent = useMemo(() => {
     if (!runtime) return null;
@@ -201,11 +212,13 @@ export default function App() {
       try {
         const example = await fetchExample(exampleId);
         setSelectedExample(example);
-        const exampleTimeline = deriveRequestTimelineFromExample(example);
-        setRequestTimeline({ requestId: example.exampleId, events: exampleTimeline });
-        setSelectedEventId(exampleTimeline[0]?.eventId ?? '');
+        const exampleSnapshot = deriveRequestSnapshotFromExample(example);
+        const exampleTimeline = deriveTimelineFromExample(example);
+        setRequestSnapshot(exampleSnapshot);
+        setRequestTimeline(exampleTimeline);
+        setSelectedEventId(exampleTimeline.events[0]?.eventId ?? '');
         if (runtime) {
-          const derivedStages = deriveWorkflowRailStagesFromExample(example, runtime.stages);
+          const derivedStages = deriveStagesFromExample(example, runtime.stages);
           const activeStage = derivedStages.find((stage) => stage.status === 'current') ?? derivedStages.find((stage) => stage.status === 'blocked') ?? derivedStages[0];
           setSelectedStageId(activeStage?.id ?? runtime.stages[0]?.id ?? '');
         }
@@ -244,7 +257,10 @@ export default function App() {
     );
   }
 
-  const requestId = requestSnapshot?.request.requestId ?? resolveRequestId(runtime);
+  const effectiveRequestSnapshot = selectedExample ? deriveRequestSnapshotFromExample(selectedExample) : requestSnapshot;
+  const effectiveRequestTimeline = selectedExample ? deriveTimelineFromExample(selectedExample) : requestTimeline;
+  const effectiveHumanCheckpoints = selectedExample ? deriveCheckpointsFromExample(selectedExample) : runtime.humanCheckpoints;
+  const requestId = effectiveRequestSnapshot?.request.requestId ?? resolveRequestId(runtime);
   const exampleMode = deriveExampleModeSummary(selectedExample);
 
   function performAction(action: 'approve' | 'deny' | 'pause' | 'resume' | 'release-execution') {
@@ -275,14 +291,14 @@ export default function App() {
         <div className="grid gap-3 lg:grid-cols-5">
           <MetricCard label="State" value={exampleMode?.state ?? runtime.request.state} tone="accent" emphasis="strong" />
           <MetricCard label="Owner" value={exampleMode?.owner ?? runtime.ownership.currentOwner.name} />
-          <MetricCard label="Workflow" value={exampleMode?.workflow ?? requestSnapshot?.request.workflowCandidate ?? runtime.playbook.name} tone="violet" />
+          <MetricCard label="Workflow" value={exampleMode?.workflow ?? effectiveRequestSnapshot?.request.workflowCandidate ?? runtime.playbook.name} tone="violet" />
           <MetricCard label="Authority" value={runtime.commandEnvelope.approvalState} tone="violet" emphasis="strong" />
           <MetricCard label={selectedExample ? 'Evidence' : 'Logs'} value={String(selectedExample ? exampleMode?.evidenceCount ?? 0 : liveExecution.length)} tone="success" />
         </div>
 
-        <RequestHeader request={runtime.request} trustModel={runtime.trustModel} snapshot={requestSnapshot} example={selectedExample} />
+        <RequestHeader request={runtime.request} trustModel={runtime.trustModel} snapshot={effectiveRequestSnapshot} example={selectedExample} />
         <div className="grid gap-6 xl:grid-cols-[1.08fr_0.92fr]">
-          <IntakeSpotlightCard request={runtime.request} snapshot={requestSnapshot} example={selectedExample} />
+          <IntakeSpotlightCard request={runtime.request} snapshot={effectiveRequestSnapshot} example={selectedExample} />
           <div className="space-y-6">
             <SourceSelector options={sourceOptions} value={selectedSourceId} onChange={handleSourceChange} />
             <ModeSwitchCard example={selectedExample} />
@@ -292,7 +308,7 @@ export default function App() {
           requestState={runtime.request.state}
           autonomyMode={runtime.request.autonomyMode}
           currentStageLabel={selectedStage.label}
-          snapshot={requestSnapshot}
+          snapshot={effectiveRequestSnapshot}
           example={selectedExample}
           onApprove={() => performAction('approve')}
           onReleaseExecution={() => performAction('release-execution')}
@@ -306,37 +322,37 @@ export default function App() {
           delegation={runtime.delegation}
           authorityBoundary={runtime.authorityBoundary}
           executionSubstrate={runtime.executionSubstrate}
-          snapshot={requestSnapshot}
+          snapshot={effectiveRequestSnapshot}
           example={selectedExample}
         />
-        <WorkflowRail stages={runtime.stages} selectedStageId={selectedStageId} onSelect={setSelectedStageId} snapshot={requestSnapshot} example={selectedExample} />
+        <WorkflowRail stages={effectiveStages} selectedStageId={selectedStageId} onSelect={setSelectedStageId} snapshot={effectiveRequestSnapshot} example={selectedExample} />
 
         <div className="grid gap-6 xl:grid-cols-[1.08fr_0.92fr]">
           <div className="space-y-6">
-            <DecisionPanel stage={selectedStage} snapshot={requestSnapshot} example={selectedExample} />
+            <DecisionPanel stage={selectedStage} snapshot={effectiveRequestSnapshot} example={selectedExample} />
             <InspectionDrawer
               open={inspectionOpen}
               record={selectedInspection}
               eventTitle={selectedEvent.title}
               eventCategory={selectedEvent.category}
               requestEvent={selectedRequestEvent}
-              snapshot={requestSnapshot}
+              snapshot={effectiveRequestSnapshot}
               onToggle={() => setInspectionOpen((value) => !value)}
             />
           </div>
           <div className="space-y-6">
-            <HumanCheckpointsPanel checkpoints={runtime.humanCheckpoints} snapshot={requestSnapshot} example={selectedExample} />
-            <TimelinePanel timeline={runtime.timeline} selectedEventId={selectedEventId} onSelect={setSelectedEventId} requestTimeline={requestTimeline?.events} example={selectedExample} />
+            <HumanCheckpointsPanel checkpoints={effectiveHumanCheckpoints} snapshot={effectiveRequestSnapshot} example={selectedExample} />
+            <TimelinePanel timeline={runtime.timeline} selectedEventId={selectedEventId} onSelect={setSelectedEventId} requestTimeline={effectiveRequestTimeline?.events} example={selectedExample} />
           </div>
         </div>
 
         <div className="grid gap-6 xl:grid-cols-[1.08fr_0.92fr]">
-          <CommandEnvelopePanel envelope={runtime.commandEnvelope} substrate={runtime.executionSubstrate} snapshot={requestSnapshot} example={selectedExample} />
-          <ExecutionTracePanel steps={runtime.executionSteps} snapshot={requestSnapshot} example={selectedExample} />
+          <CommandEnvelopePanel envelope={runtime.commandEnvelope} substrate={runtime.executionSubstrate} snapshot={effectiveRequestSnapshot} example={selectedExample} />
+          <ExecutionTracePanel steps={runtime.executionSteps} snapshot={effectiveRequestSnapshot} example={selectedExample} />
         </div>
 
         <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-          <PlaybookCard playbook={runtime.playbook} snapshot={requestSnapshot} example={selectedExample} />
+          <PlaybookCard playbook={runtime.playbook} snapshot={effectiveRequestSnapshot} example={selectedExample} />
           <LiveExecutionPanel entries={liveExecution} example={selectedExample} />
         </div>
       </div>
