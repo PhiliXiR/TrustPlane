@@ -2,7 +2,13 @@
 
 ## Purpose
 
-This document defines the minimum runtime contract TrustPlane would need in order to integrate with a governed agent runtime such as NemoClaw / OpenShell.
+This document defines the broader runtime contract direction TrustPlane would need in order to integrate with a governed agent runtime such as NemoClaw / OpenShell.
+
+For the smaller first-build contract, see:
+
+- `minimum-viable-integration-surface.md`
+- `mvp-api-shape.md`
+- `event-taxonomy.md`
 
 TrustPlane is not intended to replace the runtime.
 It is intended to act as the operator-facing control plane around the runtime.
@@ -403,6 +409,23 @@ The adapter would:
 - expose a frontend-friendly contract
 
 This is likely cleaner than trying to force the frontend to consume raw runtime internals directly.
+
+## Relationship to the MVP contract
+
+This document is intentionally broader than the first implementation slice.
+
+Use this document for:
+
+- overall runtime contract direction
+- fuller object vocabulary
+- long-term operator-facing integration shape
+
+Use the following docs for the first practical build slice:
+
+- `minimum-viable-integration-surface.md`
+- `request-lifecycle-state-model.md`
+- `mvp-api-shape.md`
+- `event-taxonomy.md`
 
 ## Summary
 

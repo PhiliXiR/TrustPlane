@@ -101,6 +101,17 @@ A useful v0 should make it easy to:
 - show artifacts and outputs alongside the step history
 - support replay-oriented reading of the record
 
+## Relationship to the MVP docs
+
+The newer MVP docs turn this framing into a first practical build shape.
+
+Use these alongside this brief:
+
+- `minimum-viable-integration-surface.md` for the first stable object contract
+- `request-lifecycle-state-model.md` for the first governed request progression
+- `event-taxonomy.md` for the first stable event vocabulary
+- `mvp-api-shape.md` for the first practical backend surface
+
 ## Open questions
 
 - What is the canonical schema for an Execution Record?

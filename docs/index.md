@@ -5,18 +5,23 @@ This index groups the current TrustPlane docs by purpose so the repo is easier t
 ## Core direction
 
 - `product-thesis.md` — what TrustPlane is and why it exists
+- `execution-records-brief.md` — why the Execution Record is the core product object
 - `road-to-real-trustplane.md` — path from prototype to real system
+- `mvp-build-order.md` — dependency-aware build sequence for the first credible slice
 - `what-to-reuse-from-ai-it-team.md` — conceptual inheritance from `ai-it-team`
 - `delegation-taxonomy.md` — trust level, delegation mode, and execution mode vocabulary
 
 ## Architecture
 
-- `integration-contract.md` — operator-facing runtime contract shape
+- `minimum-viable-integration-surface.md` — smallest credible operator-facing contract for TrustPlane
+- `integration-contract.md` — broader operator-facing runtime contract direction
+- `mvp-api-shape.md` — first practical request-centric API shape for the backend
+- `event-taxonomy.md` — stable operator-facing event model for the first governed slice
+- `request-lifecycle-state-model.md` — first-pass governed lifecycle and state transitions
 - `runtime-adapter-architecture.md` — backend adapter/projection/control model
 - `backend-plan.md` — backend direction and responsibilities
 - `linux-deployment-shape.md` — Linux-first runtime hosting model
 - `first-linux-deployment-instructions.md` — first-test Linux setup steps
-- `execution-records-brief.md` — sharper product framing around Execution Records as the primary object
 - `openclaw-n8n-trustplane-role-map.md` — role split and handoff boundaries between OpenClaw, n8n, and TrustPlane
 
 ## Intake and external entry
@@ -39,16 +44,23 @@ This index groups the current TrustPlane docs by purpose so the repo is easier t
 - `trust-rating-model.md` — rubric-based trust rating model
 - `live-command-observability.md` — real-time command/stream visibility model
 
+## Planning and implementation
+
+- `implementation-backlog.md` — concrete implementation queue derived from the MVP contract and roadmap
+
 ## Suggested reading order
 
 If you are new to the repo, a good order is:
 
 1. `product-thesis.md`
-2. `delegation-taxonomy.md`
-3. `integration-contract.md`
-4. `runtime-adapter-architecture.md`
-5. `minimal-operator-team.md`
-6. `trust-rating-model.md`
-7. `live-command-observability.md`
-8. `nemoclaw-slack-intake-plan.md`
-9. `first-linux-deployment-instructions.md`
+2. `execution-records-brief.md`
+3. `minimum-viable-integration-surface.md`
+4. `request-lifecycle-state-model.md`
+5. `mvp-build-order.md`
+6. `mvp-api-shape.md`
+7. `event-taxonomy.md`
+8. `runtime-adapter-architecture.md`
+9. `minimal-operator-team.md`
+10. `trust-rating-model.md`
+11. `slack-intake-slice.md`
+12. `first-linux-deployment-instructions.md`

@@ -210,8 +210,15 @@ npm run build
 ## Key docs
 
 - `docs/index.md` — docs map and suggested reading order
+- `docs/product-thesis.md` — what TrustPlane is and is not
 - `docs/execution-records-brief.md` — sharper product framing around Execution Records
-- `docs/integration-contract.md` — runtime contract direction
+- `docs/minimum-viable-integration-surface.md` — smallest credible operator-facing contract
+- `docs/request-lifecycle-state-model.md` — first-pass governed request lifecycle
+- `docs/mvp-build-order.md` — dependency-aware MVP build sequence
+- `docs/mvp-api-shape.md` — first practical backend API shape
+- `docs/event-taxonomy.md` — stable operator-facing event vocabulary
+- `docs/implementation-backlog.md` — concrete implementation queue for the first credible slice
+- `docs/integration-contract.md` — broader runtime contract direction
 - `docs/runtime-adapter-architecture.md` — backend adapter/projection model
 - `docs/minimal-operator-team.md` — small deployable operator team
 - `docs/trust-rating-model.md` — trust rubric direction
