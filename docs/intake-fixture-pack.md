@@ -11,7 +11,6 @@ These examples are meant to be useful for:
 - `n8n` normalization validation
 - TrustPlane operator-surface testing
 - future regression fixture design
-- portfolio/showcase material demonstrating governed intake design
 
 Each fixture includes:
 
