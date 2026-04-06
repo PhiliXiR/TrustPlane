@@ -1,5 +1,6 @@
 import type { TimelineCategory, InspectionRecord } from '../types';
-import type { RequestTimelineEvent } from '../runtime/requestTypes';
+import type { RequestSnapshot, RequestTimelineEvent } from '../runtime/requestTypes';
+import { deriveEvidenceSummary } from '../runtime/requestViewAdapters';
 import { SectionHeader, StatusBadge } from './ui';
 
 type Props = {
@@ -9,13 +10,14 @@ type Props = {
   eventCategory: TimelineCategory;
   onToggle: () => void;
   requestEvent?: RequestTimelineEvent | null;
+  snapshot?: RequestSnapshot | null;
 };
 
-export function InspectionDrawer({ open, record, eventTitle, eventCategory, onToggle, requestEvent }: Props) {
+export function InspectionDrawer({ open, record, eventTitle, eventCategory, onToggle, requestEvent, snapshot }: Props) {
+  const evidence = deriveEvidenceSummary(snapshot, requestEvent, record);
   const badgeLabel = requestEvent?.family ?? eventCategory;
   const titleLabel = requestEvent?.type ?? eventTitle;
-  const eventDetails = requestEvent?.details;
-  const artifactLinked = (requestEvent?.artifactRefs?.length ?? 0) > 0;
+  const artifactLinked = evidence.artifactRefs.length > 0;
   return (
     <section className="rounded-3xl border border-line bg-panel/95 shadow-panel">
       <button
@@ -39,11 +41,27 @@ export function InspectionDrawer({ open, record, eventTitle, eventCategory, onTo
             </div>
             <div className="mt-2 text-sm font-semibold text-slate-100 tp-wrap-anywhere">{titleLabel}</div>
           </div>
-          {eventDetails ? (
+          {evidence.detailPairs.length > 0 ? (
             <div className="mb-3 flex flex-wrap gap-2">
-              {Object.entries(eventDetails).map(([key, value]) => (
-                <StatusBadge key={key}>{key}: {Array.isArray(value) ? value.join(', ') : String(value)}</StatusBadge>
+              {evidence.detailPairs.map(({ key, value }) => (
+                <StatusBadge key={key}>{key}: {value}</StatusBadge>
               ))}
+            </div>
+          ) : null}
+          <div className="mb-3 flex flex-wrap gap-2">
+            <StatusBadge tone="accent">verification: {evidence.verificationStatus}</StatusBadge>
+            {evidence.artifactTypes.map((artifactType) => (
+              <StatusBadge key={artifactType}>{artifactType}</StatusBadge>
+            ))}
+          </div>
+          {evidence.artifactHighlights.length > 0 ? (
+            <div className="mb-3 rounded-2xl border border-line bg-ink/55 px-4 py-3 text-sm text-slate-300">
+              <div className="text-xs uppercase tracking-[0.18em] text-muted">Artifact highlights</div>
+              <ul className="mt-2 space-y-1">
+                {evidence.artifactHighlights.map((item) => (
+                  <li key={item} className="tp-wrap-anywhere">• {item}</li>
+                ))}
+              </ul>
             </div>
           ) : null}
           <div className="mb-3 text-sm font-semibold text-slate-100 tp-wrap-anywhere">{record.title}</div>

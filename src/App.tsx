@@ -251,6 +251,7 @@ export default function App() {
               eventTitle={selectedEvent.title}
               eventCategory={selectedEvent.category}
               requestEvent={selectedRequestEvent}
+              snapshot={requestSnapshot}
               onToggle={() => setInspectionOpen((value) => !value)}
             />
           </div>

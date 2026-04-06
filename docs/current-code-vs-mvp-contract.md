@@ -458,9 +458,9 @@ Implemented in code:
 
 Still not done:
 - full replacement of scenario-global API usage
-- stronger request-native evidence/artifact model
 - removal of scenario-backed transitional shaping
 - deeper write-path cleanup beyond the thin request-scoped bridge
+- a more explicit backend-native evidence/artifact contract beyond projected summaries and inspection-key linkage
 
 Newly implemented in a thin bridge form:
 - request-scoped action endpoints for approve, deny, pause, resume, and release execution
@@ -469,6 +469,7 @@ Newly implemented in a thin bridge form:
 - approval bar now prefers request-scoped actions when a request ID is available
 - workflow rail and human checkpoints now derive contract-aware summaries from the request snapshot
 - execution trace and playbook surfaces now prefer contract-derived summaries when a request snapshot exists
+- inspection/evidence surfaces now derive contract-aware evidence summaries from request snapshot + projected event details
 
 ## Summary
 

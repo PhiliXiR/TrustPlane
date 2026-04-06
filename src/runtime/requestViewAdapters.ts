@@ -1,5 +1,5 @@
-import type { ExecutionStep, HumanCheckpoint, Playbook, Stage } from '../types';
-import type { RequestSnapshot } from './requestTypes';
+import type { ExecutionStep, HumanCheckpoint, InspectionRecord, Playbook, Stage } from '../types';
+import type { RequestSnapshot, RequestTimelineEvent } from './requestTypes';
 
 export function deriveWorkflowRailStages(snapshot: RequestSnapshot | null | undefined, fallbackStages: Stage[]): Stage[] {
   if (!snapshot) return fallbackStages;
@@ -167,5 +167,27 @@ export function derivePlaybookSummary(snapshot: RequestSnapshot | null | undefin
       ...fallbackPlaybook.allowedTools,
       snapshot.pendingAction.actionType,
     ])),
+  };
+}
+
+export function deriveEvidenceSummary(
+  snapshot: RequestSnapshot | null | undefined,
+  requestEvent: RequestTimelineEvent | null | undefined,
+  fallbackRecord: InspectionRecord,
+) {
+  const detailPairs = Object.entries(requestEvent?.details ?? {}).map(([key, value]) => ({
+    key,
+    value: Array.isArray(value) ? value.join(', ') : String(value),
+  }));
+
+  return {
+    title: requestEvent?.type ?? fallbackRecord.title,
+    family: requestEvent?.family ?? 'workflow',
+    artifactRefs: requestEvent?.artifactRefs ?? [],
+    detailPairs,
+    evidenceRefs: snapshot?.verificationState.evidenceRefs ?? [],
+    artifactHighlights: snapshot?.artifactSummary.highlights ?? [],
+    artifactTypes: snapshot?.artifactSummary.artifactTypes ?? [],
+    verificationStatus: snapshot?.verificationState.status ?? 'unknown',
   };
 }

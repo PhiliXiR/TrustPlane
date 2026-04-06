@@ -228,11 +228,17 @@ def _derive_verification_state(scenario: RuntimeScenario):
     if 'failed' in scenario.request.state.lower():
         status = 'failed'
 
+    evidence_refs = []
+    if 'artifact' in scenario.inspections:
+        evidence_refs.append('artifact')
+    if 'policy' in scenario.inspections:
+        evidence_refs.append('policy')
+
     return VerificationStateSummary(
         status=status,
         summary=verification_stage.explanation if verification_stage else scenario.commandEnvelope.expectedVerification,
         lastCheckedAt='now',
-        evidenceRefs=['artifact'] if 'artifact' in scenario.inspections else [],
+        evidenceRefs=evidence_refs,
         failureReason=verification_stage.reason if verification_stage and verification_stage.status == 'blocked' else None,
     )
 
@@ -384,8 +390,14 @@ def project_request_timeline(scenario: RuntimeScenario):
                 details={
                     'inspectionKey': event.inspectionKey,
                     'requestState': scenario.request.state,
-                } if event.inspectionKey else {'requestState': scenario.request.state},
-                artifactRefs=['artifact'] if event.inspectionKey == 'artifact' else [],
+                    'artifactTypes': _derive_artifact_summary(scenario).artifactTypes,
+                    'verificationStatus': _derive_verification_state(scenario).status,
+                } if event.inspectionKey else {
+                    'requestState': scenario.request.state,
+                    'artifactTypes': _derive_artifact_summary(scenario).artifactTypes,
+                    'verificationStatus': _derive_verification_state(scenario).status,
+                },
+                artifactRefs=_derive_verification_state(scenario).evidenceRefs if event.inspectionKey in {'artifact', 'policy'} else ([] if event.inspectionKey != 'tool' else ['tool']),
             )
         )
 
