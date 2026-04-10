@@ -7,7 +7,7 @@ export type RequestActionKind = 'approve' | 'deny' | 'pause' | 'resume' | 'relea
 const API_BASE = import.meta.env.VITE_TRUSTPLANE_API_BASE ?? 'http://127.0.0.1:8011';
 const EVENTS_URL = `${API_BASE}/api/events`;
 
-type ScenarioOption = { id: string; label: string };
+type ScenarioOption = { id: string; label: string; hero?: boolean };
 
 async function call<T>(path: string, options: RequestInit = {}) {
   const response = await fetch(`${API_BASE}${path}`, {
@@ -51,6 +51,10 @@ export function fetchRequestTimeline(requestId: string) {
 
 export function changeScenario(id: string) {
   return call<RuntimeScenario>(`/api/runtime/scenario/${id}`, { method: 'POST' });
+}
+
+export function resetRuntimeState(target = 'hero-default') {
+  return call<RuntimeScenario>(`/api/runtime/reset?target=${encodeURIComponent(target)}`, { method: 'POST' });
 }
 
 export function approveRuntimeRequest() {

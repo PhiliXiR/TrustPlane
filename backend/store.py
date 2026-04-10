@@ -32,6 +32,7 @@ _request_counter = 3000
 _intake_scenarios = {}
 _STORAGE_PATH = Path(__file__).resolve().parent / 'intake-scenarios.json'
 _EXAMPLES_DIR = Path(__file__).resolve().parent.parent / 'examples' / 'intake-fixtures'
+_HERO_SCENARIO_IDS = {'reporting-access', 'vpn-policy-change'}
 
 
 def _save_intake_scenarios():
@@ -40,6 +41,11 @@ def _save_intake_scenarios():
         'scenarios': [scenario.model_dump() for scenario in _intake_scenarios.values()],
     }
     _STORAGE_PATH.write_text(json.dumps(payload, indent=2))
+
+
+def _clear_intake_storage_file():
+    if _STORAGE_PATH.exists():
+        _STORAGE_PATH.unlink()
 
 
 def _load_intake_scenarios():
@@ -506,8 +512,8 @@ def set_current_by_request_id(request_id: str, publish: bool = False):
 
 def list_runtime_scenarios():
     with _lock:
-        base = [{"id": scenario.id, "label": scenario.label} for scenario in SCENARIOS.values()]
-        intake = [{"id": scenario.id, "label": scenario.label} for scenario in _intake_scenarios.values()]
+        base = [{"id": scenario.id, "label": scenario.label, "hero": scenario.id in _HERO_SCENARIO_IDS} for scenario in SCENARIOS.values()]
+        intake = [{"id": scenario.id, "label": scenario.label, "hero": False} for scenario in _intake_scenarios.values()]
     return base + intake
 
 
@@ -1102,4 +1108,20 @@ def release_execution_authority():
         Thread(target=_run_openshell_execution, daemon=True).start()
     elif current.id == 'reporting-access':
         Thread(target=_run_reporting_access_execution, daemon=True).start()
+    return get_runtime_snapshot()
+
+
+def reset_runtime_state(target: str = 'hero-default'):
+    global _current, _intake_scenarios, _request_counter
+    with _lock:
+        if target == 'hero-default':
+            _current = deepcopy(REPORTING_ACCESS)
+        elif target in SCENARIOS:
+            _current = get_scenario(target)
+        else:
+            _current = deepcopy(REPORTING_ACCESS)
+        _intake_scenarios = {}
+        _request_counter = max(_request_counter, 3000)
+        _clear_intake_storage_file()
+    _publish_snapshot()
     return get_runtime_snapshot()

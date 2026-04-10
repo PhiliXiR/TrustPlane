@@ -192,6 +192,7 @@ class RuntimeScenario(BaseModel):
 class ScenarioOption(BaseModel):
     id: str
     label: str
+    hero: bool = False
 
 
 class IntakeRequest(BaseModel):

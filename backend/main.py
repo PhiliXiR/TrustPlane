@@ -15,6 +15,7 @@ from .store import (
     project_request_snapshot,
     project_request_timeline,
     release_execution_authority,
+    reset_runtime_state,
     resume_current_request,
     set_current_by_request_id,
     set_scenario,
@@ -178,6 +179,11 @@ def intake_slack(request: IntakeRequest):
 @app.post('/api/runtime/scenario/{scenario_id}', response_model=RuntimeScenario)
 def set_runtime_scenario(scenario_id: str):
     return set_scenario(scenario_id)
+
+
+@app.post('/api/runtime/reset', response_model=RuntimeScenario)
+def reset_runtime(target: str = 'hero-default'):
+    return reset_runtime_state(target)
 
 
 @app.post('/api/runtime/approve', response_model=RuntimeScenario)

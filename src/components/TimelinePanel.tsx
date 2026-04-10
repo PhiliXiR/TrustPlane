@@ -42,8 +42,8 @@ export function TimelinePanel({ timeline, selectedEventId, onSelect, requestTime
   return (
     <section className="rounded-3xl border border-line bg-panel/95 p-6 shadow-panel">
       <SectionHeader
-        title="Timeline"
-        description="Select an event to inspect the evidence and context attached to it."
+        title="Action timeline"
+        description="Select an event to inspect the evidence, authority context, and record details attached to it."
         meta={<div className="flex flex-wrap gap-2"><StatusBadge>{projected ? requestTimeline?.length ?? 0 : timeline.length} events</StatusBadge>{example ? <StatusBadge tone="warn">example</StatusBadge> : null}</div>}
       />
 

@@ -46,6 +46,11 @@ This index groups the current TrustPlane docs by purpose so the repo is easier t
 - `trust-rating-model.md` — rubric-based trust rating model
 - `live-command-observability.md` — real-time command/stream visibility model
 
+## Demo and presentation
+
+- `demo-hardening-checklist.md` — prioritized checklist for making the current scope showable
+- `demo-runbook.md` — recommended demo flow, framing, and talking points
+
 ## Planning and implementation
 
 - `implementation-backlog.md` — concrete implementation queue derived from the MVP contract and roadmap

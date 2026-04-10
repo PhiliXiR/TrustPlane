@@ -9,6 +9,7 @@ import { IntakeSpotlightCard } from './components/IntakeSpotlightCard';
 import { LiveExecutionPanel } from './components/LiveExecutionPanel';
 import { ModeSwitchCard } from './components/ModeSwitchCard';
 import { OperatorControlPanel } from './components/OperatorControlPanel';
+import { OutcomeSummaryCard } from './components/OutcomeSummaryCard';
 import { PlaybookCard } from './components/PlaybookCard';
 import { RequestHeader } from './components/RequestHeader';
 import { SourceSelector } from './components/SourceSelector';
@@ -30,6 +31,7 @@ import {
   pauseRuntimeRequest,
   performRequestAction,
   releaseExecutionAuthority,
+  resetRuntimeState,
   resumeRuntimeRequest,
 } from './api';
 import type { IntakeExampleFixture, IntakeExampleSummary } from './runtime/exampleTypes';
@@ -45,7 +47,7 @@ import type { RequestSnapshot, RequestTimelineResponse } from './runtime/request
 import type { RuntimeScenario } from './runtime/scenarioTypes';
 
 type ScenarioOption = { id: string; label: string };
-type SourceOption = { id: string; label: string; kind: 'runtime' | 'example'; category?: string };
+type SourceOption = { id: string; label: string; kind: 'runtime' | 'example'; category?: string; hero?: boolean };
 type ExecutionLogEntry = { id: string; stream: 'stdout' | 'stderr'; message: string };
 type RuntimeSnapshotEventPayload = RuntimeScenario | { scenario?: RuntimeScenario; requestId?: string; scenarioId?: string };
 type ExecutionStreamPayload = { eventType: string; stream: 'stdout' | 'stderr'; message: string; requestId?: string };
@@ -72,13 +74,28 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
   const [flashMessage, setFlashMessage] = useState<string | null>(null);
 
+  async function handleDemoReset(target = 'hero-default') {
+    try {
+      setLiveExecution([]);
+      setSelectedExample(null);
+      const snapshot = await resetRuntimeState(target);
+      setSelectedSourceId(`runtime:${snapshot.id}`);
+      applyRuntimeSnapshot(snapshot);
+      await hydrateProjectedState(snapshot);
+      setFlashMessage(`Demo reset to ${snapshot.label}`);
+    } catch (err) {
+      setError(String(err));
+    }
+  }
+
   useEffect(() => {
     Promise.all([fetchScenarioOptions(), fetchRuntimeSnapshot(), fetchExamples()])
       .then(async ([options, snapshot, examples]) => {
         setScenarioOptions(options);
         setExampleSummaries(examples);
+        const heroRuntimeIds = new Set(['reporting-access', 'vpn-policy-change']);
         const unifiedSources: SourceOption[] = [
-          ...options.map((option) => ({ id: `runtime:${option.id}`, label: option.label, kind: 'runtime' as const })),
+          ...options.map((option) => ({ id: `runtime:${option.id}`, label: option.label, kind: 'runtime' as const, hero: heroRuntimeIds.has(option.id) })),
           ...examples.map((example) => ({ id: `example:${example.exampleId}`, label: example.label, kind: 'example' as const, category: example.category })),
         ];
         setSourceOptions(unifiedSources);
@@ -314,6 +331,25 @@ export default function App() {
           <IntakeSpotlightCard request={runtime.request} snapshot={effectiveRequestSnapshot} example={selectedExample} />
           <div className="space-y-6">
             <SourceSelector options={sourceOptions} value={selectedSourceId} onChange={handleSourceChange} />
+            <div className="rounded-3xl border border-line bg-panel/95 px-5 py-4 text-sm leading-6 text-slate-300 shadow-panel">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <div className="text-[11px] uppercase tracking-[0.2em] text-accent">Demo framing</div>
+                  <div className="mt-2 text-slate-100">
+                    TrustPlane is the operator-facing control plane for governed agent execution, centered on the Execution Record.
+                  </div>
+                  <div className="mt-2 text-muted">
+                    Best demo path: start with reporting access, then show VPN policy change, then mention the Slack, OpenClaw, n8n intake path.
+                  </div>
+                </div>
+                <button
+                  onClick={() => handleDemoReset()}
+                  className="rounded-2xl border border-accent/35 bg-accent/10 px-4 py-2 text-sm font-medium text-accent hover:bg-accent/15"
+                >
+                  Reset demo state
+                </button>
+              </div>
+            </div>
             <ModeSwitchCard example={selectedExample} />
           </div>
         </div>
@@ -329,6 +365,7 @@ export default function App() {
           onPause={() => performAction('pause')}
           onResume={() => performAction('resume')}
         />
+        <OutcomeSummaryCard snapshot={effectiveRequestSnapshot} example={selectedExample} />
         <OperatorControlPanel
           operators={runtime.operators}
           ownership={runtime.ownership}
