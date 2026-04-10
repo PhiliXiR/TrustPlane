@@ -84,7 +84,7 @@ For a recommended show flow and narration, see `docs/demo-runbook.md`.
 ## Why this matters
 
 Most AI agent demos show that a model can do something useful.
-TrustPlane focuses on the harder problem: how to make agent-driven work legible, governed, interruptible, and reviewable once it starts affecting real systems.
+TrustPlane is about the control layer around agent work: intake, trust boundaries, approval, execution, verification, and trace.
 
 Humans need to understand:
 
