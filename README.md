@@ -162,13 +162,11 @@ For repeatable demos, use the in-app **Reset demo state** action before presenti
 
 ## Demo assets
 
-Current demo screenshots live in:
+Demo screenshots live in `docs/assets/demo/`.
 
-- `docs/assets/demo/`
+### Selected product screenshots
 
-### Product screenshots
-
-A tighter README pass keeps this to three proof screenshots.
+The README highlights three representative product views.
 
 #### 1. Request overview
 
