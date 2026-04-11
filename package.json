@@ -11,7 +11,8 @@
     "backend:install": "./.venv/bin/python -m pip install -r backend/requirements.txt",
     "backend:windows": ".\\.venv\\Scripts\\python -m uvicorn backend.main:app --host 127.0.0.1 --port 8011",
     "backend:install:windows": ".\\.venv\\Scripts\\python -m pip install -r backend\\requirements.txt",
-    "screenshots": "playwright test tests/screenshots.spec.ts"
+    "screenshots": "playwright test tests/screenshots.spec.ts",
+    "screenshots:tight": "playwright test tests/screenshots-tight.spec.ts"
   },
   "dependencies": {
     "react": "^18.3.1",

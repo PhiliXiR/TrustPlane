@@ -166,35 +166,27 @@ Current demo screenshots live in:
 
 - `docs/assets/demo/`
 
-Included captures:
-
-1. `01-request-overview.png`
-2. `02-review-gate.png`
-3. `03-action-timeline.png`
-4. `06-vpn-operator-execution.png`
-5. `07-example-mode.png`
-
 ### Product screenshots
 
-#### Request overview
+A tighter README pass keeps this to three proof screenshots.
 
-![TrustPlane request overview](docs/assets/demo/01-request-overview.png)
+#### 1. Request overview
 
-#### Review gate and workflow progression
+![TrustPlane request overview](docs/assets/demo/01-request-overview-tight.png)
 
-![TrustPlane review gate](docs/assets/demo/02-review-gate.png)
+A first read on state, ownership, authority, and the execution record itself.
 
-#### Timeline and evidence context
+#### 2. Workflow progression
 
-![TrustPlane action timeline](docs/assets/demo/03-action-timeline.png)
+![TrustPlane workflow rail](docs/assets/demo/02-workflow-rail-tight.png)
 
-#### Operator execution posture
+A focused view of progression, gating, and what happens next.
 
-![TrustPlane VPN operator execution](docs/assets/demo/06-vpn-operator-execution.png)
+#### 3. Timeline and evidence
 
-#### Example-mode record
+![TrustPlane timeline and evidence](docs/assets/demo/03-timeline-evidence-tight.png)
 
-![TrustPlane example mode](docs/assets/demo/07-example-mode.png)
+A record that keeps review and verification attached to the governed context.
 
 ## Project structure
 
