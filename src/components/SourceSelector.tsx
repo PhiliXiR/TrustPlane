@@ -39,11 +39,17 @@ export function SourceSelector({ options, value, onChange }: Props) {
             onChange={(event) => onChange(event.target.value)}
             className="mt-1 w-full rounded-xl border border-line/70 bg-ink px-3 py-2 text-sm text-slate-100 outline-none"
           >
-            {options.map((option) => (
-              <option key={option.id} value={option.id}>
-                {option.hero ? `⭐ ${option.label}` : option.kind === 'example' ? `🟣 Example · ${option.label}` : option.label}
-              </option>
-            ))}
+            {options.map((option) => {
+              const optionLabel = option.kind === 'example'
+                ? option.label.replace(/^Example:\s*/i, '')
+                : option.label;
+
+              return (
+                <option key={option.id} value={option.id}>
+                  {option.hero ? `⭐ ${optionLabel}` : option.kind === 'example' ? `🟣 Example · ${optionLabel}` : optionLabel}
+                </option>
+              );
+            })}
           </select>
           {selected?.hero ? <div className="mt-2 text-xs text-accent">Recommended hero flow</div> : null}
           {selected?.category ? <div className="mt-1 text-xs text-muted">{selected.category}</div> : null}

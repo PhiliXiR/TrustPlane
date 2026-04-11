@@ -25,7 +25,7 @@ export function IntakeSpotlightCard({ request, snapshot, example }: Props) {
         <div>
           <div className="text-[11px] uppercase tracking-[0.22em] text-accent">{example ? 'Selected example intake' : 'Newest governed intake'}</div>
           <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-50">{snapshot?.request.title ?? request.title}</h2>
-          <p className="mt-2 max-w-3xl text-sm leading-7 text-slate-200">
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-200">
             {(snapshot?.intakeStatus.clarificationNeeded ?? intake.clarificationNeeded)
               ? 'This intake record is visible, but still blocked on missing information before governed routing can proceed.'
               : 'This intake record was captured successfully and is now visible as a governed request with workflow, trust, and routing context.'}
@@ -48,7 +48,7 @@ export function IntakeSpotlightCard({ request, snapshot, example }: Props) {
       <div className="mt-4 grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
         <div className="rounded-2xl border border-line bg-ink/55 px-4 py-4">
           <div className="text-[11px] uppercase tracking-[0.18em] text-muted">Why this matters</div>
-          <div className="mt-2 text-sm leading-7 text-slate-100">{reason}</div>
+          <div className="mt-2 text-sm leading-6 text-slate-100">{reason}</div>
         </div>
         <div className="rounded-2xl border border-line bg-ink/55 px-4 py-4">
           <div className="text-[11px] uppercase tracking-[0.18em] text-muted">Current intake signal</div>

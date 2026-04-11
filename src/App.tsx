@@ -101,10 +101,6 @@ export default function App() {
         setSourceOptions(unifiedSources);
         setSelectedSourceId(`runtime:${snapshot.id}`);
         setSelectedExampleId(examples[0]?.exampleId ?? '');
-        if (examples[0]?.exampleId) {
-          const example = await fetchExample(examples[0].exampleId);
-          setSelectedExample(example);
-        }
         applyRuntimeSnapshot(snapshot);
         await hydrateProjectedState(snapshot);
       })
@@ -310,8 +306,8 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-transparent px-4 py-8 text-slate-100 lg:px-8">
-      <div className="mx-auto flex max-w-[1500px] flex-col gap-5 lg:gap-6">
+    <div className="min-h-screen bg-transparent px-4 py-6 text-slate-100 lg:px-8 lg:py-8">
+      <div className="mx-auto flex max-w-[1440px] flex-col gap-5 lg:gap-6">
         {flashMessage ? (
           <div className="animate-rise-in rounded-2xl border border-success/25 bg-success/10 px-4 py-3 text-sm text-slate-100 shadow-panel">
             Runtime updated: <span className="font-semibold">{flashMessage}</span>

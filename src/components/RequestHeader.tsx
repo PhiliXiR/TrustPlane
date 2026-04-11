@@ -44,7 +44,7 @@ export function RequestHeader({ request, trustModel, snapshot, example }: Props)
           <div className="hero-surface rounded-[28px] border border-accent/15 bg-[radial-gradient(circle_at_top_left,rgba(143,208,255,0.14),transparent_45%),linear-gradient(180deg,rgba(8,16,24,0.84),rgba(8,16,24,0.34))] p-5 lg:p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
             <p className="mb-2 text-xs font-semibold uppercase tracking-[0.24em] text-accent">TrustPlane</p>
             <h1 className="text-[2rem] font-semibold tracking-tight text-slate-50 sm:text-[2.2rem] lg:text-[2.7rem] tp-wrap-anywhere">{request.title}</h1>
-            <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-300">
+            <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-300">
               A governed execution record showing who owns the request, what authority is currently in play, and what can happen next.
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
@@ -84,7 +84,7 @@ export function RequestHeader({ request, trustModel, snapshot, example }: Props)
 
               <SurfaceCard>
                 <div className="text-[11px] uppercase tracking-[0.2em] text-muted">Request context</div>
-                <div className="mt-3 text-sm leading-7 text-slate-100">{intake.rawRequest}</div>
+                <div className="mt-3 text-sm leading-6 text-slate-100">{intake.rawRequest}</div>
 
                 <div className="mt-4 flex flex-wrap gap-2">
                   <Chip>{intake.clarificationNeeded ? 'Clarification needed' : 'Ready for routing'}</Chip>

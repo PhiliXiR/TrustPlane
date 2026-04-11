@@ -10,13 +10,15 @@
     "backend": "./.venv/bin/python -m uvicorn backend.main:app --host 0.0.0.0 --port 8011",
     "backend:install": "./.venv/bin/python -m pip install -r backend/requirements.txt",
     "backend:windows": ".\\.venv\\Scripts\\python -m uvicorn backend.main:app --host 127.0.0.1 --port 8011",
-    "backend:install:windows": ".\\.venv\\Scripts\\python -m pip install -r backend\\requirements.txt"
+    "backend:install:windows": ".\\.venv\\Scripts\\python -m pip install -r backend\\requirements.txt",
+    "screenshots": "playwright test tests/screenshots.spec.ts"
   },
   "dependencies": {
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.59.1",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.1",

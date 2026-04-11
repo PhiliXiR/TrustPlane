@@ -61,14 +61,14 @@ export function TimelinePanel({ timeline, selectedEventId, onSelect, requestTime
       ) : null}
 
       <div className="mt-6 space-y-3">
-        {(projected ? requestTimeline! : timeline).map((event, index) => {
+        {(projected ? requestTimeline! : timeline).map((event, index, events) => {
           const eventId = projected ? (event as RequestTimelineEvent).eventId : (event as TimelineEvent).id;
           const selected = eventId === selectedEventId;
           return (
             <div key={eventId} className="flex gap-3">
               <div className="flex w-8 shrink-0 flex-col items-center pt-2">
                 <div className={`h-2.5 w-2.5 rounded-full ${selected ? 'bg-accent shadow-[0_0_0_6px_rgba(143,208,255,0.10)]' : 'bg-slate-500'}`} />
-                {index < timeline.length - 1 ? <div className="mt-2 h-full w-px bg-line/80" /> : null}
+                {index < events.length - 1 ? <div className="mt-2 h-full w-px bg-line/80" /> : null}
               </div>
               <button
                 onClick={() => onSelect(eventId)}

@@ -162,20 +162,39 @@ For repeatable demos, use the in-app **Reset demo state** action before presenti
 
 ## Demo assets
 
-Drop demo screenshots into:
+Current demo screenshots live in:
 
 - `docs/assets/demo/`
 
-Recommended captures:
+Included captures:
 
 1. `01-request-overview.png`
 2. `02-review-gate.png`
 3. `03-action-timeline.png`
-4. `04-execution-evidence.png`
-5. `05-outcome-and-evidence.png`
-6. `06-vpn-operator-execution.png`
-7. `07-example-mode.png` (optional)
-8. `08-demo-reset.png` (optional)
+4. `06-vpn-operator-execution.png`
+5. `07-example-mode.png`
+
+### Product screenshots
+
+#### Request overview
+
+![TrustPlane request overview](docs/assets/demo/01-request-overview.png)
+
+#### Review gate and workflow progression
+
+![TrustPlane review gate](docs/assets/demo/02-review-gate.png)
+
+#### Timeline and evidence context
+
+![TrustPlane action timeline](docs/assets/demo/03-action-timeline.png)
+
+#### Operator execution posture
+
+![TrustPlane VPN operator execution](docs/assets/demo/06-vpn-operator-execution.png)
+
+#### Example-mode record
+
+![TrustPlane example mode](docs/assets/demo/07-example-mode.png)
 
 ## Project structure
 
