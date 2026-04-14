@@ -1,4 +1,4 @@
-# TOOLS.md - Intake Bot Local Notes
+# TOOLS.md - Intake Agent Local Notes
 
 This file holds environment-specific notes for intake behavior.
 

@@ -53,7 +53,7 @@ Example:
 
 > Can I get access to the reporting dashboard?
 
-### Step 2 — intake bot evaluates completeness
+### Step 2 — intake agent evaluates completeness
 
 The bot should look for required fields such as:
 
@@ -104,7 +104,7 @@ TrustPlane should show:
 
 ### Slack side
 
-A Slack-facing intake bot handles:
+A Slack-facing intake agent handles:
 
 - message receipt
 - lightweight clarification loop
@@ -211,7 +211,7 @@ After this slice works, the next useful upgrade would be:
 
 The smallest sane Slack integration is:
 
-- one intake bot
+- one intake agent
 - one narrow request family
 - one clarification loop
 - one normalized request object

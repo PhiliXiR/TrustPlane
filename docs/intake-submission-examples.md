@@ -2,11 +2,11 @@
 
 ## Purpose
 
-This document provides a curated set of realistic intake submissions for the implemented intake-bot -> watcher -> `n8n` -> TrustPlane path.
+This document provides a curated set of realistic intake submissions for the implemented intake-agent -> watcher -> `n8n` -> TrustPlane path.
 
 These examples are meant to help with:
 
-- intake-bot prompt and behavior tuning
+- intake-agent prompt and behavior tuning
 - normalization testing
 - clarification-loop testing
 - candidate workflow selection
@@ -626,7 +626,7 @@ This set intentionally spans:
 - investigation-only requests
 - staging vs production contexts
 
-That variety is useful because the intake bot should not behave the same way for all of them.
+That variety is useful because the intake agent should not behave the same way for all of them.
 
 ## Good behaviors these examples should test
 
@@ -642,7 +642,7 @@ That variety is useful because the intake bot should not behave the same way for
 
 A good follow-up would be to add for each example:
 
-- expected intake-bot clarification transcript
+- expected intake-agent clarification transcript
 - expected `n8n` normalized output shape
 - expected TrustPlane request snapshot summary
 - expected operator timeline events

@@ -8,27 +8,27 @@ The goal is to make routing and ownership explicit instead of leaving them impli
 
 ## Core principle
 
-NemoClaw should not be the final delegator.
+OpenClaw should not be the final delegator.
 TrustPlane UI should not be the hidden delegation engine.
 
 The most sensible model is:
 
-- NemoClaw handles intake conversation and normalization
+- OpenClaw handles intake conversation and normalization
 - a request router performs delegation
 - TrustPlane shows and governs the resulting ownership, trust, and control state
 
 ## Roles in the delegation chain
 
-### NemoClaw
+### OpenClaw
 
-NemoClaw should own:
+OpenClaw should own:
 
 - intake conversation
 - clarification loop
 - request normalization
 - request packaging for handoff
 
-NemoClaw may suggest likely workflows or operator lanes, but it should not be the final source of delegation authority.
+OpenClaw may suggest likely workflows or operator lanes, but it should not be the final source of delegation authority.
 
 ### Request router
 
@@ -59,11 +59,11 @@ TrustPlane should not have to be the hidden system that makes all routing decisi
 
 ### Step 1 — intake
 
-A user sends a request to NemoClaw in Slack or another intake surface.
+A user sends a request to OpenClaw in Slack or another intake surface.
 
 ### Step 2 — normalization
 
-NemoClaw clarifies missing fields and produces a normalized request object.
+OpenClaw clarifies missing fields and produces a normalized request object.
 
 ### Step 3 — routing
 
@@ -104,9 +104,9 @@ Examples:
 
 That mapping may begin as a simple routing table and become more sophisticated later.
 
-## Why NemoClaw should not be the final delegator
+## Why OpenClaw should not be the final delegator
 
-If NemoClaw both converses with the user and performs final delegation, too much authority gets concentrated in the intake bot.
+If OpenClaw both converses with the user and performs final delegation, too much authority gets concentrated in the intake agent.
 
 That creates problems:
 
@@ -115,7 +115,7 @@ That creates problems:
 - harder to override
 - easier to blur user conversation with execution authority
 
-It is better for NemoClaw to shape requests than to own downstream control decisions.
+It is better for OpenClaw to shape requests than to own downstream control decisions.
 
 ## Why TrustPlane should not be the hidden delegator
 
@@ -202,8 +202,8 @@ This helps the operator understand whether the delegation makes sense and whethe
 ### Example: reporting access request
 
 1. User in Slack asks for reporting access
-2. NemoClaw asks for missing environment or justification
-3. NemoClaw normalizes the request
+2. OpenClaw asks for missing environment or justification
+3. OpenClaw normalizes the request
 4. Routing layer evaluates `normalizedType = access_request`
 5. Routing layer assigns `access-operator`
 6. TrustPlane displays:
@@ -216,7 +216,7 @@ This helps the operator understand whether the delegation makes sense and whethe
 
 The cleanest model is:
 
-- NemoClaw prepares the request
+- OpenClaw prepares the request
 - routing/orchestration delegates the request
 - TrustPlane shows and governs the handoff
 

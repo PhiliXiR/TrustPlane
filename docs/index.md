@@ -23,6 +23,7 @@ This index groups the current TrustPlane docs by purpose so the repo is easier t
 - `linux-deployment-shape.md` — Linux-first runtime hosting model
 - `first-linux-deployment-instructions.md` — first-test Linux setup steps
 - `openclaw-n8n-trustplane-role-map.md` — role split and handoff boundaries between OpenClaw, n8n, and TrustPlane
+- `openclaw-slack-intake-plan.md` — staged plan for the OpenClaw Slack intake agent path
 
 ## Intake and external entry
 
@@ -31,10 +32,10 @@ This index groups the current TrustPlane docs by purpose so the repo is easier t
 - `intake-submission-examples.md` — canonical example submissions with normalization and trust notes
 - `intake-fixture-pack.md` — canonical fully fleshed example fixtures with clarification, timeline, lifecycle, and evidence expectations
 - `slack-intake-slice.md` — smallest sane Slack integration slice
-- `nemoclaw-slack-intake-plan.md` — staged plan for NemoClaw as Slack intake bot
-- `minimal-intake-bot-template.md` — deployable-ish intake bot workspace/config shape
+- `minimal-intake-agent-template.md` — deployable-ish intake agent workspace/config shape
 - `n8n-integration-starter.md` — local n8n webhook-to-TrustPlane starter path
-- `intake-agent-tuning-notes.md` — guidance for keeping the intake bot focused and reducing clarification churn
+- `intake-agent-tuning-notes.md` — guidance for keeping the intake agent focused and reducing clarification churn
+- `langfuse-and-defenseclaw-notes.md` — prompt observability notes and future security-integration evaluation
 
 ## Operators and team model
 

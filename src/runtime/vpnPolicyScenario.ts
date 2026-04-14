@@ -19,13 +19,13 @@ export const vpnPolicyScenario: RuntimeScenario = {
   operators: [],
   ownership: {
     currentOwner: { actorType: 'operator-agent', agentId: 'change-operator', name: 'Change Operator', lane: 'change' },
-    previousOwner: { actorType: 'intake-agent', agentId: 'intake', name: 'Intake Bot', lane: 'intake' },
+    previousOwner: { actorType: 'intake-agent', agentId: 'intake', name: 'Intake Agent', lane: 'intake' },
     assignedAt: '18:21',
-    ownershipReason: 'NemoClaw routing matched the normalized infrastructure_change request to the change operator lane.',
+    ownershipReason: 'OpenClaw routing matched the normalized infrastructure_change request to the change operator lane.',
   },
   delegation: {
     delegationMode: 'automatic',
-    routingComponent: 'nemoclaw-request-router',
+    routingComponent: 'openclaw-request-router',
     selectedLane: 'change',
     selectedAgentId: 'change-operator',
     candidateLanes: ['change'],

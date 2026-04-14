@@ -18,6 +18,7 @@ Show TrustPlane as:
    - this proves the model extends to higher-risk operator-agent execution
 3. **Only then mention the Slack/OpenClaw/n8n path**
    - as the real intake story feeding the same control-plane model
+   - note that the active intake path runs in OpenClaw with Codex, while Langfuse gives prompt-path observability around that flow
 
 ## One-sentence framing
 
@@ -166,7 +167,9 @@ That prevents old intake-created scenarios from hanging around in the source sel
 
 Only after the hero flows are clear, mention:
 
-- a real local Slack -> OpenClaw -> watcher -> n8n -> TrustPlane path exists
+- a real local Slack -> OpenClaw intake agent -> watcher -> n8n -> TrustPlane path exists
+- the conversational intake layer currently runs in OpenClaw with Codex
+- Langfuse is being used to inspect prompt and intake behavior around that path
 - intake-created requests can enter the same TrustPlane record model
 - today, the operator-facing control-plane model is ahead of the fully real runtime adapters
 
@@ -180,6 +183,7 @@ Say this clearly:
 - operator actions and state transitions are real in the prototype
 - event streaming shape is real
 - the local Slack/OpenClaw/n8n/TrustPlane handoff path is real
+- the active intake path is OpenClaw + Codex, with Langfuse providing observability around prompt behavior
 
 ## What is simulated today
 
@@ -188,6 +192,7 @@ Also say this clearly:
 - seeded scenarios still back key demo flows
 - command execution output is simulated in the prototype flows
 - verification and artifact completion in those hero flows are currently scenario-driven
+- the request-native runtime model is still ahead of the fully native execution/runtime implementation
 
 ## What not to over-explain
 

@@ -37,7 +37,7 @@ TrustPlane exists to make that principle visible.
 
 ### Runtime layer
 
-NemoClaw / OpenShell or a similar substrate handles:
+OpenClaw / OpenShell or a similar substrate handles:
 
 - agents
 - sessions
@@ -274,7 +274,7 @@ Treat trust as a changing operational state rather than a static label.
 
 This is one of the strongest long-term product ideas in TrustPlane.
 
-## Phase 7 — Integrate with NemoClaw / OpenShell through a projection layer
+## Phase 7 — Integrate with OpenClaw / OpenShell through a projection layer
 
 ### Goal
 
@@ -282,7 +282,7 @@ Replace mocked runtime data with real governed runtime projections.
 
 ### Recommended architecture
 
-- runtime (NemoClaw / OpenShell)
+- runtime (OpenClaw / OpenShell)
 - projection / adapter layer
 - TrustPlane UI
 

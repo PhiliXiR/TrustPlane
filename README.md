@@ -53,6 +53,8 @@ The clearest current demo story is:
 2. **VPN policy change** — approved operator-agent execution with verification
 3. **Slack/OpenClaw/n8n intake path** — believable real intake feeding the same control-plane model
 
+The strongest way to present it is as a **governed prototype with a real intake path and a strong operator-facing control surface**, not as a fully productized runtime.
+
 For a recommended show flow and narration, see `docs/demo-runbook.md`.
 
 ## What works today
@@ -64,7 +66,9 @@ For a recommended show flow and narration, see `docs/demo-runbook.md`.
 - Intake-created requests projected into runtime scenarios
 - Lightweight intake-request persistence
 - Local `n8n` webhook handoff into TrustPlane proven on the Linux machine
-- Local Slack -> intake agent -> watcher -> n8n -> TrustPlane handoff working end-to-end when the backend is reachable at `0.0.0.0:8011`
+- Local Slack -> OpenClaw intake agent -> watcher -> n8n -> TrustPlane handoff working end-to-end when the backend is reachable at `0.0.0.0:8011`
+- The active intake path is running in OpenClaw with Codex handling the conversational intake layer
+- Langfuse is already useful for prompt-path and intake-trace visibility around that conversational flow
 
 ## What is real today
 
@@ -73,12 +77,13 @@ For a recommended show flow and narration, see `docs/demo-runbook.md`.
 - request snapshot and timeline projection
 - operator controls for approve, deny, pause, resume, and release
 - event streaming shape for runtime and request-scoped views
-- local Slack -> OpenClaw -> watcher -> n8n -> TrustPlane handoff on the Linux host
+- local Slack -> OpenClaw intake agent -> watcher -> n8n -> TrustPlane handoff on the Linux host
 
 ## What is simulated today
 
-- runtime scenarios are still scenario-backed rather than sourced from a real agent runtime
+- runtime scenarios are still scenario-backed rather than sourced from a fully request-native runtime model
 - command output is currently simulated to prove the control-plane and event model
+- verification and artifact completion in the hero flows are still scenario-driven
 - the intake path still needs hardening, tighter automation, and cleaner operational packaging
 
 ## Why this matters
@@ -97,12 +102,25 @@ Humans need to understand:
 
 That is the layer TrustPlane is trying to make real.
 
+## Current stack
+
+- **TrustPlane** for the operator-facing Execution Record and control surface
+- **OpenClaw** for the intake and operator-agent runtime layer
+- **Codex** for the active conversational intake path inside OpenClaw
+- **n8n** for deterministic webhook and integration handoff
+- **Langfuse** for prompt-path and intake-trace observability
+
+This stack is enough to show a coherent governed-agent story today: conversational intake, deterministic handoff, request projection, operator review, and a clear distinction between what is real versus what is still scenario-backed.
+
 ## What I am building next
 
-- hardening and operational cleanup for the intake-bot -> watcher -> `n8n` -> TrustPlane path
+- hardening and operational cleanup for the OpenClaw intake agent -> watcher -> `n8n` -> TrustPlane path
 - richer trust downgrade and suspended-mode behavior
-- runtime adapters that project real agent/runtime state into the TrustPlane contract
+- runtime adapters that project real OpenClaw operator state into the TrustPlane contract
 - cleaner request-native runtime, action, and event handling inside TrustPlane
+- evaluation of Cisco DefenseClaw as a future security and control-plane integration surface
+
+Langfuse is part of the observability story around the intake path, not the TrustPlane control plane itself. Cisco DefenseClaw is currently an investigation area rather than a core runtime dependency.
 
 ## Quick start
 
@@ -153,10 +171,11 @@ npm run build
 1. Start backend and frontend
 2. Open `http://127.0.0.1:4511`
 3. Select **Grant access to reporting app**
-4. Click **Approve**
-5. Watch the workflow advance and the **Live Command Output** panel stream execution and verification events
-6. Open inspection context to view request, policy, playbook version, and artifact details
-7. Compare what is real today versus what is still simulated
+4. Show the trust boundary, policy basis, and prepared action
+5. Click **Approve**
+6. Watch the workflow advance and the **Live Command Output** panel stream execution and verification events
+7. Open inspection context to view request, policy, playbook version, and artifact details
+8. Compare what is real today versus what is still simulated
 
 For repeatable demos, use the in-app **Reset demo state** action before presenting. It resets the runtime to the default hero flow and clears persisted intake-created demo records.
 

@@ -18,7 +18,7 @@ The team should be able to cover:
 
 ## Team roster
 
-### 1. Intake Bot
+### 1. Intake Agent
 
 **Primary responsibility:**
 
@@ -110,8 +110,8 @@ Each operator should eventually have:
     list: [
       {
         id: "intake",
-        name: "Intake Bot",
-        workspace: "~/.openclaw/workspaces/intake-bot"
+        name: "Intake Agent",
+        workspace: "~/.openclaw/workspaces/intake-agent"
       },
       {
         id: "access-operator",
@@ -137,7 +137,7 @@ A human approver may remain outside the runtime as a real human checkpoint rathe
 
 ## Suggested ownership boundaries
 
-### Intake Bot
+### Intake Agent
 
 Can:
 
@@ -232,7 +232,7 @@ That would let the frontend show a believable governed team instead of static la
 
 The minimal realistic team is:
 
-- Intake Bot
+- Intake Agent
 - Access Operator
 - Endpoint Operator
 - Change Operator

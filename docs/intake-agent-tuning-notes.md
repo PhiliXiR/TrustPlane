@@ -143,7 +143,7 @@ If partially incomplete:
 
 ## Best next implementation move
 
-Create a very explicit intake-bot instruction layer that includes:
+Create a very explicit intake-agent instruction layer that includes:
 
 - request type taxonomy
 - target-system taxonomy

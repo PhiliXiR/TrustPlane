@@ -1,15 +1,15 @@
-# Minimal Intake Bot Template
+# Minimal Intake Agent Template
 
 ## Purpose
 
-This document defines a minimal but realistic agent structure for an eventual Slack-facing intake bot.
+This document defines a minimal but realistic agent structure for an eventual Slack-facing intake agent.
 
 The goal is not to create a fake product demo.
-The goal is to define a structure that could later be deployed through a real runtime such as OpenClaw, NemoClaw, or another governed agent system.
+The goal is to define a structure that could later be deployed through a real runtime such as OpenClaw or another governed agent system.
 
 ## Design goal
 
-The intake bot should be able to:
+The intake agent should be able to:
 
 - talk to humans in Slack
 - gather missing information
@@ -44,7 +44,7 @@ This defines:
 ## Minimal workspace layout
 
 ```text
-intake-bot/
+intake-agent/
 ├── AGENTS.md
 ├── SOUL.md
 ├── TOOLS.md
@@ -121,7 +121,7 @@ Example:
 # IDENTITY.md
 
 - Name: Intake
-- Role: Slack intake bot for IT support workflows
+- Role: Slack intake agent for IT support workflows
 - Emoji: 📨
 - Vibe: clear, calm, operational
 ```
@@ -159,14 +159,14 @@ A deployable runtime should also define the bot in config.
       {
         id: "intake",
         default: false,
-        name: "Intake Bot",
-        workspace: "~/.openclaw/workspaces/intake-bot",
+        name: "Intake Agent",
+        workspace: "~/.openclaw/workspaces/intake-agent",
         model: {
           primary: "openai/gpt-5-mini"
         },
         identity: {
           name: "Intake",
-          theme: "IT intake bot",
+          theme: "IT intake agent",
           emoji: "📨"
         },
         tools: {
@@ -186,7 +186,7 @@ A deployable runtime should also define the bot in config.
 
 ## Why this shape matters
 
-This gives the intake bot:
+This gives the intake agent:
 
 - identity
 - runtime configuration
@@ -198,7 +198,7 @@ That is much more realistic than a vague role label.
 
 ## Slack binding shape
 
-Eventually, the intake bot would be bound to a Slack channel, DM surface, or request thread.
+Eventually, the intake agent would be bound to a Slack channel, DM surface, or request thread.
 
 Example shape:
 
@@ -223,9 +223,9 @@ In a more precise deployment, routing could instead target:
 - a specific request queue channel
 - a dedicated bot DM surface
 
-## What the intake bot should hand off
+## What the intake agent should hand off
 
-The intake bot should not just emit free text.
+The intake agent should not just emit free text.
 It should eventually hand off a normalized request object containing fields like:
 
 - source
@@ -252,7 +252,7 @@ But the minimal deployable form should stay small.
 
 ## Summary
 
-A realistic intake bot needs:
+A realistic intake agent needs:
 
 - a dedicated workspace
 - bootstrap files for behavior and identity

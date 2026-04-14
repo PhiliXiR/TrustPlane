@@ -11,7 +11,7 @@ Get a minimal end-to-end handoff working:
 
 This keeps the system architecture clean:
 
-- **OpenClaw intake bot** handles conversation and clarification
+- **OpenClaw intake agent** handles conversation and clarification
 - **n8n** handles glue, routing, and deterministic integration steps
 - **TrustPlane** remains the system of record for the intake/execution trace
 
@@ -45,7 +45,7 @@ Accepted payload shape:
 
 ## Minimal webhook contract into n8n
 
-For the first pass, have the intake bot or any test client send the same canonical JSON directly to n8n.
+For the first pass, have the intake agent or any test client send the same canonical JSON directly to n8n.
 
 Recommended webhook body:
 

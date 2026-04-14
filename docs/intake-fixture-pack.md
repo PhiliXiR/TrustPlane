@@ -2,12 +2,12 @@
 
 ## Purpose
 
-This document expands the curated intake submissions into full fixture-style examples for the implemented intake-bot -> watcher -> `n8n` -> TrustPlane path.
+This document expands the curated intake submissions into full fixture-style examples for the implemented intake-agent -> watcher -> `n8n` -> TrustPlane path.
 
 These examples are meant to be useful for:
 
 - demos
-- intake-bot prompt tuning
+- intake-agent prompt tuning
 - `n8n` normalization validation
 - TrustPlane operator-surface testing
 - future regression fixture design
@@ -69,12 +69,12 @@ These are written to be readable by humans first while still being structured en
 
 > Hey, can someone give Jamie access to the reporting dashboard? They’re helping with the Monday metrics review.
 
-## Expected intake-bot behavior
+## Expected intake-agent behavior
 
 ### Clarification behavior
 No clarification required if Jamie’s identity is resolvable through the identity provider.
 
-### Ideal intake-bot response
+### Ideal intake-agent response
 > Got it — I’ll route a reporting dashboard access request for Jamie tied to the Monday metrics review.
 
 ## Expected normalized `n8n` output
@@ -149,7 +149,7 @@ No clarification required if Jamie’s identity is resolvable through the identi
 
 > Need Priya added to the Finance shared drive for month-end close.
 
-## Expected intake-bot behavior
+## Expected intake-agent behavior
 
 ### Clarification behavior
 Clarification required.
@@ -163,7 +163,7 @@ Clarification required.
 
 **Requester:** Temporary for this week only.
 
-### Ideal intake-bot response after clarification
+### Ideal intake-agent response after clarification
 > Thanks — I’ll route a temporary Finance Close shared-drive access request for Priya tied to month-end close.
 
 ## Expected normalized `n8n` output
@@ -242,7 +242,7 @@ Clarification required.
 
 > Can we get VPN access set up for the new contractor starting tomorrow? Name is Alex, working with infra for two weeks.
 
-## Expected intake-bot behavior
+## Expected intake-agent behavior
 
 ### Clarification behavior
 Clarification required.
@@ -260,7 +260,7 @@ Clarification required.
 
 **Requester:** Dana approved it.
 
-### Ideal intake-bot response after clarification
+### Ideal intake-agent response after clarification
 > Got it — I’ll route a contractor VPN access request for Alex Rivera with the infra contractor VPN profile and Dana as sponsor.
 
 ## Expected normalized `n8n` output
@@ -340,13 +340,13 @@ Clarification required.
 
 > Please remove Morgan’s VPN and internal group access today — they left Friday.
 
-## Expected intake-bot behavior
+## Expected intake-agent behavior
 
 ### Clarification behavior
 Minimal clarification only if Morgan cannot be resolved.
 Otherwise proceed directly.
 
-### Ideal intake-bot response
+### Ideal intake-agent response
 > Understood — I’ll route an offboarding access-removal request for Morgan covering VPN and internal group access.
 
 ## Expected normalized `n8n` output
@@ -417,7 +417,7 @@ Otherwise proceed directly.
 
 > Sarah needs access to support@ mailbox while Chris is away.
 
-## Expected intake-bot behavior
+## Expected intake-agent behavior
 
 ### Clarification behavior
 Clarification required.
@@ -431,7 +431,7 @@ Clarification required.
 
 **Requester:** Through next Friday.
 
-### Ideal intake-bot response after clarification
+### Ideal intake-agent response after clarification
 > Thanks — I’ll route temporary mailbox delegation for Sarah to support@ through next Friday with reply capability but not full send-as.
 
 ## Expected normalized `n8n` output
@@ -509,7 +509,7 @@ Clarification required.
 
 > staging web is wedged again, can someone restart it?
 
-## Expected intake-bot behavior
+## Expected intake-agent behavior
 
 ### Clarification behavior
 Clarification required.
@@ -523,7 +523,7 @@ Clarification required.
 
 **Requester:** Yes, staging only.
 
-### Ideal intake-bot response after clarification
+### Ideal intake-agent response after clarification
 > Got it — I’ll route a restart request for the staging-web-api service in staging only.
 
 ## Expected normalized `n8n` output
@@ -601,7 +601,7 @@ Clarification required.
 
 > We should probably clean up those unattached EBS volumes in dev, they’ve been hanging around forever.
 
-## Expected intake-bot behavior
+## Expected intake-agent behavior
 
 ### Clarification behavior
 Clarification required.
@@ -615,7 +615,7 @@ Clarification required.
 
 **Requester:** Unattached for more than 30 days and not tagged keep.
 
-### Ideal intake-bot response after clarification
+### Ideal intake-agent response after clarification
 > Thanks — I’ll route a reviewed cleanup request for unattached EBS volumes in dev/us-west-2 using the 30-day and no-keep-tag rule.
 
 ## Expected normalized `n8n` output
@@ -693,7 +693,7 @@ Clarification required.
 
 > Looks like one of the old IAM users still has an active key. Can we revoke it and rotate if needed?
 
-## Expected intake-bot behavior
+## Expected intake-agent behavior
 
 ### Clarification behavior
 Clarification required.
@@ -711,7 +711,7 @@ Clarification required.
 
 **Requester:** Revoke only for now.
 
-### Ideal intake-bot response after clarification
+### Ideal intake-agent response after clarification
 > Understood — I’ll route a revoke-only IAM credential request for deploy-bot-old in the staging shared-services account.
 
 ## Expected normalized `n8n` output
@@ -790,7 +790,7 @@ Clarification required.
 
 > prod api cpu is pinned on one node, can someone take a look?
 
-## Expected intake-bot behavior
+## Expected intake-agent behavior
 
 ### Clarification behavior
 Clarification required.
@@ -804,7 +804,7 @@ Clarification required.
 
 **Requester:** Investigation only for now.
 
-### Ideal intake-bot response after clarification
+### Ideal intake-agent response after clarification
 > Got it — I’ll route a production investigation request for the prod-api ASG in us-west-2 with investigation-only scope.
 
 ## Expected normalized `n8n` output
@@ -882,13 +882,13 @@ Clarification required.
 
 > The background invoice worker in staging stopped processing jobs again. Please restart it.
 
-## Expected intake-bot behavior
+## Expected intake-agent behavior
 
 ### Clarification behavior
 Minimal clarification, only if there are multiple candidate workers.
 Otherwise proceed.
 
-### Ideal intake-bot response
+### Ideal intake-agent response
 > Understood — I’ll route a staging restart request for the invoice worker.
 
 ## Expected normalized `n8n` output

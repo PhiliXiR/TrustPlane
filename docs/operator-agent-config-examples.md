@@ -9,7 +9,7 @@ They are meant to show how the workspace scaffolds can line up with deployable a
 
 ## Team covered
 
-- Intake Bot
+- Intake Agent
 - Access Operator
 - Endpoint Operator
 - Change Operator
@@ -32,14 +32,14 @@ These examples aim for:
     list: [
       {
         id: "intake",
-        name: "Intake Bot",
-        workspace: "./examples/agent-workspaces/intake-bot",
+        name: "Intake Agent",
+        workspace: "./examples/agent-workspaces/intake-agent",
         model: {
           primary: "openai/gpt-5-mini"
         },
         identity: {
           name: "Intake",
-          theme: "governed IT intake bot",
+          theme: "governed IT intake agent",
           emoji: "📨"
         },
         tools: {
@@ -125,9 +125,9 @@ These examples aim for:
 
 ## Why these choices
 
-### Intake Bot
+### Intake Agent
 
-The intake bot gets the strongest execution restrictions.
+The intake agent gets the strongest execution restrictions.
 
 It should be able to:
 
@@ -168,7 +168,7 @@ In a later deployment, routing could look like this:
 }
 ```
 
-Then the intake bot would hand off internally based on normalized request type:
+Then the intake agent would hand off internally based on normalized request type:
 
 - `access_request` -> `access-operator`
 - `endpoint_support` -> `endpoint-operator`
@@ -200,6 +200,8 @@ If one or more of these agents later uses an ACP harness runtime, the shape woul
 ```
 
 That is optional, but it shows how the same workspace scaffolds could support a real harness-backed runtime later.
+
+For current positioning, keep this framed as an implementation option rather than the headline architecture. The live intake path already runs in OpenClaw, and Codex is a concrete fit when you want a harness-backed conversational intake agent.
 
 ## Recommended next refinement
 

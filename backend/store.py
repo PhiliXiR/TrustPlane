@@ -561,17 +561,18 @@ def _run_reporting_access_execution():
                 _current.request.state = 'Completed and verified'
                 _current.request.autonomyMode = 'bounded execution completed'
                 _current.commandEnvelope.approvalState = 'executed'
+                _current.executionSubstrate.mode = 'runtime_executed'
+                for operator in _current.operators:
+                    if operator.agentId == _current.ownership.currentOwner.agentId:
+                        operator.status = 'completed'
                 for stage in _current.stages:
-                    if stage.id == 'verification':
+                    if stage.id in {'submitted', 'intake', 'classification', 'playbook', 'policy', 'approval', 'tool', 'verification', 'done'}:
                         stage.status = 'completed'
-                    elif stage.id == 'done':
-                        stage.status = 'completed'
+                        stage.reason = None
                 for checkpoint in _current.humanCheckpoints:
-                    if checkpoint.id == 'hc3':
-                        checkpoint.state = 'completed'
+                    checkpoint.state = 'completed'
                 for step in _current.executionSteps:
-                    if step.id == 'ex5':
-                        step.state = 'completed'
+                    step.state = 'completed'
                 _append_timeline('verification.completed', 'Verification passed and completion artifact is ready.', 'verification', 'artifact')
                 _current.inspections['artifact'].content = '{\n  "artifactType": "access_change_record",\n  "status": "complete",\n  "verification": "passed",\n  "executedCommand": "reporting-access.grant analyst@company reporting.read"\n}'
             _persist_current_if_intake()
@@ -599,7 +600,7 @@ def create_intake_request(intake: IntakeRequest):
     scenario.label = f"Intake · {intake.targetSystem}"
     scenario.request.title = title
     scenario.request.state = current_state
-    scenario.request.owner = 'Intake Bot' if intake.clarificationNeeded else selected_agent_name
+    scenario.request.owner = 'Intake Agent' if intake.clarificationNeeded else selected_agent_name
     scenario.request.risk = 'medium' if intake.normalizedType == 'access_request' else 'unknown'
     scenario.request.autonomyMode = intake.initialTrustMode.replace('_', '-')
     scenario.request.intake = IntakeMetadata(
@@ -634,11 +635,11 @@ def create_intake_request(intake: IntakeRequest):
     scenario.operators = [
         {
             'agentId': 'intake',
-            'name': 'Intake Bot',
+            'name': 'Intake Agent',
             'kind': 'intake-agent',
             'lane': 'intake',
-            'runtime': 'nemoclaw',
-            'workspace': '~/.openclaw/workspaces/intake-bot',
+            'runtime': 'openclaw',
+            'workspace': '~/.openclaw/workspaces/intake-agent',
             'sessionType': 'persistent',
             'authorityProfile': 'clarify_and_route_only',
             'allowedSubstrates': ['openclaw-routing'],
@@ -649,7 +650,7 @@ def create_intake_request(intake: IntakeRequest):
             'name': selected_agent_name,
             'kind': 'operator-agent',
             'lane': selected_lane,
-            'runtime': 'nemoclaw',
+            'runtime': 'openclaw',
             'workspace': f'~/.openclaw/workspaces/{selected_agent}',
             'sessionType': 'persistent',
             'authorityProfile': 'bounded_access_changes' if selected_lane == 'access' else 'prepare_high_risk_change_and_execute_after_release',
@@ -662,26 +663,26 @@ def create_intake_request(intake: IntakeRequest):
         'currentOwner': {
             'actorType': 'intake-agent' if intake.clarificationNeeded else 'operator-agent',
             'agentId': 'intake' if intake.clarificationNeeded else selected_agent,
-            'name': 'Intake Bot' if intake.clarificationNeeded else selected_agent_name,
+            'name': 'Intake Agent' if intake.clarificationNeeded else selected_agent_name,
             'lane': 'intake' if intake.clarificationNeeded else selected_lane,
         },
         'previousOwner': None if intake.clarificationNeeded else {
             'actorType': 'intake-agent',
             'agentId': 'intake',
-            'name': 'Intake Bot',
+            'name': 'Intake Agent',
             'lane': 'intake',
         },
         'assignedAt': 'now',
         'ownershipReason': (
-            'The request remains with Intake Bot until missing intake fields are resolved.'
+            'The request remains with Intake Agent until missing intake fields are resolved.'
             if intake.clarificationNeeded
-            else f'NemoClaw routed the normalized request to {selected_agent_name} after matching lane {selected_lane}.'
+            else f'OpenClaw routed the normalized request to {selected_agent_name} after matching lane {selected_lane}.'
         ),
     }
 
     scenario.delegation = {
         'delegationMode': 'held_for_clarification' if intake.clarificationNeeded else 'automatic',
-        'routingComponent': 'nemoclaw-request-router',
+        'routingComponent': 'openclaw-request-router',
         'selectedLane': 'intake' if intake.clarificationNeeded else selected_lane,
         'selectedAgentId': None if intake.clarificationNeeded else selected_agent,
         'candidateLanes': ['access'] if intake.normalizedType == 'access_request' else ['change'],
@@ -884,7 +885,7 @@ def create_intake_request(intake: IntakeRequest):
             'detail': (
                 f"Clarification needed for fields: {', '.join(intake.missingFields)}."
                 if intake.clarificationNeeded and intake.missingFields
-                else f'Request ownership transferred to {selected_agent_name} after NemoClaw routing.'
+                else f'Request ownership transferred to {selected_agent_name} after OpenClaw routing.'
             ),
             'category': 'human' if intake.clarificationNeeded else 'workflow',
             'inspectionKey': 'policy' if intake.clarificationNeeded else 'playbook',
@@ -983,6 +984,14 @@ def approve_current_request():
         _current.trustModel.currentBoundary = 'Delegation mode: Bounded autonomous execution · Execution mode: Runtime executed'
         _current.trustModel.delegationRule = 'The runtime may now issue the prepared action within the approved playbook boundaries.'
         _current.commandEnvelope.approvalState = 'released'
+        _current.authorityBoundary.mayExecute = True
+        if _current.executionSubstrate.substrateId == 'openshell':
+            _current.executionSubstrate.mode = 'released_for_execution'
+        else:
+            _current.executionSubstrate.mode = 'runtime_executing'
+        for operator in _current.operators:
+            if operator.agentId == _current.ownership.currentOwner.agentId:
+                operator.status = 'execution_released'
         for stage in _current.stages:
             if stage.id == 'approval':
                 stage.status = 'completed'
@@ -1076,12 +1085,20 @@ def _run_openshell_execution():
                 _append_timeline('verification.started', 'Verification started after OpenShell command completion.', 'verification', 'artifact')
             elif event_type == 'verification.completed':
                 _current.request.state = 'Completed and verified'
+                _current.request.autonomyMode = 'operator-agent execution completed'
                 _current.commandEnvelope.approvalState = 'executed'
+                _current.executionSubstrate.mode = 'execution_completed'
+                for operator in _current.operators:
+                    if operator.agentId == _current.ownership.currentOwner.agentId:
+                        operator.status = 'completed'
                 for stage in _current.stages:
-                    if stage.id == 'verification':
+                    if stage.id in {'submitted', 'intake', 'classification', 'playbook', 'policy', 'approval', 'tool', 'verification', 'done'}:
                         stage.status = 'completed'
-                    elif stage.id == 'done':
-                        stage.status = 'completed'
+                        stage.reason = None
+                for checkpoint in _current.humanCheckpoints:
+                    checkpoint.state = 'completed'
+                for step in _current.executionSteps:
+                    step.state = 'completed'
                 _append_timeline('verification.completed', 'Verification passed and OpenShell execution artifact is ready.', 'verification', 'artifact')
             _persist_current_if_intake()
         _publish('execution.stream', {'eventType': event_type, 'stream': stream, 'message': message})

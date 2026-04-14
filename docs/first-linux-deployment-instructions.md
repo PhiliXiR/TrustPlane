@@ -8,7 +8,7 @@ The goal is not full production deployment.
 The goal is to stand up a believable first external test environment for:
 
 - TrustPlane frontend/backend
-- future NemoClaw Slack intake integration
+- future OpenClaw intake integration
 - governed request visibility
 - streamed operator execution visibility
 
@@ -262,11 +262,11 @@ curl -X POST http://127.0.0.1:8011/api/intake/slack \
 
 That should create the request without requiring Slack on day one.
 
-## Phase 7 — prepare NemoClaw intake bot on Linux
+## Phase 7 — prepare OpenClaw intake agent on Linux
 
-This phase depends on the NemoClaw setup you choose, but the desired service role is clear.
+This phase depends on the OpenClaw setup you choose, but the desired service role is clear.
 
-### NemoClaw should do
+### OpenClaw should do
 
 - connect to Slack
 - receive requests
@@ -274,7 +274,7 @@ This phase depends on the NemoClaw setup you choose, but the desired service rol
 - normalize the intake object
 - POST the normalized request to TrustPlane backend
 
-### NemoClaw should not do in v1
+### OpenClaw should not do in v1
 
 - risky execution
 - approvals
@@ -285,20 +285,20 @@ Keep it intake-only.
 
 ## Phase 8 — Slack bot test plan
 
-Once NemoClaw is connected to Slack and the intake endpoint exists:
+Once OpenClaw is connected to Slack and the intake endpoint exists:
 
 ### Happy-path test
 
 1. user sends: `Can I get access to the reporting dashboard?`
-2. NemoClaw asks for any missing detail
+2. OpenClaw asks for any missing detail
 3. user responds
-4. NemoClaw submits normalized request to TrustPlane
+4. OpenClaw submits normalized request to TrustPlane
 5. TrustPlane shows request source = Slack
 
 ### Ambiguous-path test
 
 1. user sends: `Give me admin on the dashboard`
-2. NemoClaw asks for missing environment and justification
+2. OpenClaw asks for missing environment and justification
 3. request remains in clarification-needed state until enough info exists
 
 ## Phase 9 — optional reverse proxy setup later
@@ -318,7 +318,7 @@ When you want persistence and restart behavior, add services like:
 
 - `trustplane-backend.service`
 - `trustplane-frontend.service`
-- `nemoclaw-intake.service`
+- `openclaw-intake.service`
 
 This is not required for the first bootstrapping pass, but it is the right next operational step.
 
@@ -332,10 +332,10 @@ Before adding Slack, confirm:
 - no unexplained port conflicts exist
 - Linux host can keep services running reliably
 
-Before adding NemoClaw, confirm:
+Before adding the OpenClaw intake agent, confirm:
 
 - you know the intake payload contract
-- you know the endpoint URL NemoClaw should call
+- you know the endpoint URL the OpenClaw intake agent should call
 - TrustPlane can visibly represent intake source and normalized request state
 
 ## Summary
@@ -348,7 +348,7 @@ The first Linux-based TrustPlane deployment is:
 4. run backend/frontend
 5. verify streaming proof slice
 6. prepare intake endpoint shape
-7. prepare NemoClaw intake bot
+7. prepare OpenClaw intake agent
 8. connect Slack only after the intake path is ready
 
 That gives you a controlled path from local prototype toward a real external test environment.

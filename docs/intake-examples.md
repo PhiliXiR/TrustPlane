@@ -17,7 +17,7 @@ The newer example docs are clearer, broader, more internally consistent, and ali
 
 - TrustPlane’s event taxonomy
 - TrustPlane’s request lifecycle model
-- the implemented intake-bot -> watcher -> `n8n` -> TrustPlane path
+- the implemented intake-agent -> watcher -> `n8n` -> TrustPlane path
 
 ## Recommended use
 

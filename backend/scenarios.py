@@ -20,11 +20,11 @@ REPORTING_ACCESS = RuntimeScenario.model_validate({
     "operators": [
         {
             "agentId": "intake",
-            "name": "Intake Bot",
+            "name": "Intake Agent",
             "kind": "intake-agent",
             "lane": "intake",
-            "runtime": "nemoclaw",
-            "workspace": "~/.openclaw/workspaces/intake-bot",
+            "runtime": "openclaw",
+            "workspace": "~/.openclaw/workspaces/intake-agent",
             "sessionType": "persistent",
             "authorityProfile": "clarify_and_route_only",
             "allowedSubstrates": ["openclaw-routing"],
@@ -35,7 +35,7 @@ REPORTING_ACCESS = RuntimeScenario.model_validate({
             "name": "Access Operator",
             "kind": "operator-agent",
             "lane": "access",
-            "runtime": "nemoclaw",
+            "runtime": "openclaw",
             "workspace": "~/.openclaw/workspaces/access-operator",
             "sessionType": "persistent",
             "authorityProfile": "bounded_access_changes",
@@ -47,7 +47,7 @@ REPORTING_ACCESS = RuntimeScenario.model_validate({
             "name": "Duty Operator",
             "kind": "human-approver",
             "lane": "approval",
-            "runtime": "nemoclaw",
+            "runtime": "openclaw",
             "workspace": None,
             "sessionType": "on-demand",
             "authorityProfile": "approval_and_override",
@@ -65,15 +65,15 @@ REPORTING_ACCESS = RuntimeScenario.model_validate({
         "previousOwner": {
             "actorType": "intake-agent",
             "agentId": "intake",
-            "name": "Intake Bot",
+            "name": "Intake Agent",
             "lane": "intake"
         },
         "assignedAt": "10:02",
-        "ownershipReason": "NemoClaw routing matched normalized access_request intake to the access lane and handed ownership to Access Operator."
+        "ownershipReason": "OpenClaw routing matched normalized access_request intake to the access lane and handed ownership to Access Operator."
     },
     "delegation": {
         "delegationMode": "automatic",
-        "routingComponent": "nemoclaw-request-router",
+        "routingComponent": "openclaw-request-router",
         "selectedLane": "access",
         "selectedAgentId": "access-operator",
         "candidateLanes": ["access"],
@@ -120,11 +120,11 @@ REPORTING_ACCESS = RuntimeScenario.model_validate({
     "stages": [
         {"id": "submitted", "label": "Request Submitted", "status": "completed", "explanation": "The request entered the runtime with a known target application and a bounded entitlement ask.", "evidence": ["requestId=req_1042", "targetApp=Reporting", "requestedEntitlement=reporting.read"], "rule": "Requests with a clear system target may enter structured intake.", "next": "The intake agent normalizes the request into a governed runtime object."},
         {"id": "intake", "label": "Intake", "status": "completed", "explanation": "The intake agent extracted the target system, requested scope, and business intent into structured state.", "evidence": ["target app parsed from natural language", "business need matched to reporting use case", "request normalized into access_request schema"], "rule": "All downstream control logic depends on normalized request state.", "next": "Classification confirms workflow family and ownership lane."},
-        {"id": "classification", "label": "Classification", "status": "completed", "explanation": "The NemoClaw request router classified this as a standard access request and assigned the access operator lane.", "evidence": ["workflow=access_request", "confidence=high", "selectedLane=access"], "rule": "Standard access requests can use versioned IAM playbooks and automatic operator-lane assignment.", "next": "The orchestrator selects the matching IAM playbook."},
+        {"id": "classification", "label": "Classification", "status": "completed", "explanation": "The OpenClaw request router classified this as a standard access request and assigned the access operator lane.", "evidence": ["workflow=access_request", "confidence=high", "selectedLane=access"], "rule": "Standard access requests can use versioned IAM playbooks and automatic operator-lane assignment.", "next": "The orchestrator selects the matching IAM playbook."},
         {"id": "playbook", "label": "IAM Playbook", "status": "completed", "explanation": "The runtime selected a governed playbook for analytics read access rather than allowing ad hoc tool use.", "evidence": ["playbook=analytics-read-standard", "version=1.4.2", "allowed tool envelope prepared"], "rule": "Known requests should bind to playbooks before any execution path is opened.", "next": "Policy check determines whether the playbook may proceed as prepared."},
         {"id": "policy", "label": "Policy Check", "status": "completed", "explanation": "Policy evaluation allowed the entitlement in principle but marked it approval-gated because the reporting dataset is governed.", "evidence": ["policyId=pol_reporting_sensitive_02", "requester role is within allowed population", "dataset sensitivity requires approval"], "rule": "Sensitive reporting access requires explicit human approval before runtime execution.", "next": "A human checkpoint pauses execution and waits for approval."},
         {"id": "approval", "label": "Approval Check", "status": "current", "explanation": "The workflow is paused at a trust boundary. The access operator has prepared the intended action, but it is not allowed to issue the write until approval is granted.", "evidence": ["approver role=Reporting Data Owner", "prepared tool request is reversible", "execution envelope exists but is blocked"], "rule": "The system that decides must also expose where it is not allowed to continue alone.", "next": "If approved, the governed runtime can execute the prepared access-grant call."},
-        {"id": "tool", "label": "Tool Execute", "status": "future", "explanation": "The access operator will execute the grant through a governed NemoClaw substrate rather than by uncontrolled direct API action.", "evidence": ["substrate=openclaw-tools", "tool=reporting-access.grant", "write action currently blocked"], "rule": "Execution must happen through a governed runtime envelope.", "next": "Verification checks resulting access state against expected post-conditions."},
+        {"id": "tool", "label": "Tool Execute", "status": "future", "explanation": "The access operator will execute the grant through governed OpenClaw tooling rather than by uncontrolled direct API action.", "evidence": ["substrate=openclaw-tools", "tool=reporting-access.grant", "write action currently blocked"], "rule": "Execution must happen through a governed runtime envelope.", "next": "Verification checks resulting access state against expected post-conditions."},
         {"id": "verification", "label": "Verification", "status": "future", "explanation": "Post-execution verification will confirm that the exact entitlement was granted and that no excess permission appeared.", "evidence": ["expected entitlement=reporting.read", "verification query prepared", "artifact template prepared"], "rule": "No governed write is complete until verification passes.", "next": "The runtime records evidence and closes the request."},
         {"id": "done", "label": "Done", "status": "future", "explanation": "The request completes only after execution, verification, and artifact recording are all present.", "evidence": ["completion artifact pending", "verification result pending"], "rule": "Evidence is part of completion, not an optional afterthought.", "next": "No next step."}
     ],
@@ -143,7 +143,7 @@ REPORTING_ACCESS = RuntimeScenario.model_validate({
     "timeline": [
         {"id": "t1", "time": "10:01", "title": "workflow.entered_queue", "detail": "Request created and entered the governed runtime intake queue.", "category": "request", "inspectionKey": "request"},
         {"id": "t2", "time": "10:01", "title": "workflow.classified", "detail": "Intake agent parsed target app: Reporting and normalized the request.", "category": "workflow", "inspectionKey": "request"},
-        {"id": "t3", "time": "10:02", "title": "ownership.transferred", "detail": "NemoClaw transferred the request from Intake Bot to Access Operator after the routing layer selected the access lane.", "category": "workflow", "inspectionKey": "playbook"},
+        {"id": "t3", "time": "10:02", "title": "ownership.transferred", "detail": "OpenClaw transferred the request from Intake Agent to Access Operator after the routing layer selected the access lane.", "category": "workflow", "inspectionKey": "playbook"},
         {"id": "t4", "time": "10:03", "title": "workflow.playbook_selected", "detail": "Playbook selected: analytics-read-standard.", "category": "workflow", "inspectionKey": "playbook"},
         {"id": "t5", "time": "10:03", "title": "policy.check.completed", "detail": "Policy evaluation allowed the entitlement but marked it approval-gated.", "category": "policy", "inspectionKey": "policy"},
         {"id": "t6", "time": "10:04", "title": "human.approval.requested", "detail": "Approval required by policy before the runtime may execute the prepared tool call.", "category": "human", "inspectionKey": "policy"},
@@ -186,11 +186,11 @@ VPN_POLICY = RuntimeScenario.model_validate({
     "operators": [
         {
             "agentId": "intake",
-            "name": "Intake Bot",
+            "name": "Intake Agent",
             "kind": "intake-agent",
             "lane": "intake",
-            "runtime": "nemoclaw",
-            "workspace": "~/.openclaw/workspaces/intake-bot",
+            "runtime": "openclaw",
+            "workspace": "~/.openclaw/workspaces/intake-agent",
             "sessionType": "persistent",
             "authorityProfile": "clarify_and_route_only",
             "allowedSubstrates": ["openclaw-routing"],
@@ -201,7 +201,7 @@ VPN_POLICY = RuntimeScenario.model_validate({
             "name": "Change Operator",
             "kind": "operator-agent",
             "lane": "change",
-            "runtime": "nemoclaw",
+            "runtime": "openclaw",
             "workspace": "~/.openclaw/workspaces/change-operator",
             "sessionType": "persistent",
             "authorityProfile": "prepare_high_risk_change_and_execute_after_release",
@@ -213,7 +213,7 @@ VPN_POLICY = RuntimeScenario.model_validate({
             "name": "Duty Operator",
             "kind": "human-approver",
             "lane": "approval",
-            "runtime": "nemoclaw",
+            "runtime": "openclaw",
             "workspace": None,
             "sessionType": "on-demand",
             "authorityProfile": "approval_and_override",
@@ -231,15 +231,15 @@ VPN_POLICY = RuntimeScenario.model_validate({
         "previousOwner": {
             "actorType": "intake-agent",
             "agentId": "intake",
-            "name": "Intake Bot",
+            "name": "Intake Agent",
             "lane": "intake"
         },
         "assignedAt": "18:21",
-        "ownershipReason": "NemoClaw routing matched the normalized infrastructure_change request to the change operator lane."
+        "ownershipReason": "OpenClaw routing matched the normalized infrastructure_change request to the change operator lane."
     },
     "delegation": {
         "delegationMode": "automatic",
-        "routingComponent": "nemoclaw-request-router",
+        "routingComponent": "openclaw-request-router",
         "selectedLane": "change",
         "selectedAgentId": "change-operator",
         "candidateLanes": ["change"],
@@ -286,7 +286,7 @@ VPN_POLICY = RuntimeScenario.model_validate({
     "stages": [
         {"id": "submitted", "label": "Request Submitted", "status": "completed", "explanation": "A change request entered the runtime asking for a VPN policy update before the maintenance window.", "evidence": ["requestId=req_2088", "targetSystem=vpn-policy", "changeType=policy_update"], "rule": "Structured change requests can enter governed intake.", "next": "Intake normalizes the requested change."},
         {"id": "intake", "label": "Intake", "status": "completed", "explanation": "The intake agent extracted target policy, requested change scope, and maintenance context into a controlled request object.", "evidence": ["maintenanceWindow=approved", "requestedScope=remote-access-policy", "change intent normalized"], "rule": "Infrastructure changes must be normalized before playbook selection.", "next": "Classification selects the infrastructure-change workflow family."},
-        {"id": "classification", "label": "Classification", "status": "completed", "explanation": "The NemoClaw routing layer classified this as a governed infrastructure change and assigned the change operator lane.", "evidence": ["workflow=infrastructure_change", "risk=high", "selectedLane=change"], "rule": "Policy-affecting changes receive stronger execution controls than standard access grants.", "next": "A network playbook is selected."},
+        {"id": "classification", "label": "Classification", "status": "completed", "explanation": "The OpenClaw routing layer classified this as a governed infrastructure change and assigned the change operator lane.", "evidence": ["workflow=infrastructure_change", "risk=high", "selectedLane=change"], "rule": "Policy-affecting changes receive stronger execution controls than standard access grants.", "next": "A network playbook is selected."},
         {"id": "playbook", "label": "IAM Playbook", "status": "completed", "explanation": "A versioned network-policy playbook was selected to avoid uncontrolled, one-off execution.", "evidence": ["playbook=vpn-policy-standard-change", "version=0.9.8", "verification runbook attached"], "rule": "Risky policy changes must use playbook-backed envelopes and rollback paths.", "next": "Policy check validates whether the staged change can proceed to operator-agent execution."},
         {"id": "policy", "label": "Policy Check", "status": "completed", "explanation": "Policy review allowed the change to be staged, but execution through OpenShell remains gated until approval releases authority to the change operator.", "evidence": ["executionMode=operator_agent_executed", "rollback path validated", "blast-radius note attached"], "rule": "High-risk infrastructure policy changes require explicit human release before operator-agent execution.", "next": "Approval and execution preparation remain visible to the operator."},
         {"id": "approval", "label": "Approval Check", "status": "completed", "explanation": "Human review has already approved the staged policy change for execution within the maintenance window.", "evidence": ["approver=Duty Operator", "approval status=granted", "window status=active"], "rule": "Approval releases authority to the change operator but does not remove verification requirements.", "next": "The change operator may execute the staged OpenShell command envelope."},
@@ -308,7 +308,7 @@ VPN_POLICY = RuntimeScenario.model_validate({
     ],
     "timeline": [
         {"id": "t1", "time": "18:20", "title": "workflow.entered_queue", "detail": "Infrastructure change request created and queued for governed intake.", "category": "request", "inspectionKey": "request"},
-        {"id": "t2", "time": "18:21", "title": "ownership.transferred", "detail": "NemoClaw transferred the request from Intake Bot to Change Operator after routing matched the change lane.", "category": "workflow", "inspectionKey": "request"},
+        {"id": "t2", "time": "18:21", "title": "ownership.transferred", "detail": "OpenClaw transferred the request from Intake Agent to Change Operator after routing matched the change lane.", "category": "workflow", "inspectionKey": "request"},
         {"id": "t3", "time": "18:22", "title": "workflow.playbook_selected", "detail": "Playbook selected: vpn-policy-standard-change.", "category": "workflow", "inspectionKey": "playbook"},
         {"id": "t4", "time": "18:23", "title": "policy.check.completed", "detail": "Policy review allowed staging but required human release before operator-agent execution.", "category": "policy", "inspectionKey": "policy"},
         {"id": "t5", "time": "18:24", "title": "human.approval.granted", "detail": "Duty Operator approved the staged change for the active maintenance window.", "category": "human", "inspectionKey": "policy"},
@@ -320,7 +320,7 @@ VPN_POLICY = RuntimeScenario.model_validate({
         "request": {"title": "Raw request JSON", "content": "{\n  \"requestId\": \"req_2088\",\n  \"workflow\": \"infrastructure_change\",\n  \"targetSystem\": \"vpn-policy\",\n  \"changeType\": \"policy_update\",\n  \"requestedBy\": \"network-admin@company\",\n  \"maintenanceWindow\": \"active\",\n  \"risk\": \"high\"\n}"},
         "tool": {"title": "Raw tool request / response", "content": "{\n  \"substrate\": \"openshell\",\n  \"commandEnvelopeStatus\": \"prepared_for_operator_agent_execution\",\n  \"input\": {\n    \"command\": \"vpn-policy update --profile vendor-nightly --allow 203.0.113.10/32\",\n    \"rollbackCommand\": \"vpn-policy rollback --profile vendor-nightly\"\n  },\n  \"response\": null,\n  \"blockedBy\": null\n}"},
         "policy": {"title": "Policy metadata", "content": "{\n  \"policyId\": \"pol_infra_high_risk_07\",\n  \"decision\": \"operator_agent_execution_after_approval\",\n  \"requiredApprover\": \"Duty Operator\",\n  \"delegationMode\": \"human_approved_execution\",\n  \"reason\": \"target workflow affects remote access posture\"\n}"},
-        "playbook": {"title": "Playbook version", "content": "{\n  \"playbook\": \"vpn-policy-standard-change\",\n  \"version\": \"0.9.8\",\n  \"allowedTools\": [\"vpn-policy.read\", \"vpn-policy.update\", \"vpn-policy.verify\"],\n  \"runtime\": \"nemoclaw-change-operator\",\n  \"executionAuthority\": \"operator_agent_after_release\"\n}"},
+        "playbook": {"title": "Playbook version", "content": "{\n  \"playbook\": \"vpn-policy-standard-change\",\n  \"version\": \"0.9.8\",\n  \"allowedTools\": [\"vpn-policy.read\", \"vpn-policy.update\", \"vpn-policy.verify\"],\n  \"runtime\": \"openclaw-change-operator\",\n  \"executionAuthority\": \"operator_agent_after_release\"\n}"},
         "artifact": {"title": "Artifact preview", "content": "{\n  \"artifactType\": \"infrastructure_change_record\",\n  \"status\": \"pending\",\n  \"willInclude\": [\n    \"approved OpenShell command envelope\",\n    \"operator-agent execution record\",\n    \"verification result\",\n    \"rollback reference\"\n  ]\n}"}
     },
     "playbook": {

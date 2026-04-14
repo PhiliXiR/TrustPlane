@@ -6,7 +6,7 @@ This document extends the TrustPlane runtime contract so operator agents become 
 
 The goal is to support the real TrustPlane vision where:
 
-- NemoClaw / OpenClaw hosts intake and operator agents
+- OpenClaw hosts intake and operator agents
 - TrustPlane is the operator-facing trust and control plane
 - routing and delegation between agents are visible and governable
 - execution may occur through one or more substrates such as OpenClaw-native tools or OpenShell-backed command flows
@@ -37,7 +37,7 @@ That means TrustPlane needs explicit contract objects for:
 
 ## Architectural position
 
-### NemoClaw / OpenClaw
+### OpenClaw
 
 Owns:
 
@@ -120,7 +120,7 @@ TrustPlane needs explicit request ownership state.
   "previousOwner": {
     "actorType": "intake-agent",
     "agentId": "intake",
-    "name": "Intake Bot",
+    "name": "Intake Agent",
     "lane": "intake"
   },
   "assignedAt": "2026-03-29T20:05:00Z",
@@ -334,7 +334,7 @@ TrustPlane should be able to show the set of agents relevant to the current requ
   "team": [
     {
       "agentId": "intake",
-      "name": "Intake Bot",
+      "name": "Intake Agent",
       "role": "intake",
       "participation": "completed_handoff"
     },
@@ -409,7 +409,7 @@ The existing event families should be extended so agent handoff becomes explicit
   "type": "ownership.transferred",
   "actor": "request-router",
   "timestamp": "2026-03-29T20:05:00Z",
-  "summary": "Request transferred from Intake Bot to Access Operator after routing matched the access lane"
+  "summary": "Request transferred from Intake Agent to Access Operator after routing matched the access lane"
 }
 ```
 

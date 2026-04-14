@@ -19,13 +19,13 @@ export const reportingAccessScenario: RuntimeScenario = {
   operators: [],
   ownership: {
     currentOwner: { actorType: 'operator-agent', agentId: 'access-operator', name: 'Access Operator', lane: 'access' },
-    previousOwner: { actorType: 'intake-agent', agentId: 'intake', name: 'Intake Bot', lane: 'intake' },
+    previousOwner: { actorType: 'intake-agent', agentId: 'intake', name: 'Intake Agent', lane: 'intake' },
     assignedAt: '10:02',
-    ownershipReason: 'NemoClaw routing matched normalized access_request intake to the access lane.',
+    ownershipReason: 'OpenClaw routing matched normalized access_request intake to the access lane.',
   },
   delegation: {
     delegationMode: 'automatic',
-    routingComponent: 'nemoclaw-request-router',
+    routingComponent: 'openclaw-request-router',
     selectedLane: 'access',
     selectedAgentId: 'access-operator',
     candidateLanes: ['access'],

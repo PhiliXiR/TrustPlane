@@ -263,7 +263,7 @@ A sensible incremental path would be:
 
 ### Phase 4
 
-- integrate with real runtime adapters such as NemoClaw/OpenShell-style systems
+- integrate with real runtime adapters such as OpenClaw/OpenShell-style systems
 
 ## Summary
 

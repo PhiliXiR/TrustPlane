@@ -63,11 +63,14 @@ The demo should clearly distinguish:
 - operator controls for approve, deny, pause, resume, and release
 - event streaming shape
 - local Slack/OpenClaw/n8n/TrustPlane handoff path
+- active conversational intake running in OpenClaw with Codex
+- Langfuse-backed prompt and intake observability around that path
 
 **Simulated today**
 - runtime scenarios as the backing execution source in key flows
 - command execution output in the demo scenarios
 - verification events and final artifact generation in seeded runtime scenarios
+- the fully native request/runtime implementation behind those views
 
 This should be stated once, clearly, without apologizing.
 
@@ -131,7 +134,7 @@ Recommended demo posture:
 The app currently exposes several overlapping concepts:
 
 - runtime scenarios
-n- example fixtures
+- example fixtures
 - request projections
 - live intake-backed records
 
@@ -144,7 +147,7 @@ The demo should foreground the request-facing contract.
 Internal migration language such as:
 
 - bridge
-n- older scenario-backed store
+- older scenario-backed store
 - overlap
 - projection from legacy runtime
 

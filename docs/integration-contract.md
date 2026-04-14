@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document defines the broader runtime contract direction TrustPlane would need in order to integrate with a governed agent runtime such as NemoClaw / OpenShell.
+This document defines the broader runtime contract direction TrustPlane would need in order to integrate with a governed agent runtime such as OpenClaw / OpenShell.
 
 For the smaller first-build contract, see:
 
@@ -38,7 +38,7 @@ The runtime is responsible for:
 
 Examples:
 
-- NemoClaw
+- OpenClaw
 - OpenShell
 
 ### TrustPlane layer
@@ -397,7 +397,7 @@ The key distinction is:
 
 ## Adapter-layer recommendation
 
-If NemoClaw / OpenShell does not currently expose these objects directly, the best integration path is likely:
+If OpenClaw / OpenShell does not currently expose these objects directly, the best integration path is likely:
 
 ### runtime -> projection/adapter -> TrustPlane UI
 
@@ -429,7 +429,7 @@ Use the following docs for the first practical build slice:
 
 ## Summary
 
-To integrate TrustPlane with NemoClaw / OpenShell, the core requirement is not just connectivity.
+To integrate TrustPlane with OpenClaw / OpenShell, the core requirement is not just connectivity.
 It is a governed runtime contract.
 
 That contract must expose:

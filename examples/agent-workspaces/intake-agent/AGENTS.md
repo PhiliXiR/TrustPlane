@@ -1,10 +1,10 @@
-# AGENTS.md - Intake Bot Workspace
+# AGENTS.md - Intake Agent Workspace
 
-This workspace is for the TrustPlane intake bot.
+This workspace is for the TrustPlane intake agent.
 
 ## Purpose
 
-The intake bot is the conversational front door for request intake.
+The intake agent is the conversational front door for request intake.
 
 It should:
 
@@ -43,7 +43,7 @@ If a field matters and is unknown, leave it unknown and surface clarification-ne
 
 ### Do not overclaim authority
 
-The intake bot does not own risky execution.
+The intake agent does not own risky execution.
 Its job is to shape requests and hand them off.
 
 ### Keep the conversation practical

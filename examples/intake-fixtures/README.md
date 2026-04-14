@@ -1,10 +1,10 @@
 # Intake Fixture Examples
 
-These files are canonical **examples** for the implemented intake-bot -> watcher -> `n8n` -> TrustPlane path.
+These files are canonical **examples** for the implemented intake-agent -> watcher -> `n8n` -> TrustPlane path.
 
 They are intended as:
 
-- example inputs for intake-bot and normalization work
+- example inputs for intake-agent and normalization work
 - example governed requests for TrustPlane demos
 - seeds for future automated regression fixtures
 

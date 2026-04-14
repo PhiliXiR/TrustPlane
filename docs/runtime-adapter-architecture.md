@@ -54,7 +54,7 @@ TrustPlane should conceptually own this layer, even if some external intake UIs 
 
 Examples:
 
-- NemoClaw
+- OpenClaw
 - OpenShell
 - other agent runtimes
 
@@ -212,7 +212,7 @@ As the backend grows, a useful structure might be:
 
 ### Connectors
 
-- `connectors/nemoclaw.py`
+- `connectors/openclaw.py`
 - `connectors/openshell.py`
 - `connectors/slack.py`
 - `connectors/jira.py`

@@ -42,6 +42,8 @@ In other words, OpenClaw agents should do the parts where rigid workflows break 
 
 ### Primary OpenClaw agent roles
 
+In the current Linux prototype, the intake agent runs in OpenClaw with Codex handling the conversational intake layer, while `n8n` handles deterministic handoff and TrustPlane remains the operator-facing record and control surface.
+
 #### 1. Intake agent
 
 The intake agent should:
@@ -106,7 +108,7 @@ It is one possible substrate for moving data and triggering actions.
 
 ### Good n8n jobs in this architecture
 
-- receive a canonical intake payload from an intake bot or helper
+- receive a canonical intake payload from an intake agent or helper
 - validate the payload shape
 - stamp metadata like received time or correlation id
 - forward the payload into TrustPlane
@@ -278,8 +280,10 @@ Examples that can remain internal unless they affect operator trust:
 - hidden chain-of-thought
 - low-level retry mechanics
 - internal scheduling details
-- implementation-specific prompt internals
+- raw prompt internals that do not affect operator trust or review
 - transport noise that does not affect operator understanding
+
+Prompt-path observability can still matter. In practice, tooling such as Langfuse is useful for tracing prompt inputs, normalization behavior, and clarification drift without turning prompt telemetry into the product surface itself.
 
 The rule is simple:
 

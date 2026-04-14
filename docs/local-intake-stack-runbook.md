@@ -60,9 +60,9 @@ Watcher store:
 
 Watcher state file:
 
-`/home/philixir/.openclaw/workspaces/intake-bot/.openclaw/handoff-watcher-state.json`
+`/home/philixir/.openclaw/workspaces/intake-agent/.openclaw/handoff-watcher-state.json`
 
-The intake bot must emit a message containing the marker line:
+The intake agent must emit a message containing the marker line:
 
 `TRUSTPLANE_INTAKE_PAYLOAD`
 
@@ -87,13 +87,13 @@ npm run dev
 ### Watcher
 
 ```bash
-python3 /home/philixir/.openclaw/workspaces/intake-bot/scripts/intake_handoff_watcher.py --loop --interval 5 --verbose
+python3 /home/philixir/.openclaw/workspaces/intake-agent/scripts/intake_handoff_watcher.py --loop --interval 5 --verbose
 ```
 
 ### Combined local bring-up
 
 ```bash
-/home/philixir/.openclaw/workspaces/intake-bot/scripts/run_always_on_stack.sh
+/home/philixir/.openclaw/workspaces/intake-agent/scripts/run_always_on_stack.sh
 ```
 
 ## Minimal verification checklist
