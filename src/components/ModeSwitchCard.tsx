@@ -11,11 +11,11 @@ export function ModeSwitchCard({ example }: Props) {
   return (
     <SurfaceCard tone={inExampleMode ? 'violet' : 'accent'}>
       <SectionHeader
-        title={inExampleMode ? 'Example Mode' : 'Live Runtime Mode'}
+        title={inExampleMode ? 'Example mode' : 'Live runtime'}
         description={
           inExampleMode
-            ? 'The current record is a canonical example fixture shown through the same operator-facing Execution Record surface used for live runtime records.'
-            : 'The current record is sourced from the live TrustPlane runtime path and is the recommended mode for the hero demo flows.'
+            ? 'The current record is a canonical example shown through the same Execution Record surface used for live runtime records.'
+            : 'The current record comes from the live TrustPlane runtime path and is the recommended mode for the core demo flows.'
         }
         meta={<StatusBadge tone={inExampleMode ? 'warn' : 'success'}>{inExampleMode ? 'example active' : 'live runtime'}</StatusBadge>}
       />

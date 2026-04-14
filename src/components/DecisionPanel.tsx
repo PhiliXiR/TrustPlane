@@ -26,15 +26,15 @@ export function DecisionPanel({ stage, snapshot, example }: Props) {
 
       <div className="mt-5 grid gap-5 lg:grid-cols-2">
         <SurfaceCard>
-          <Block title="What is happening right now?" content={currentSummary} />
+          <Block title="What is happening now" content={currentSummary} />
         </SurfaceCard>
         <SurfaceCard>
-          <Block title="Why is it allowed?" content={policyBasis} />
+          <Block title="Why this path is allowed" content={policyBasis} />
         </SurfaceCard>
       </div>
 
       <SurfaceCard className="mt-5">
-        <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted">Evidence used</h3>
+        <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted">Decision inputs</h3>
         <ul className="mt-3 grid gap-2">
           {evidenceItems.map((item) => (
             <li key={item} className="rounded-2xl border border-line bg-ink/60 px-4 py-3 text-sm text-slate-200">
@@ -45,7 +45,7 @@ export function DecisionPanel({ stage, snapshot, example }: Props) {
       </SurfaceCard>
 
       <SurfaceCard className="mt-5">
-        <Block title="What happens next?" content={nextStep} />
+        <Block title="What happens next" content={nextStep} />
       </SurfaceCard>
     </section>
   );

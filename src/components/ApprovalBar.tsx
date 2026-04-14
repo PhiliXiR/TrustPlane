@@ -73,16 +73,16 @@ export function ApprovalBar({
         <div className="space-y-3">
           <div>
             <div className="flex flex-wrap items-center gap-2">
-              <div className="text-sm font-semibold text-slate-100">Human intervention points</div>
+              <div className="text-sm font-semibold text-slate-100">Approval and control</div>
               <StatusBadge tone={runtimeLive ? 'success' : paused ? 'warn' : denied ? 'warn' : 'violet'}>
                 {runtimeLive ? 'runtime active' : paused ? 'paused' : denied ? 'denied' : 'review state'}
               </StatusBadge>
               {example ? <StatusBadge tone="warn">example</StatusBadge> : null}
             </div>
-            <div className="mt-1 text-sm text-muted">Use this bar to release, hold, or revoke authority as the request moves through the governed runtime.</div>
+            <div className="mt-1 text-sm text-muted">Use these controls to approve, hold, release, or revoke authority as the record moves through the governed flow.</div>
             {snapshot ? (
               <div className="mt-2 text-xs text-slate-300">
-                {blocked ? 'Blocked:' : 'Next:'} {snapshot.workflowState.blockedReason ?? snapshot.workflowState.nextStep}
+                {blocked ? 'Blocked by:' : 'Next step:'} {snapshot.workflowState.blockedReason ?? snapshot.workflowState.nextStep}
               </div>
             ) : null}
           </div>
@@ -135,11 +135,11 @@ export function ApprovalBar({
 }
 
 const confirmationCopy: Record<Exclude<PendingAction, null>, string> = {
-  approve: 'Approve the staged request and move it into an execution-authorized state.',
-  release: 'Release execution authority so the prepared command can run inside the governed envelope.',
-  deny: 'Deny the staged request and revoke further execution authority.',
-  pause: 'Pause the workflow and hold movement until an operator resumes it.',
-  resume: 'Resume the workflow from its paused state.',
+  approve: 'Approve this request and allow it to move into an execution-authorized state.',
+  release: 'Release execution authority so the prepared command can run within the governed envelope.',
+  deny: 'Deny this request and revoke further execution authority.',
+  pause: 'Pause this record and hold progress until an operator resumes it.',
+  resume: 'Resume this record from its paused state.',
 };
 
 function StatusChip({ label, value, tone = 'neutral' }: { label: string; value: string; tone?: 'neutral' | 'accent' }) {

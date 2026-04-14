@@ -310,7 +310,7 @@ export default function App() {
       <div className="mx-auto flex max-w-[1440px] flex-col gap-5 lg:gap-6">
         {flashMessage ? (
           <div className="animate-rise-in rounded-2xl border border-success/25 bg-success/10 px-4 py-3 text-sm text-slate-100 shadow-panel">
-            Runtime updated: <span className="font-semibold">{flashMessage}</span>
+            Record updated: <span className="font-semibold">{flashMessage}</span>
           </div>
         ) : null}
 
@@ -319,7 +319,7 @@ export default function App() {
           <MetricCard label="Owner" value={exampleMode?.owner ?? runtime.ownership.currentOwner.name} />
           <MetricCard label="Workflow" value={exampleMode?.workflow ?? effectiveRequestSnapshot?.request.workflowCandidate ?? runtime.playbook.name} tone="violet" />
           <MetricCard label="Authority" value={runtime.commandEnvelope.approvalState} tone="violet" emphasis="strong" />
-          <MetricCard label={selectedExample ? 'Evidence' : 'Logs'} value={String(selectedExample ? exampleMode?.evidenceCount ?? 0 : liveExecution.length)} tone="success" />
+          <MetricCard label={selectedExample ? 'Evidence items' : 'Evidence lines'} value={String(selectedExample ? exampleMode?.evidenceCount ?? 0 : liveExecution.length)} tone="success" />
         </div>
 
         <RequestHeader request={runtime.request} trustModel={runtime.trustModel} snapshot={effectiveRequestSnapshot} example={selectedExample} />
@@ -330,19 +330,19 @@ export default function App() {
             <div className="rounded-3xl border border-line bg-panel/95 px-5 py-4 text-sm leading-6 text-slate-300 shadow-panel">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <div className="text-[11px] uppercase tracking-[0.2em] text-accent">Demo framing</div>
+                  <div className="text-[11px] uppercase tracking-[0.2em] text-accent">Demo guide</div>
                   <div className="mt-2 text-slate-100">
-                    TrustPlane is the operator-facing control plane for governed agent execution, centered on the Execution Record.
+                    TrustPlane is an operator-facing control plane built around the Execution Record.
                   </div>
                   <div className="mt-2 text-muted">
-                    Best demo path: start with reporting access, then show VPN policy change, then mention the Slack, OpenClaw, n8n intake path.
+                    Strongest demo sequence: reporting access first, VPN policy change second, then the Slack, OpenClaw, and n8n intake path as supporting proof.
                   </div>
                 </div>
                 <button
                   onClick={() => handleDemoReset()}
                   className="rounded-2xl border border-accent/35 bg-accent/10 px-4 py-2 text-sm font-medium text-accent hover:bg-accent/15"
                 >
-                  Reset demo state
+                  Reset demo
                 </button>
               </div>
             </div>

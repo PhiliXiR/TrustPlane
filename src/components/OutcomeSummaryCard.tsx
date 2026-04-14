@@ -32,7 +32,7 @@ export function OutcomeSummaryCard({ snapshot, example }: Props) {
     <section className="rounded-3xl border border-line bg-panel/95 p-6 shadow-panel">
       <SectionHeader
         title="Outcome and evidence"
-        description="A concise readout of what this record intended to do, what happened, and whether the result is verified."
+        description="A concise readout of what this record set out to do, what happened, and whether the result is verified."
         meta={
           <div className="flex flex-wrap gap-2">
             <StatusBadge tone={outcomeTone}>{outcomeLabel}</StatusBadge>
@@ -43,7 +43,7 @@ export function OutcomeSummaryCard({ snapshot, example }: Props) {
 
       <div className="mt-5 grid gap-5 xl:grid-cols-[1.05fr_0.95fr]">
         <SurfaceCard tone={completed ? 'accent' : 'violet'}>
-          <div className="text-xs uppercase tracking-[0.18em] text-muted">Record outcome</div>
+          <div className="text-xs uppercase tracking-[0.18em] text-muted">Current outcome</div>
           <div className="mt-3 text-lg font-semibold text-slate-50">{snapshot.request.currentState}</div>
           <div className="mt-3 text-sm leading-7 text-slate-200">{outcomeSummary}</div>
 
@@ -57,7 +57,7 @@ export function OutcomeSummaryCard({ snapshot, example }: Props) {
 
         <div className="space-y-5">
           <SurfaceCard>
-            <div className="text-xs uppercase tracking-[0.18em] text-muted">What happened</div>
+            <div className="text-xs uppercase tracking-[0.18em] text-muted">Record summary</div>
             <ul className="mt-3 space-y-2 text-sm text-slate-200">
               <li className="rounded-2xl border border-line bg-ink/55 px-4 py-3">Plan: {snapshot.request.workflowCandidate}</li>
               <li className="rounded-2xl border border-line bg-ink/55 px-4 py-3">Action: {snapshot.pendingAction.summary}</li>

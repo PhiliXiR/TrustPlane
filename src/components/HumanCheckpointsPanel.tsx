@@ -14,7 +14,7 @@ export function HumanCheckpointsPanel({ checkpoints, snapshot, example }: Props)
       <div className="flex items-center justify-between gap-3">
         <div>
           <h2 className="text-lg font-semibold text-slate-50">Human checkpoints</h2>
-          <p className="mt-1 text-sm text-muted">Where authority shifts, pauses, or requires explicit human review.</p>
+          <p className="mt-1 text-sm text-muted">Where authority changes hands, pauses, or requires explicit human review.</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <span className="rounded-full border border-line bg-ink/60 px-3 py-1 text-xs text-slate-300">{resolvedCheckpoints.length} checkpoints</span>

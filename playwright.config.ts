@@ -11,5 +11,10 @@ export default defineConfig({
     viewport: { width: 1440, height: 1400 },
     headless: true,
     screenshot: 'off',
+    video: {
+      mode: 'on',
+      size: { width: 1440, height: 1400 },
+    },
   },
+  outputDir: './test-results',
 });

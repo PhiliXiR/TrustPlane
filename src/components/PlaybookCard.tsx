@@ -11,14 +11,14 @@ export function PlaybookCard({ playbook, snapshot, example }: Props) {
   return (
     <section className="rounded-3xl border border-line bg-panel/95 p-6 shadow-panel">
       <SectionHeader
-        title="Playbook"
+        title="Execution playbook"
         meta={<div className="flex flex-wrap gap-2"><StatusBadge>{resolvedPlaybook.allowedTools.length} tools</StatusBadge>{example ? <StatusBadge tone="warn">example</StatusBadge> : null}</div>}
       />
 
       <div className="mt-5 grid gap-5 lg:grid-cols-[0.85fr_1.15fr] text-sm text-slate-200">
         <div className="space-y-5">
           <SurfaceCard>
-            <Block title="Trigger" content={resolvedPlaybook.trigger} />
+            <Block title="When this playbook applies" content={resolvedPlaybook.trigger} />
           </SurfaceCard>
           <SurfaceCard>
             <Block title="Approval requirement" content={resolvedPlaybook.approvalRequirement} />
@@ -33,7 +33,7 @@ export function PlaybookCard({ playbook, snapshot, example }: Props) {
             <ListBlock title="Preconditions" items={resolvedPlaybook.preconditions} emptyLabel="No explicit preconditions listed." />
           </SurfaceCard>
           <SurfaceCard>
-            <ListBlock title="Allowed tools" items={resolvedPlaybook.allowedTools} emptyLabel="No tools declared." />
+            <ListBlock title="Allowed actions" items={resolvedPlaybook.allowedTools} emptyLabel="No allowed actions listed." />
           </SurfaceCard>
         </div>
       </div>

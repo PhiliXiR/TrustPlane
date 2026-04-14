@@ -24,7 +24,7 @@ export function SourceSelector({ options, value, onChange }: Props) {
     <section className="rounded-3xl border border-line bg-panel/95 p-5 shadow-panel">
       <SectionHeader
         title="Record source"
-        description="Choose the current Execution Record source. Keep the hero flows in live runtime view, then use examples as curated supporting records."
+        description="Choose the current Execution Record source. Lead with live runtime flows, then use examples as curated supporting records."
       />
 
       <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-[minmax(220px,1fr)_minmax(120px,0.55fr)_minmax(120px,0.55fr)_minmax(120px,0.55fr)_minmax(320px,1.2fr)] xl:items-end">
@@ -51,7 +51,7 @@ export function SourceSelector({ options, value, onChange }: Props) {
               );
             })}
           </select>
-          {selected?.hero ? <div className="mt-2 text-xs text-accent">Recommended hero flow</div> : null}
+          {selected?.hero ? <div className="mt-2 text-xs text-accent">Recommended demo flow</div> : null}
           {selected?.category ? <div className="mt-1 text-xs text-muted">{selected.category}</div> : null}
         </label>
       </div>

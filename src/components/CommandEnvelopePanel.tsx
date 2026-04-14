@@ -17,8 +17,8 @@ export function CommandEnvelopePanel({ envelope, substrate, snapshot, example }:
   return (
     <section className="rounded-3xl border border-line bg-panel/95 p-6 shadow-panel">
       <SectionHeader
-        title="Command envelope"
-        description="The governed command package the current operator agent may execute through the selected substrate."
+        title="Execution envelope"
+        description="The governed command package the current operator may execute through the selected substrate."
         meta={<div className="flex flex-wrap gap-2"><StatusBadge tone="accent">{approvalState}</StatusBadge>{example ? <StatusBadge tone="warn">example</StatusBadge> : null}</div>}
       />
 
@@ -38,7 +38,7 @@ export function CommandEnvelopePanel({ envelope, substrate, snapshot, example }:
           </div>
           {actionSummary ? (
             <div className="mt-3 text-sm leading-6 text-slate-300">
-              <span className="font-semibold text-slate-100">Projected pending action:</span> {actionSummary}
+              <span className="font-semibold text-slate-100">Prepared action:</span> {actionSummary}
             </div>
           ) : null}
         </SurfaceCard>
@@ -58,7 +58,7 @@ export function CommandEnvelopePanel({ envelope, substrate, snapshot, example }:
             <div className="mt-3 space-y-3 text-sm leading-6 text-slate-300">
               <div className="tp-wrap-anywhere"><span className="font-semibold text-slate-100">Working directory:</span> {envelope.workingDirectory ?? '—'}</div>
               <div className="tp-wrap-anywhere"><span className="font-semibold text-slate-100">Rollback command:</span> {envelope.rollbackCommand ?? '—'}</div>
-              {riskSummary ? <div className="tp-wrap-anywhere"><span className="font-semibold text-slate-100">Projected risk summary:</span> {riskSummary}</div> : null}
+              {riskSummary ? <div className="tp-wrap-anywhere"><span className="font-semibold text-slate-100">Risk summary:</span> {riskSummary}</div> : null}
             </div>
           </SurfaceCard>
         </div>

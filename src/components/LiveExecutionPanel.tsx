@@ -25,8 +25,8 @@ export function LiveExecutionPanel({ entries, example }: Props) {
   const live = entries.length > 0;
   const title = example ? 'Expected execution evidence' : 'Execution evidence';
   const description = example
-    ? 'When an example is selected, this panel emphasizes the expected execution and evidence story for that record.'
-    : 'Watch governed execution evidence arrive in real time as the current operator path runs.';
+    ? 'When an example is selected, this panel shows the expected execution and evidence story for that record.'
+    : 'Watch execution evidence arrive in real time as the current governed path runs.';
 
   return (
     <section className="rounded-3xl border border-line bg-panel/95 p-6 shadow-panel">
@@ -42,7 +42,7 @@ export function LiveExecutionPanel({ entries, example }: Props) {
       />
       <div ref={containerRef} className="mt-5 max-h-[320px] overflow-auto rounded-2xl border border-line bg-ink/75 p-4 font-mono text-xs leading-6 text-slate-200">
         {entries.length === 0 ? (
-          <div className="text-muted">{example ? 'No live output for this example fixture. Use the expected timeline and evidence context above.' : 'No live execution evidence yet.'}</div>
+          <div className="text-muted">{example ? 'No live output for this example. Use the timeline and evidence context above.' : 'No execution evidence yet.'}</div>
         ) : (
           entries.map((entry, index) => (
             <div key={entry.id} className={`grid min-w-0 grid-cols-[auto_auto_minmax(0,1fr)] gap-3 ${entry.stream === 'stderr' ? 'text-amber-300' : 'text-slate-200'}`}>
